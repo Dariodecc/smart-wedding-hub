@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
       const profile = profiles.find(p => p.id === authUser.id)
       const weddingData = weddingSpouses.find(ws => ws.user_id === authUser.id)
 
-      return {
+      const userData = {
         id: authUser.id,
         email: authUser.email || 'N/A',
         role: userRole?.role || 'N/A',
@@ -98,6 +98,9 @@ Deno.serve(async (req) => {
         wedding_id: weddingData?.wedding_id,
         wedding_name: (weddingData?.weddings as any)?.couple_name,
       }
+
+      console.log('User data:', userData)
+      return userData
     })
 
     return new Response(

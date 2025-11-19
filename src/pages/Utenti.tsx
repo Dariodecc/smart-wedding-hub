@@ -45,6 +45,7 @@ const Utenti = () => {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
+      console.log('=== FETCHING USERS ===');
       const { data: session } = await supabase.auth.getSession();
       
       const { data, error } = await supabase.functions.invoke("list-users", {
@@ -53,7 +54,12 @@ const Utenti = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+      }
+      
+      console.log('Fetched users:', data.users);
       return data.users as UserData[];
     },
   });
@@ -440,26 +446,26 @@ const Utenti = () => {
                       className="flex-1 cursor-pointer"
                       onClick={() => openEditDialog(currentUser)}
                     >
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{currentUser.email}</p>
-                        {isCurrentUser && (
-                          <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                            Tu
-                          </span>
-                        )}
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          currentUser.role === "admin" 
-                            ? "bg-primary/10 text-primary" 
-                            : "bg-secondary/10 text-secondary-foreground"
-                        }`}>
-                          {currentUser.role}
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{currentUser.email}</p>
+                      {isCurrentUser && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                          Tu
                         </span>
-                        {!currentUser.is_active && (
-                          <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">
-                            Disabilitato
-                          </span>
-                        )}
-                      </div>
+                      )}
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        currentUser.role === "admin" 
+                          ? "bg-primary/10 text-primary" 
+                          : "bg-secondary/10 text-secondary-foreground"
+                      }`}>
+                        {currentUser.role}
+                      </span>
+                      {!currentUser.is_active && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">
+                          Disabilitato
+                        </span>
+                      )}
+                    </div>
                       {currentUser.wedding_name && (
                         <p className="text-sm text-muted-foreground mt-1">
                           Matrimonio: {currentUser.wedding_name}

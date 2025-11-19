@@ -138,7 +138,8 @@ Deno.serve(async (req) => {
     if (action === 'update') {
       const { userId, email, password, role, weddingId, isActive } = body as UpdateUserRequest
 
-      console.log('Updating user:', { userId, email, role })
+      console.log('=== UPDATE USER START ===')
+      console.log('Updating user:', { userId, email, role, isActive })
 
       // Update email/password if provided
       if (email || password) {
@@ -146,6 +147,7 @@ Deno.serve(async (req) => {
         if (email) updateData.email = email
         if (password) updateData.password = password
 
+        console.log('Updating auth user with:', updateData)
         const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
           userId,
           updateData
@@ -155,22 +157,26 @@ Deno.serve(async (req) => {
           console.error('Error updating user auth:', updateError)
           throw updateError
         }
+        console.log('Auth user updated successfully')
       }
 
       // Update profile active status if provided
       if (isActive !== undefined) {
-        console.log('Updating profile is_active:', { userId, isActive })
+        console.log('=== UPDATING PROFILE is_active ===')
+        console.log('Setting is_active to:', isActive, 'for user:', userId)
         
-        const { error: profileError } = await supabaseAdmin
+        const { data: updateResult, error: profileError } = await supabaseAdmin
           .from('profiles')
           .update({ is_active: isActive })
           .eq('id', userId)
+          .select()
 
         if (profileError) {
-          console.error('Error updating profile:', profileError)
+          console.error('ERROR updating profile:', profileError)
           throw profileError
         }
 
+        console.log('Profile update result:', updateResult)
         console.log('Profile is_active updated successfully')
       }
 

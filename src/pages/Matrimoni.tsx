@@ -120,6 +120,11 @@ const Matrimoni = () => {
   // Create wedding mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      // Validate wedding_date is set
+      if (!data.wedding_date) {
+        throw new Error("La data del matrimonio è obbligatoria");
+      }
+
       const { data: wedding, error } = await supabase
         .from("weddings")
         .insert({
@@ -174,6 +179,11 @@ const Matrimoni = () => {
   // Update wedding mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
+      // Validate wedding_date is set
+      if (!data.wedding_date) {
+        throw new Error("La data del matrimonio è obbligatoria");
+      }
+
       const { error } = await supabase
         .from("weddings")
         .update({
@@ -369,7 +379,10 @@ const Matrimoni = () => {
               <CardTitle className="text-xl">{wedding.couple_name}</CardTitle>
               <CardDescription className="flex items-center gap-1">
                 <CalendarIcon className="h-4 w-4" />
-                {format(new Date(wedding.wedding_date), "PPP", { locale: it })}
+                {wedding.wedding_date 
+                  ? format(new Date(wedding.wedding_date), "PPP", { locale: it })
+                  : "Data non specificata"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">

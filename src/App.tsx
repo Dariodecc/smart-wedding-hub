@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import Matrimoni from "./pages/Matrimoni";
+import MatrimoniDetail from "./pages/MatrimoniDetail";
 import Dashboard from "./pages/Dashboard";
 import Invitati from "./pages/Invitati";
 import Famiglie from "./pages/Famiglie";
@@ -62,6 +63,16 @@ const App = () => (
                 <ProtectedRoute requireAdmin>
                   <AppLayout>
                     <Matrimoni />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/matrimoni/:id"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AppLayout>
+                    <MatrimoniDetail />
                   </AppLayout>
                 </ProtectedRoute>
               }

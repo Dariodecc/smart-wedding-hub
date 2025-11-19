@@ -35,6 +35,74 @@ export type Database = {
         }
         Relationships: []
       }
+      wedding_spouses: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string
+          wedding_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id: string
+          wedding_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          wedding_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_spouses_wedding_id_fkey"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weddings: {
+        Row: {
+          ceremony_location: string
+          couple_name: string
+          created_at: string | null
+          enable_multi_rsvp: boolean
+          id: string
+          reception_location: string | null
+          service_cost: number
+          updated_at: string | null
+          webhook_url: string | null
+          wedding_date: string
+        }
+        Insert: {
+          ceremony_location: string
+          couple_name: string
+          created_at?: string | null
+          enable_multi_rsvp?: boolean
+          id?: string
+          reception_location?: string | null
+          service_cost: number
+          updated_at?: string | null
+          webhook_url?: string | null
+          wedding_date: string
+        }
+        Update: {
+          ceremony_location?: string
+          couple_name?: string
+          created_at?: string | null
+          enable_multi_rsvp?: boolean
+          id?: string
+          reception_location?: string | null
+          service_cost?: number
+          updated_at?: string | null
+          webhook_url?: string | null
+          wedding_date?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -159,6 +159,8 @@ Deno.serve(async (req) => {
 
       // Update profile active status if provided
       if (isActive !== undefined) {
+        console.log('Updating profile is_active:', { userId, isActive })
+        
         const { error: profileError } = await supabaseAdmin
           .from('profiles')
           .update({ is_active: isActive })
@@ -168,6 +170,8 @@ Deno.serve(async (req) => {
           console.error('Error updating profile:', profileError)
           throw profileError
         }
+
+        console.log('Profile is_active updated successfully')
       }
 
       // Update role if provided

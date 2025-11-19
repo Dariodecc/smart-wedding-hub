@@ -118,8 +118,17 @@ const Utenti = () => {
       setIsCreateOpen(false);
       resetForm();
     },
-    onError: (error) => {
-      toast.error(`Errore durante la creazione: ${error.message}`);
+    onError: (error: any) => {
+      // Check if it's a user-friendly error message
+      const errorMessage = error?.message || error?.error || "Errore durante la creazione";
+      
+      if (errorMessage.includes("Utenza già registrata")) {
+        toast.warning("Utenza già registrata", {
+          description: "Un utente con questa email esiste già nel sistema"
+        });
+      } else {
+        toast.error(`Errore durante la creazione: ${errorMessage}`);
+      }
     },
   });
 

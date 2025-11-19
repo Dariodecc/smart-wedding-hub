@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Heart } from "lucide-react";
 
@@ -33,7 +34,27 @@ const Login = () => {
           ? "Credenziali non valide. Verifica email e password."
           : "Si è verificato un errore. Riprova.",
       });
-    } else {
+      setLoading(false);
+      return;
+    }
+
+    // Check if user is active
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    
+    if (currentUser) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("is_active")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (profileError || !profile?.is_active) {
+        await supabase.auth.signOut();
+        toast.error("Le tue credenziali sono scadute, contatta l'Admin");
+        setLoading(false);
+        return;
+      }
+
       toast.success("Accesso effettuato!");
     }
 

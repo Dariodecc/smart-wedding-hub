@@ -17,6 +17,7 @@ import Famiglie from "./pages/Famiglie";
 import Gruppi from "./pages/Gruppi";
 import Tavoli from "./pages/Tavoli";
 import Impostazioni from "./pages/Impostazioni";
+import Utenti from "./pages/Utenti";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -73,6 +74,16 @@ const App = () => (
                 <ProtectedRoute requireAdmin>
                   <AppLayout>
                     <MatrimoniDetail />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/utenti"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AppLayout>
+                    <Utenti />
                   </AppLayout>
                 </ProtectedRoute>
               }

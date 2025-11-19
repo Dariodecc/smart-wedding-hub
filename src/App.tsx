@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import Matrimoni from "./pages/Matrimoni";
@@ -38,76 +40,94 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route
-            path="/admin"
-            element={
-              <AppLayout>
-                <AdminDashboard />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/matrimoni"
-            element={
-              <AppLayout>
-                <Matrimoni />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <AppLayout>
-                <Dashboard />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/invitati"
-            element={
-              <AppLayout>
-                <Invitati />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/famiglie"
-            element={
-              <AppLayout>
-                <Famiglie />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/gruppi"
-            element={
-              <AppLayout>
-                <Gruppi />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/tavoli"
-            element={
-              <AppLayout>
-                <Tavoli />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/impostazioni"
-            element={
-              <AppLayout>
-                <Impostazioni />
-              </AppLayout>
-            }
-          />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AppLayout>
+                    <AdminDashboard />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/matrimoni"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AppLayout>
+                    <Matrimoni />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Dashboard />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/invitati"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Invitati />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/famiglie"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Famiglie />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/gruppi"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Gruppi />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tavoli"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Tavoli />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/impostazioni"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Impostazioni />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

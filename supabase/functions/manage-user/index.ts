@@ -79,6 +79,10 @@ Deno.serve(async (req) => {
 
       if (createError) {
         console.error('Error creating user:', createError)
+        // Return user-friendly error message for duplicate email
+        if (createError.message?.includes('already been registered') || createError.code === 'email_exists') {
+          throw new Error('Utenza già registrata')
+        }
         throw createError
       }
 
@@ -215,6 +219,27 @@ Deno.serve(async (req) => {
           }
         }
       }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (action === 'delete') {
+      const { userId } = body as { userId: string }
+
+      console.log('Deleting user:', { userId })
+
+      // Delete user from auth (this will cascade delete profile, roles, and wedding associations)
+      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+
+      if (deleteError) {
+        console.error('Error deleting user:', deleteError)
+        throw deleteError
+      }
+
+      console.log('User deleted successfully')
 
       return new Response(
         JSON.stringify({ success: true }),

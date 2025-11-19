@@ -22,14 +22,16 @@ const queryClient = new QueryClient();
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider>
-    <div className="flex min-h-screen w-full">
-      <AppSidebar />
-      <main className="flex-1">
-        <header className="sticky top-0 z-10 h-14 flex items-center border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 px-4">
-          <SidebarTrigger />
-        </header>
-        <div className="flex-1">{children}</div>
-      </main>
+    <div className="flex flex-col min-h-screen w-full">
+      <header className="sticky top-0 z-10 h-14 flex items-center border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 px-4">
+        <SidebarTrigger />
+      </header>
+      <div className="flex flex-1 w-full">
+        <AppSidebar />
+        <main className="flex-1 overflow-auto">
+          {children}
+        </main>
+      </div>
     </div>
   </SidebarProvider>
 );

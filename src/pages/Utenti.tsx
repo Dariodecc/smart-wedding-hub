@@ -3,13 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Eye, EyeOff, RefreshCw, Users, UserCog, Heart, UserX } from "lucide-react";
+import { Plus, Eye, EyeOff, RefreshCw, Users, UserCog, Heart, UserX, Trash2 } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -26,7 +26,9 @@ const Utenti = () => {
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [deletingUser, setDeletingUser] = useState<UserData | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -153,6 +155,35 @@ const Utenti = () => {
     },
     onError: (error) => {
       toast.error(`Errore durante l'aggiornamento: ${error.message}`);
+    },
+  });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data: session } = await supabase.auth.getSession();
+      
+      const { data: result, error } = await supabase.functions.invoke("manage-user", {
+        body: {
+          action: "delete",
+          userId,
+        },
+        headers: {
+          Authorization: `Bearer ${session.session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      toast.success("Utente eliminato con successo");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setIsDeleteOpen(false);
+      setDeletingUser(null);
+    },
+    onError: (error) => {
+      toast.error(`Errore durante l'eliminazione: ${error.message}`);
     },
   });
 
@@ -357,10 +388,12 @@ const Utenti = () => {
               {users.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
-                  onClick={() => openEditDialog(user)}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                 >
-                  <div className="flex-1">
+                  <div 
+                    className="flex-1 cursor-pointer"
+                    onClick={() => openEditDialog(user)}
+                  >
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{user.email}</p>
                       <span className={`text-xs px-2 py-1 rounded-full ${
@@ -382,6 +415,18 @@ const Utenti = () => {
                       </p>
                     )}
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeletingUser(user);
+                      setIsDeleteOpen(true);
+                    }}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               ))}
             </div>
@@ -495,6 +540,43 @@ const Utenti = () => {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Elimina Utente</DialogTitle>
+            <DialogDescription>
+              Sei sicuro di voler eliminare l'utente <strong>{deletingUser?.email}</strong>?
+              Questa azione non può essere annullata.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => {
+                setIsDeleteOpen(false);
+                setDeletingUser(null);
+              }}
+            >
+              Annulla
+            </Button>
+            <Button 
+              type="button" 
+              variant="destructive"
+              onClick={() => {
+                if (deletingUser) {
+                  deleteUserMutation.mutate(deletingUser.id);
+                }
+              }}
+              disabled={deleteUserMutation.isPending}
+            >
+              {deleteUserMutation.isPending ? "Eliminazione..." : "Elimina"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

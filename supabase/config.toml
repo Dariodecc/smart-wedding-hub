@@ -2,3 +2,6 @@ project_id = "ihjhxtwgbrqabogysdsa"
 
 [functions.manage-user]
 verify_jwt = true
+
+[functions.list-users]
+verify_jwt = true

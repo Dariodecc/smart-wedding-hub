@@ -41,50 +41,16 @@ const Utenti = () => {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      // Get all users from auth (via profiles)
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("*");
-
-      if (profilesError) throw profilesError;
-
-      // Get roles for all users
-      const { data: roles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
-
-      if (rolesError) throw rolesError;
-
-      // Get wedding associations
-      const { data: weddingSpouses, error: weddingError } = await supabase
-        .from("wedding_spouses")
-        .select("user_id, wedding_id, weddings(couple_name)");
-
-      if (weddingError) throw weddingError;
-
-      // Get user emails from auth metadata
-      const usersData: UserData[] = [];
+      const { data: session } = await supabase.auth.getSession();
       
-      for (const profile of profiles) {
-        const userRole = roles.find(r => r.user_id === profile.id);
-        const weddingData = weddingSpouses.find(ws => ws.user_id === profile.id);
-        
-        // Fetch user email from auth
-        const { data: { user: authUser }, error: authError } = await supabase.auth.admin.getUserById(profile.id);
-        
-        if (!authError && authUser) {
-          usersData.push({
-            id: profile.id,
-            email: authUser.email || "N/A",
-            role: userRole?.role || "N/A",
-            is_active: profile.is_active,
-            wedding_id: weddingData?.wedding_id,
-            wedding_name: weddingData?.weddings?.couple_name,
-          });
-        }
-      }
+      const { data, error } = await supabase.functions.invoke("list-users", {
+        headers: {
+          Authorization: `Bearer ${session.session?.access_token}`,
+        },
+      });
 
-      return usersData;
+      if (error) throw error;
+      return data.users as UserData[];
     },
   });
 

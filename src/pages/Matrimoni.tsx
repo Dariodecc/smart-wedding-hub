@@ -398,7 +398,11 @@ const Matrimoni = () => {
               )}
               <div className="flex items-center gap-2 text-sm">
                 <Euro className="h-4 w-4 text-muted-foreground" />
-                <span className="font-semibold">{wedding.service_cost.toFixed(2)} €</span>
+                <span className="font-semibold">
+                  {wedding.service_cost != null 
+                    ? `${wedding.service_cost.toFixed(2)} €` 
+                    : "Non specificato"}
+                </span>
               </div>
               {wedding.enable_multi_rsvp && (
                 <Badge variant="secondary">RSVP Multiplo Attivo</Badge>

@@ -88,19 +88,17 @@ Deno.serve(async (req) => {
 
       console.log('User created in auth:', newUser.user.id)
 
-      // Update profile (created by trigger) if isActive is false
       if (!isActive) {
         const { error: profileError } = await supabaseAdmin
           .from('profiles')
-          .update({ is_active: isActive })
-          .eq('id', newUser.user.id)
+          .upsert({ id: newUser.user.id, is_active: isActive })
 
         if (profileError) {
-          console.error('Error updating profile:', profileError)
+          console.error('Error upserting profile:', profileError)
           throw profileError
         }
 
-        console.log('Profile updated')
+        console.log('Profile upserted for new user')
       }
 
       // Create role
@@ -165,19 +163,18 @@ Deno.serve(async (req) => {
         console.log('=== UPDATING PROFILE is_active ===')
         console.log('Setting is_active to:', isActive, 'for user:', userId)
         
-        const { data: updateResult, error: profileError } = await supabaseAdmin
+        const { data: upsertResult, error: profileError } = await supabaseAdmin
           .from('profiles')
-          .update({ is_active: isActive })
-          .eq('id', userId)
+          .upsert({ id: userId, is_active: isActive })
           .select()
 
         if (profileError) {
-          console.error('ERROR updating profile:', profileError)
+          console.error('ERROR upserting profile:', profileError)
           throw profileError
         }
 
-        console.log('Profile update result:', updateResult)
-        console.log('Profile is_active updated successfully')
+        console.log('Profile upsert result:', upsertResult)
+        console.log('Profile is_active upserted successfully')
       }
 
       // Update role if provided

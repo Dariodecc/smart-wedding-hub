@@ -449,15 +449,17 @@ const Utenti = () => {
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{currentUser.email}</p>
                       {isCurrentUser && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                        <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
                           Tu
                         </span>
                       )}
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        currentUser.role === "admin" 
-                          ? "bg-primary/10 text-primary" 
-                          : "bg-secondary/10 text-secondary-foreground"
-                      }`}>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          currentUser.role === "admin"
+                            ? "bg-primary/10 text-primary"
+                            : "bg-secondary/10 text-secondary-foreground"
+                        }`}
+                      >
                         {currentUser.role}
                       </span>
                       {!currentUser.is_active && (

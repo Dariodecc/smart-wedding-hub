@@ -63,28 +63,23 @@ const Matrimoni = () => {
   const { data: spouseUsers } = useQuery({
     queryKey: ["spouse-users"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "sposi");
+      const { data: session } = await supabase.auth.getSession();
       
+      const { data, error } = await supabase.functions.invoke("list-users", {
+        headers: {
+          Authorization: `Bearer ${session.session?.access_token}`,
+        },
+      });
+
       if (error) throw error;
       
-      // Fetch user details
-      const userIds = data.map(ur => ur.user_id);
-      const users: SpouseUser[] = [];
+      // Filter only users with 'sposi' role
+      const sposiUsers = data.users.filter((user: any) => user.role === 'sposi');
       
-      for (const userId of userIds) {
-        const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
-        if (!userError && userData.user) {
-          users.push({
-            id: userData.user.id,
-            email: userData.user.email || "",
-          });
-        }
-      }
-      
-      return users;
+      return sposiUsers.map((user: any) => ({
+        id: user.id,
+        email: user.email,
+      })) as SpouseUser[];
     },
   });
 

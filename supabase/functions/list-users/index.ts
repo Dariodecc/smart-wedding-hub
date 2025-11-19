@@ -46,14 +46,12 @@ Deno.serve(async (req) => {
       throw new Error('User is not an admin')
     }
 
-    // Get all profiles
-    const { data: profiles, error: profilesError } = await supabaseAdmin
-      .from('profiles')
-      .select('*')
-
-    if (profilesError) {
-      console.error('Error fetching profiles:', profilesError)
-      throw profilesError
+    // Get all users from auth
+    const { data: { users: authUsers }, error: authError } = await supabaseAdmin.auth.admin.listUsers()
+    
+    if (authError) {
+      console.error('Error fetching auth users:', authError)
+      throw authError
     }
 
     // Get all user roles
@@ -66,6 +64,16 @@ Deno.serve(async (req) => {
       throw rolesErr
     }
 
+    // Get all profiles
+    const { data: profiles, error: profilesError } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError)
+      throw profilesError
+    }
+
     // Get wedding associations
     const { data: weddingSpouses, error: weddingError } = await supabaseAdmin
       .from('wedding_spouses')
@@ -76,29 +84,21 @@ Deno.serve(async (req) => {
       throw weddingError
     }
 
-    // Build user list with emails
-    const usersWithEmails = []
-    
-    for (const profile of profiles) {
-      const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.admin.getUserById(profile.id)
-      
-      if (authError) {
-        console.error(`Error fetching user ${profile.id}:`, authError)
-        continue
-      }
+    // Build user list with all auth users
+    const usersWithEmails = authUsers.map(authUser => {
+      const userRole = userRoles.find(r => r.user_id === authUser.id)
+      const profile = profiles.find(p => p.id === authUser.id)
+      const weddingData = weddingSpouses.find(ws => ws.user_id === authUser.id)
 
-      const userRole = userRoles.find(r => r.user_id === profile.id)
-      const weddingData = weddingSpouses.find(ws => ws.user_id === profile.id)
-
-      usersWithEmails.push({
-        id: profile.id,
-        email: authUser?.email || 'N/A',
+      return {
+        id: authUser.id,
+        email: authUser.email || 'N/A',
         role: userRole?.role || 'N/A',
-        is_active: profile.is_active,
+        is_active: profile?.is_active ?? true,
         wedding_id: weddingData?.wedding_id,
         wedding_name: (weddingData?.weddings as any)?.couple_name,
-      })
-    }
+      }
+    })
 
     return new Response(
       JSON.stringify({ users: usersWithEmails }),

@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.list-users]
 verify_jwt = true
+
+[functions.check-user]
+verify_jwt = true

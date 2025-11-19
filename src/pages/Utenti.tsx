@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +25,7 @@ interface UserData {
 
 const Utenti = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -93,8 +95,26 @@ const Utenti = () => {
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      // Check if user already exists
       const { data: session } = await supabase.auth.getSession();
       
+      const { data: checkResult, error: checkError } = await supabase.functions.invoke("check-user", {
+        body: {
+          action: "check",
+          email: data.email,
+        },
+        headers: {
+          Authorization: `Bearer ${session.session?.access_token}`,
+        },
+      });
+
+      if (checkError) throw checkError;
+
+      if (checkResult?.exists) {
+        throw new Error("Utenza già registrata");
+      }
+
+      // Proceed with user creation
       const { data: result, error } = await supabase.functions.invoke("manage-user", {
         body: {
           action: "create",
@@ -119,8 +139,7 @@ const Utenti = () => {
       resetForm();
     },
     onError: (error: any) => {
-      // Check if it's a user-friendly error message
-      const errorMessage = error?.message || error?.error || "Errore durante la creazione";
+      const errorMessage = error?.message || "Errore durante la creazione";
       
       if (errorMessage.includes("Utenza già registrata")) {
         toast.warning("Utenza già registrata", {
@@ -394,50 +413,61 @@ const Utenti = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div 
-                    className="flex-1 cursor-pointer"
-                    onClick={() => openEditDialog(user)}
+              {users.map((currentUser) => {
+                const isCurrentUser = currentUser.id === user?.id;
+                
+                return (
+                  <div
+                    key={currentUser.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                   >
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{user.email}</p>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        user.role === "admin" 
-                          ? "bg-primary/10 text-primary" 
-                          : "bg-secondary/10 text-secondary-foreground"
-                      }`}>
-                        {user.role}
-                      </span>
-                      {!user.is_active && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">
-                          Disabilitato
+                    <div 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => openEditDialog(currentUser)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{currentUser.email}</p>
+                        {isCurrentUser && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                            Tu
+                          </span>
+                        )}
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          currentUser.role === "admin" 
+                            ? "bg-primary/10 text-primary" 
+                            : "bg-secondary/10 text-secondary-foreground"
+                        }`}>
+                          {currentUser.role}
                         </span>
+                        {!currentUser.is_active && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">
+                            Disabilitato
+                          </span>
+                        )}
+                      </div>
+                      {currentUser.wedding_name && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Matrimonio: {currentUser.wedding_name}
+                        </p>
                       )}
                     </div>
-                    {user.wedding_name && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Matrimonio: {user.wedding_name}
-                      </p>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeletingUser(currentUser);
+                        setIsDeleteOpen(true);
+                      }}
+                      disabled={isCurrentUser}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={isCurrentUser ? "Non puoi eliminare il tuo account" : "Elimina utente"}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeletingUser(user);
-                      setIsDeleteOpen(true);
-                    }}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -536,9 +566,16 @@ const Utenti = () => {
                   id="edit-active"
                   checked={formData.isActive}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
+                  disabled={editingUser?.id === user?.id}
                 />
               </div>
             </div>
+
+            {editingUser?.id === user?.id && (
+              <p className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950 p-3 rounded-md">
+                ℹ️ Non puoi disabilitare il tuo account
+              </p>
+            )}
 
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>

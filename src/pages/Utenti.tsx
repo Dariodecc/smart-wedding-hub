@@ -156,6 +156,13 @@ const Utenti = () => {
     mutationFn: async (data: typeof formData & { userId: string }) => {
       const { data: session } = await supabase.auth.getSession();
       
+      console.log('Updating user with data:', { 
+        userId: data.userId, 
+        isActive: data.isActive,
+        role: data.role,
+        email: data.email
+      });
+      
       const { data: result, error } = await supabase.functions.invoke("manage-user", {
         body: {
           action: "update",
@@ -171,17 +178,25 @@ const Utenti = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating user:', error);
+        throw error;
+      }
+      
+      console.log('Update successful:', result);
       return result;
     },
     onSuccess: () => {
       toast.success("Utente aggiornato con successo");
+      // Force refetch to update stats immediately
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.refetchQueries({ queryKey: ["users"] });
       setIsEditOpen(false);
       setEditingUser(null);
       resetForm();
     },
     onError: (error) => {
+      console.error('Update mutation error:', error);
       toast.error(`Errore durante l'aggiornamento: ${error.message}`);
     },
   });

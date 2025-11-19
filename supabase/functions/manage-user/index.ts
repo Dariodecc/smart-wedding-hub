@@ -84,17 +84,20 @@ Deno.serve(async (req) => {
 
       console.log('User created in auth:', newUser.user.id)
 
-      // Create profile
-      const { error: profileError } = await supabaseAdmin
-        .from('profiles')
-        .insert({ id: newUser.user.id, is_active: isActive })
+      // Update profile (created by trigger) if isActive is false
+      if (!isActive) {
+        const { error: profileError } = await supabaseAdmin
+          .from('profiles')
+          .update({ is_active: isActive })
+          .eq('id', newUser.user.id)
 
-      if (profileError) {
-        console.error('Error creating profile:', profileError)
-        throw profileError
+        if (profileError) {
+          console.error('Error updating profile:', profileError)
+          throw profileError
+        }
+
+        console.log('Profile updated')
       }
-
-      console.log('Profile created')
 
       // Create role
       const { error: roleError } = await supabaseAdmin

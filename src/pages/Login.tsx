@@ -42,13 +42,14 @@ const Login = () => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     
     if (currentUser) {
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from("profiles")
         .select("is_active")
         .eq("id", currentUser.id)
         .maybeSingle();
 
-      if (profileError || !profile?.is_active) {
+      // Block ONLY if profile exists AND is explicitly disabled
+      if (profile && profile.is_active === false) {
         await supabase.auth.signOut();
         toast.error("Le tue credenziali sono scadute, contatta l'Admin");
         setLoading(false);

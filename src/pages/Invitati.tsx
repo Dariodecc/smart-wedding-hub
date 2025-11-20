@@ -182,7 +182,7 @@ const Invitati = () => {
 
             <div className="bg-background border rounded-lg p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
-                <Clock className="h-5 w-5 text-orange-600" />
+                <Clock className="h-5 w-5 text-yellow-600" />
                 <span className="text-sm text-muted-foreground">In Attesa</span>
               </div>
               {isLoading ? (
@@ -288,7 +288,7 @@ const Invitati = () => {
                             }
                             className={
                               invitato.rsvp_status === 'Ci sarò' ? 'bg-green-600 hover:bg-green-700' :
-                              invitato.rsvp_status === 'In attesa' ? 'bg-orange-600 hover:bg-orange-700' :
+                              invitato.rsvp_status === 'In attesa' ? 'bg-yellow-600 hover:bg-yellow-700' :
                               ''
                             }
                           >
@@ -370,7 +370,7 @@ const Invitati = () => {
                             }
                             className={
                               invitato.rsvp_status === 'Ci sarò' ? 'bg-green-600 hover:bg-green-700' :
-                              invitato.rsvp_status === 'In attesa' ? 'bg-orange-600 hover:bg-orange-700' :
+                              invitato.rsvp_status === 'In attesa' ? 'bg-yellow-600 hover:bg-yellow-700' :
                               ''
                             }
                           >

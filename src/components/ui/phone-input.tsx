@@ -143,9 +143,12 @@ export function PhoneInput({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[100px] justify-between px-3"
+            className="w-[120px] justify-between px-3"
           >
-            <span className="text-xl">{selectedCountry.flag}</span>
+            <span className="flex items-center gap-2">
+              <span className="text-xl leading-none">{selectedCountry.flag}</span>
+              <span className="text-sm text-muted-foreground">{selectedCountry.dialCode}</span>
+            </span>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -161,7 +164,7 @@ export function PhoneInput({
                 />
               </div>
             </div>
-            <ScrollArea className="h-[300px]">
+            <ScrollArea className="h-[300px] pointer-events-auto">
               <div className="p-1">
                 {filteredCountries.length === 0 ? (
                   <div className="py-6 text-center text-sm text-muted-foreground">

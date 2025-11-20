@@ -3,6 +3,7 @@ import { Users, Plus, CheckCircle, Clock, XCircle, Table2, Grid3x3, Phone, User,
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AddInvitatoDialog } from "@/components/AddInvitatoDialog";
+import { EditInvitatoSheet } from "@/components/EditInvitatoSheet";
 import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +33,8 @@ const Invitati = () => {
     const saved = localStorage.getItem('invitati-view-mode');
     return saved as 'table' | 'box' || (window.innerWidth >= 1024 ? 'table' : 'box');
   });
+  const [selectedInvitato, setSelectedInvitato] = useState<any>(null);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   
   const { wedding, isLoading: isLoadingWedding } = useCurrentMatrimonio();
   const isMobile = useIsMobile();
@@ -99,6 +102,16 @@ const Invitati = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleInvitatoClick = (invitato: any) => {
+    setSelectedInvitato(invitato);
+    setIsEditSheetOpen(true);
+  };
+
+  const handleCloseEditSheet = () => {
+    setIsEditSheetOpen(false);
+    setSelectedInvitato(null);
   };
 
   if (isLoading) {
@@ -262,7 +275,11 @@ const Invitati = () => {
                     ))
                   ) : paginatedData && paginatedData.length > 0 ? (
                     paginatedData.map((invitato) => (
-                      <TableRow key={invitato.id} className="hover:bg-muted/50">
+                      <TableRow 
+                        key={invitato.id} 
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleInvitatoClick(invitato)}
+                      >
                         <TableCell className="font-medium">{invitato.nome}</TableCell>
                         <TableCell>{invitato.cognome}</TableCell>
                         <TableCell className="hidden sm:table-cell">{invitato.cellulare}</TableCell>
@@ -327,7 +344,8 @@ const Invitati = () => {
                 paginatedData.map((invitato) => (
                   <div
                     key={invitato.id}
-                    className="bg-background border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                    className="bg-background border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => handleInvitatoClick(invitato)}
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -444,6 +462,16 @@ const Invitati = () => {
         onOpenChange={setIsDialogOpen}
         weddingId={wedding.id}
       />
+
+      {/* Edit Sheet */}
+      {selectedInvitato && (
+        <EditInvitatoSheet
+          invitato={selectedInvitato}
+          isOpen={isEditSheetOpen}
+          onClose={handleCloseEditSheet}
+          matrimonioId={wedding.id}
+        />
+      )}
     </div>
   );
 };

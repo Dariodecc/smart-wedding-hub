@@ -86,22 +86,29 @@ export function AppSidebar() {
     <Sidebar className={isCollapsed ? "w-14" : "w-60"} collapsible="icon">
       <SidebarContent>
         {isImpersonating && !isCollapsed && (
-          <div className="px-4 py-3">
-            <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950/20">
-              <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              <AlertDescription className="text-sm text-orange-800 dark:text-orange-200">
-                <div className="font-medium mb-2">Stai visualizzando come:</div>
-                <div className="font-semibold">{wedding?.couple_name || "Caricamento..."}</div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={stopImpersonation}
-                  className="mt-2 w-full border-orange-500 text-orange-700 hover:bg-orange-100 dark:border-orange-400 dark:text-orange-300 dark:hover:bg-orange-950"
-                >
-                  ← Esci
-                </Button>
-              </AlertDescription>
-            </Alert>
+          <div className="px-3 py-3 border-b border-border/50">
+            <div className="rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-3 border border-orange-200/50 dark:border-orange-800/50">
+              <div className="flex items-start gap-2 mb-2">
+                <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-medium text-orange-900/70 dark:text-orange-100/70 mb-1">
+                    Modalità impersonificazione
+                  </div>
+                  <div className="text-sm font-semibold text-orange-900 dark:text-orange-100 truncate">
+                    {wedding?.couple_name || "Caricamento..."}
+                  </div>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={stopImpersonation}
+                className="w-full h-8 text-xs border-orange-300 bg-white/80 text-orange-700 hover:bg-orange-50 hover:text-orange-800 hover:border-orange-400 dark:border-orange-700 dark:bg-orange-950/50 dark:text-orange-300 dark:hover:bg-orange-900/50 dark:hover:border-orange-600 transition-colors"
+              >
+                <LogOut className="h-3 w-3 mr-1.5" />
+                Esci da impersonificazione
+              </Button>
+            </div>
           </div>
         )}
 
@@ -162,19 +169,9 @@ export function AppSidebar() {
           <div className="mb-2 px-2">
             <p className="text-sm font-medium truncate">{user.email}</p>
             <p className="text-xs text-muted-foreground">
-              {isImpersonating ? "Admin (Impersonificazione)" : isAdmin ? "Admin" : "Sposi"}
+              {isAdmin ? "Admin" : "Sposi"}
             </p>
           </div>
-        )}
-        {isImpersonating && (
-          <Button
-            variant="outline"
-            onClick={stopImpersonation}
-            className="w-full justify-start mb-2 hover:bg-sidebar-accent"
-          >
-            <LogOut className="h-5 w-5" />
-            {!isCollapsed && <span>Esci da impersonificazione</span>}
-          </Button>
         )}
         <Button
           variant="ghost"

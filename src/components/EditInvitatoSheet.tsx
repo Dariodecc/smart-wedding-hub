@@ -271,7 +271,7 @@ export function EditInvitatoSheet({
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent
           side="right"
-          className="w-full sm:w-[85vw] lg:w-[66vw] xl:w-[50vw] h-full p-0 flex flex-col overflow-hidden"
+          className="w-full sm:w-[85vw] md:w-[700px] lg:w-[800px] xl:w-[900px] h-full p-0 flex flex-col overflow-hidden"
         >
           {/* Header - Fixed */}
           <div className="shrink-0">

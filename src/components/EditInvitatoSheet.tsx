@@ -27,10 +27,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   X,
   ArrowLeft,
@@ -40,6 +53,7 @@ import {
   Loader2,
   Users,
   Crown,
+  ChevronDown,
 } from "lucide-react";
 
 interface EditInvitatoSheetProps {
@@ -60,6 +74,12 @@ export function EditInvitatoSheet({
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedGruppo, setSelectedGruppo] = useState<any>(null);
+  const [selectedTavolo, setSelectedTavolo] = useState<any>(null);
+  
+  // Placeholder data - will be replaced with real data later
+  const gruppi: any[] = [];
+  const tavoli: any[] = [];
 
   const form = useForm({
     defaultValues: {
@@ -175,42 +195,18 @@ export function EditInvitatoSheet({
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent
           side="right"
-          className="w-full sm:w-[540px] md:w-[600px] lg:w-[650px] p-0 flex flex-col"
+          className="w-full sm:w-[540px] md:w-[600px] lg:w-[650px] h-full p-0 flex flex-col overflow-hidden"
         >
-          {/* Header */}
+          {/* Header - Fixed */}
           <div className="shrink-0">
-            {isMobile ? (
-              <div className="flex items-center justify-between border-b p-4">
-                <Button variant="ghost" size="icon" onClick={onClose}>
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-                <h2 className="text-lg font-semibold flex-1 text-center">
-                  {invitato.nome} {invitato.cognome}
-                </h2>
-                <div className="w-10" />
-              </div>
-            ) : (
-              <div className="flex items-start justify-between border-b p-6">
-                <div>
-                  <h2 className="text-xl font-semibold">
-                    {invitato.nome} {invitato.cognome}
-                  </h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Modifica i dettagli dell'invitato
-                  </p>
-                </div>
-                <Button variant="ghost" size="icon" onClick={onClose}>
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            )}
+...
           </div>
 
-          {/* Scrollable Content */}
+          {/* Scrollable Content - Takes all available space */}
           <div className="flex-1 overflow-y-auto">
             <form
               onSubmit={form.handleSubmit(handleSave)}
-              className="p-4 sm:p-5 md:p-6 pb-24 space-y-6"
+              className="p-4 sm:p-5 md:p-6 pb-32 space-y-6"
             >
               {/* RSVP Status Section */}
               <div className="space-y-4">
@@ -306,9 +302,11 @@ export function EditInvitatoSheet({
                 </div>
               </div>
 
+              <Separator className="my-6" />
+
               {/* Informazioni Base */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-base">Informazioni Base</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Informazioni Base</h3>
 
                 {isMobile ? (
                   <div className="space-y-5">
@@ -426,10 +424,12 @@ export function EditInvitatoSheet({
                 </div>
               </div>
 
+              <Separator className="my-6" />
+
               {/* Famiglia */}
               {invitato.famiglia && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-base">Famiglia & Associazioni</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">Famiglia</h3>
 
                   {isMobile ? (
                     <div className="p-4 bg-muted rounded-lg space-y-3">
@@ -462,11 +462,108 @@ export function EditInvitatoSheet({
                   )}
                 </div>
               )}
+
+              <Separator className="my-6" />
+
+              {/* Assegnazioni */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-900">Assegnazioni</h3>
+
+                {/* Gruppi */}
+                <div className="space-y-2">
+                  <Label htmlFor="gruppo" className={isMobile ? "text-base" : "text-sm"}>
+                    Gruppo
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={`w-full justify-between ${isMobile ? "h-12 text-base" : "h-10"}`}
+                      >
+                        {selectedGruppo ? selectedGruppo.nome : "Seleziona gruppo (opzionale)"}
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Cerca gruppo..." />
+                        <CommandEmpty>
+                          <div className="py-6 text-center text-sm text-muted-foreground">
+                            Nessun gruppo disponibile
+                            <p className="text-xs text-muted-foreground mt-1">(Da implementare)</p>
+                          </div>
+                        </CommandEmpty>
+                        <CommandGroup className="max-h-[200px] overflow-auto">
+                          {gruppi.length > 0 && gruppi.map((gruppo) => (
+                            <CommandItem
+                              key={gruppo.id}
+                              onSelect={() => setSelectedGruppo(gruppo)}
+                            >
+                              {gruppo.nome}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground">
+                    Opzionale - Assegna l'invitato ad un gruppo
+                  </p>
+                </div>
+
+                {/* Tavolo */}
+                <div className="space-y-2">
+                  <Label htmlFor="tavolo" className={isMobile ? "text-base" : "text-sm"}>
+                    Tavolo
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={`w-full justify-between ${isMobile ? "h-12 text-base" : "h-10"}`}
+                      >
+                        {selectedTavolo ? `Tavolo ${selectedTavolo.numero}` : "Seleziona tavolo (opzionale)"}
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Cerca tavolo..." />
+                        <CommandEmpty>
+                          <div className="py-6 text-center text-sm text-muted-foreground">
+                            Nessun tavolo ancora creato
+                          </div>
+                        </CommandEmpty>
+                        <CommandGroup className="max-h-[200px] overflow-auto">
+                          {tavoli.map((tavolo) => (
+                            <CommandItem
+                              key={tavolo.id}
+                              onSelect={() => setSelectedTavolo(tavolo)}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <span>Tavolo {tavolo.numero}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {tavolo.postiOccupati}/{tavolo.postiTotali} posti
+                                </span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground">
+                    Opzionale - Assegna l'invitato ad un tavolo
+                  </p>
+                </div>
+              </div>
             </form>
           </div>
 
-          {/* Footer */}
-          <div className="shrink-0 sticky bottom-0 bg-background border-t p-4 md:p-6 shadow-lg">
+          {/* Footer - Fixed at bottom */}
+          <div className="shrink-0 border-t bg-background p-4 md:p-6 shadow-lg">
             {isMobile ? (
               <div className="flex items-center gap-3">
                 <Button

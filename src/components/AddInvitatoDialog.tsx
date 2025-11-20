@@ -31,7 +31,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
-import PhoneInput from "react-phone-number-input/input";
+import PhoneInput from "react-phone-number-input";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { ComboboxSelect } from "@/components/ui/combobox-select";
 import "react-phone-number-input/style.css";
@@ -39,7 +40,12 @@ import "react-phone-number-input/style.css";
 const formSchema = z.object({
   nome: z.string().min(1, "Il nome è obbligatorio"),
   cognome: z.string().min(1, "Il cognome è obbligatorio"),
-  cellulare: z.string().min(8, "Numero di telefono non valido"),
+  cellulare: z
+    .string()
+    .min(1, "Il cellulare è obbligatorio")
+    .refine((val) => isValidPhoneNumber(val || ""), {
+      message: "Numero di telefono non valido",
+    }),
   email: z.string().email("Email non valida").optional().or(z.literal("")),
   tipo_ospite: z.enum(["Neonato", "Bambino", "Ragazzo", "Adulto"], {
     required_error: "Seleziona un tipo di ospite",
@@ -255,13 +261,12 @@ export function AddInvitatoDialog({
                     <FormLabel>Cellulare *</FormLabel>
                     <FormControl>
                       <PhoneInput
-                        country="IT"
-                        international
                         defaultCountry="IT"
+                        international
                         value={field.value}
                         onChange={field.onChange}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                         placeholder="+39 340 123 4567"
+                        className="phone-input-custom"
                       />
                     </FormControl>
                     <FormMessage />

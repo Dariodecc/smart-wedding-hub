@@ -31,21 +31,17 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
-import PhoneInput from "react-phone-number-input";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { ComboboxSelect } from "@/components/ui/combobox-select";
-import "react-phone-number-input/style.css";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const formSchema = z.object({
   nome: z.string().min(1, "Il nome è obbligatorio"),
   cognome: z.string().min(1, "Il cognome è obbligatorio"),
   cellulare: z
     .string()
-    .min(1, "Il cellulare è obbligatorio")
-    .refine((val) => isValidPhoneNumber(val || ""), {
-      message: "Numero di telefono non valido",
-    }),
+    .min(8, "Numero troppo corto")
+    .regex(/^\+\d+$/, "Numero di telefono non valido"),
   email: z.string().email("Email non valida").optional().or(z.literal("")),
   tipo_ospite: z.enum(["Neonato", "Bambino", "Ragazzo", "Adulto"], {
     required_error: "Seleziona un tipo di ospite",
@@ -261,12 +257,9 @@ export function AddInvitatoDialog({
                     <FormLabel>Cellulare *</FormLabel>
                     <FormControl>
                       <PhoneInput
-                        defaultCountry="IT"
-                        international
                         value={field.value}
                         onChange={field.onChange}
-                        placeholder="+39 340 123 4567"
-                        className="phone-input-custom"
+                        placeholder="340 123 4567"
                       />
                     </FormControl>
                     <FormMessage />

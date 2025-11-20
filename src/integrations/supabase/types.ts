@@ -54,6 +54,7 @@ export type Database = {
           is_capo_famiglia: boolean | null
           nome: string
           preferenze_alimentari: string[] | null
+          rsvp_status: string | null
           rsvp_uuid: string | null
           tipo_ospite: string
           wedding_id: string
@@ -68,6 +69,7 @@ export type Database = {
           is_capo_famiglia?: boolean | null
           nome: string
           preferenze_alimentari?: string[] | null
+          rsvp_status?: string | null
           rsvp_uuid?: string | null
           tipo_ospite: string
           wedding_id: string
@@ -82,6 +84,7 @@ export type Database = {
           is_capo_famiglia?: boolean | null
           nome?: string
           preferenze_alimentari?: string[] | null
+          rsvp_status?: string | null
           rsvp_uuid?: string | null
           tipo_ospite?: string
           wedding_id?: string

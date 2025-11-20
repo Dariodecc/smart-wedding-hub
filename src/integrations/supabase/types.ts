@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      famiglie: {
+        Row: {
+          created_at: string | null
+          id: string
+          nome: string
+          wedding_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          nome: string
+          wedding_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          nome?: string
+          wedding_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "famiglie_wedding_id_fkey"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitati: {
+        Row: {
+          cellulare: string
+          cognome: string
+          created_at: string | null
+          email: string | null
+          famiglia_id: string | null
+          id: string
+          is_capo_famiglia: boolean | null
+          nome: string
+          preferenze_alimentari: string[] | null
+          rsvp_uuid: string | null
+          tipo_ospite: string
+          wedding_id: string
+        }
+        Insert: {
+          cellulare: string
+          cognome: string
+          created_at?: string | null
+          email?: string | null
+          famiglia_id?: string | null
+          id?: string
+          is_capo_famiglia?: boolean | null
+          nome: string
+          preferenze_alimentari?: string[] | null
+          rsvp_uuid?: string | null
+          tipo_ospite: string
+          wedding_id: string
+        }
+        Update: {
+          cellulare?: string
+          cognome?: string
+          created_at?: string | null
+          email?: string | null
+          famiglia_id?: string | null
+          id?: string
+          is_capo_famiglia?: boolean | null
+          nome?: string
+          preferenze_alimentari?: string[] | null
+          rsvp_uuid?: string | null
+          tipo_ospite?: string
+          wedding_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitati_famiglia_id_fkey"
+            columns: ["famiglia_id"]
+            isOneToOne: false
+            referencedRelation: "famiglie"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitati_wedding_id_fkey"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null

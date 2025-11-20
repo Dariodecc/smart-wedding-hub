@@ -32,8 +32,8 @@ const adminItems = [
     icon: UsersRound,
   },
   {
-    title: "Impostazioni",
-    url: "/impostazioni",
+    title: "Impostazioni Admin",
+    url: "/impostazioni-admin",
     icon: Settings,
   },
 ];
@@ -63,6 +63,11 @@ const gestioneInvitatiItems = [
     title: "Tavoli",
     url: "/tavoli",
     icon: Table2,
+  },
+  {
+    title: "Impostazioni",
+    url: "/impostazioni",
+    icon: Settings,
   },
 ];
 

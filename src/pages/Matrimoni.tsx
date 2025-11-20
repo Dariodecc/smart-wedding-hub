@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, CalendarIcon, MapPin, Euro, Edit, Trash2 } from "lucide-react";
+import { Plus, CalendarIcon, MapPin, Euro, Edit, Trash2, UserCog } from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { WeddingForm } from "@/components/WeddingForm";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Wedding {
   id: string;
@@ -32,6 +33,7 @@ const Matrimoni = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { startImpersonation } = useAuth();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingWedding, setEditingWedding] = useState<Wedding | null>(null);
   const [formData, setFormData] = useState({
@@ -412,6 +414,16 @@ const Matrimoni = () => {
                   }}
                 >
                   <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startImpersonation(wedding.id);
+                  }}
+                >
+                  <UserCog className="h-4 w-4" />
                 </Button>
                 <Button
                   size="sm"

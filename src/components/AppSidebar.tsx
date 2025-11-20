@@ -1,7 +1,9 @@
-import { LayoutDashboard, Users, UsersRound, Group, Table2, Settings, Heart, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, UsersRound, Group, Table2, Settings, Heart, LogOut, AlertTriangle } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
 import {
   Sidebar,
   SidebarContent,
@@ -75,6 +77,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const { isAdmin, isImpersonating, stopImpersonation, signOut, user } = useAuth();
+  const { wedding } = useCurrentMatrimonio();
 
   const showAdminMenu = isAdmin && !isImpersonating;
   const showSposiMenu = !isAdmin || isImpersonating;
@@ -82,6 +85,26 @@ export function AppSidebar() {
   return (
     <Sidebar className={isCollapsed ? "w-14" : "w-60"} collapsible="icon">
       <SidebarContent>
+        {isImpersonating && !isCollapsed && (
+          <div className="px-4 py-3">
+            <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950/20">
+              <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <AlertDescription className="text-sm text-orange-800 dark:text-orange-200">
+                <div className="font-medium mb-2">Stai visualizzando come:</div>
+                <div className="font-semibold">{wedding?.couple_name || "Caricamento..."}</div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={stopImpersonation}
+                  className="mt-2 w-full border-orange-500 text-orange-700 hover:bg-orange-100 dark:border-orange-400 dark:text-orange-300 dark:hover:bg-orange-950"
+                >
+                  ← Esci
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
         {showAdminMenu && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground px-4">

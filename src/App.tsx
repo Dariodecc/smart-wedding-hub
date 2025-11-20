@@ -17,6 +17,7 @@ import Famiglie from "./pages/Famiglie";
 import Gruppi from "./pages/Gruppi";
 import Tavoli from "./pages/Tavoli";
 import Impostazioni from "./pages/Impostazioni";
+import ImpostazioniAdmin from "./pages/ImpostazioniAdmin";
 import Utenti from "./pages/Utenti";
 import NotFound from "./pages/NotFound";
 
@@ -84,6 +85,16 @@ const App = () => (
                 <ProtectedRoute requireAdmin>
                   <AppLayout>
                     <Utenti />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/impostazioni-admin"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AppLayout>
+                    <ImpostazioniAdmin />
                   </AppLayout>
                 </ProtectedRoute>
               }

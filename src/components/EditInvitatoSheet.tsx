@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -44,6 +44,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   X,
   ArrowLeft,
@@ -54,6 +55,8 @@ import {
   Users,
   Crown,
   ChevronDown,
+  AlertCircle,
+  PlusCircle,
 } from "lucide-react";
 
 interface EditInvitatoSheetProps {
@@ -77,9 +80,31 @@ export function EditInvitatoSheet({
   const [selectedGruppo, setSelectedGruppo] = useState<any>(null);
   const [selectedTavolo, setSelectedTavolo] = useState<any>(null);
   
+  // Famiglia state
+  const [selectedFamiglia, setSelectedFamiglia] = useState<any>(invitato?.famiglia || null);
+  const [isCapoFamiglia, setIsCapoFamiglia] = useState(invitato?.is_capo_famiglia || false);
+  const [creaFamiglia, setCreaFamiglia] = useState(false);
+  const [famigliaHasCapo, setFamigliaHasCapo] = useState(false);
+  
   // Placeholder data - will be replaced with real data later
   const gruppi: any[] = [];
   const tavoli: any[] = [];
+  
+  // Fetch famiglie
+  const { data: famiglie = [] } = useQuery({
+    queryKey: ["famiglie", matrimonioId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("famiglie")
+        .select("*")
+        .eq("wedding_id", matrimonioId)
+        .order("nome");
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: isOpen,
+  });
 
   const form = useForm({
     defaultValues: {
@@ -90,6 +115,7 @@ export function EditInvitatoSheet({
       tipo_ospite: invitato?.tipo_ospite || "Adulto",
       preferenze_alimentari: invitato?.preferenze_alimentari || [],
       rsvp_status: invitato?.rsvp_status || "In attesa",
+      nomeFamiglia: "",
     },
   });
 
@@ -103,9 +129,26 @@ export function EditInvitatoSheet({
         tipo_ospite: invitato.tipo_ospite,
         preferenze_alimentari: invitato.preferenze_alimentari || [],
         rsvp_status: invitato.rsvp_status || "In attesa",
+        nomeFamiglia: "",
       });
+      setSelectedFamiglia(invitato.famiglia || null);
+      setIsCapoFamiglia(invitato.is_capo_famiglia || false);
+      setCreaFamiglia(false);
     }
   }, [invitato, form]);
+  
+  // Check if selected famiglia already has a capo
+  const checkCapoFamiglia = async (famigliaId: string) => {
+    const { data } = await supabase
+      .from("invitati")
+      .select("id")
+      .eq("famiglia_id", famigliaId)
+      .eq("is_capo_famiglia", true)
+      .neq("id", invitato.id)
+      .single();
+    
+    setFamigliaHasCapo(!!data);
+  };
 
   const rsvpLink = `${window.location.origin}/rsvp/${invitato?.rsvp_uuid}`;
 
@@ -128,6 +171,36 @@ export function EditInvitatoSheet({
   const handleSave = async (data: any) => {
     setIsLoading(true);
     try {
+      let famigliaId = null;
+      let shouldBeCapo = false;
+      
+      // Scenario 1: Creating new famiglia
+      if (creaFamiglia && data.nomeFamiglia) {
+        const { data: newFamiglia, error: famigliaError } = await supabase
+          .from("famiglie")
+          .insert({
+            nome: data.nomeFamiglia,
+            wedding_id: matrimonioId,
+          })
+          .select()
+          .single();
+        
+        if (famigliaError) throw famigliaError;
+        
+        famigliaId = newFamiglia.id;
+        shouldBeCapo = true; // Auto-capo when creating famiglia
+      }
+      // Scenario 2: Joining existing famiglia
+      else if (selectedFamiglia) {
+        famigliaId = selectedFamiglia.id;
+        shouldBeCapo = isCapoFamiglia;
+      }
+      // Scenario 3: Single guest (no famiglia)
+      else {
+        famigliaId = null;
+        shouldBeCapo = false;
+      }
+      
       const { error } = await supabase
         .from("invitati")
         .update({
@@ -138,12 +211,15 @@ export function EditInvitatoSheet({
           tipo_ospite: data.tipo_ospite,
           preferenze_alimentari: data.preferenze_alimentari,
           rsvp_status: data.rsvp_status,
+          famiglia_id: famigliaId,
+          is_capo_famiglia: shouldBeCapo,
         })
         .eq("id", invitato.id);
 
       if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ["invitati", matrimonioId] });
+      await queryClient.invalidateQueries({ queryKey: ["famiglie", matrimonioId] });
 
       toast.success("Modifiche salvate con successo", {
         position: isMobile ? "top-center" : "bottom-right",
@@ -427,41 +503,196 @@ export function EditInvitatoSheet({
               <Separator className="my-6" />
 
               {/* Famiglia */}
-              {invitato.famiglia && (
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-900">Famiglia</h3>
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-900">Famiglia</h3>
 
-                  {isMobile ? (
-                    <div className="p-4 bg-muted rounded-lg space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-muted-foreground" />
-                        <span className="font-medium text-base">
-                          {invitato.famiglia.nome}
-                        </span>
-                      </div>
-                      {invitato.is_capo_famiglia && (
-                        <Badge variant="secondary" className="text-sm w-fit">
-                          <Crown className="h-4 w-4 mr-1" />
-                          Capo Famiglia
-                        </Badge>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{invitato.famiglia.nome}</span>
-                        {invitato.is_capo_famiglia && (
-                          <Badge variant="secondary" className="text-xs">
-                            <Crown className="h-3 w-3 mr-1" />
-                            Capo
-                          </Badge>
+                {/* Associa Famiglia - Select with search */}
+                <div className="space-y-2">
+                  <Label htmlFor="associa-famiglia" className={isMobile ? "text-base" : "text-sm"}>
+                    Associa Famiglia
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={`w-full justify-between ${isMobile ? "h-12 text-base" : "h-10"}`}
+                        disabled={creaFamiglia}
+                      >
+                        {selectedFamiglia ? (
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            {selectedFamiglia.nome}
+                          </div>
+                        ) : (
+                          "Seleziona famiglia..."
                         )}
-                      </div>
-                    </div>
-                  )}
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Cerca famiglia..." />
+                        <CommandEmpty>Nessuna famiglia trovata</CommandEmpty>
+                        <CommandGroup className="max-h-[200px] overflow-auto">
+                          {famiglie.map((famiglia) => (
+                            <CommandItem
+                              key={famiglia.id}
+                              value={famiglia.nome}
+                              onSelect={() => {
+                                setSelectedFamiglia(famiglia);
+                                checkCapoFamiglia(famiglia.id);
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Check
+                                  className={`h-4 w-4 ${
+                                    selectedFamiglia?.id === famiglia.id
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  }`}
+                                />
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <span>{famiglia.nome}</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground">
+                    Opzionale - Seleziona una famiglia esistente
+                  </p>
                 </div>
-              )}
+
+                {/* È il Capo Famiglia - Switch */}
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="space-y-0.5">
+                    <Label
+                      htmlFor="capo-famiglia"
+                      className={isMobile ? "text-base font-medium" : "text-sm font-medium"}
+                    >
+                      È il capo famiglia
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Riceverà il link RSVP per tutta la famiglia
+                    </p>
+                  </div>
+                  <Switch
+                    id="capo-famiglia"
+                    checked={isCapoFamiglia}
+                    onCheckedChange={(checked) => {
+                      if (selectedFamiglia && checked) {
+                        if (famigliaHasCapo) {
+                          toast.error("Questa famiglia ha già un capo famiglia", {
+                            position: isMobile ? "top-center" : "bottom-right",
+                          });
+                          return;
+                        }
+                      }
+                      setIsCapoFamiglia(checked);
+                    }}
+                    disabled={!selectedFamiglia}
+                  />
+                </div>
+
+                {/* Visual indicator when switch is disabled */}
+                {!selectedFamiglia && !creaFamiglia && (
+                  <p className="text-xs text-amber-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    Seleziona prima una famiglia per abilitare questa opzione
+                  </p>
+                )}
+
+                {/* Show capo famiglia badge if enabled */}
+                {selectedFamiglia && isCapoFamiglia && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm text-blue-900">
+                      <Crown className="h-4 w-4" />
+                      <span className="font-medium">Questo invitato sarà il capo famiglia</span>
+                    </div>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Riceverà un link RSVP univoco per gestire tutta la famiglia
+                    </p>
+                  </div>
+                )}
+
+                <Separator className="my-4" />
+
+                {/* Oppure Crea una Nuova Famiglia - Switch */}
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="space-y-0.5">
+                    <Label
+                      htmlFor="crea-famiglia"
+                      className={isMobile ? "text-base font-medium" : "text-sm font-medium"}
+                    >
+                      Oppure crea una nuova famiglia
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Crea una nuova famiglia e assegna questo invitato come capo
+                    </p>
+                  </div>
+                  <Switch
+                    id="crea-famiglia"
+                    checked={creaFamiglia}
+                    onCheckedChange={(checked) => {
+                      setCreaFamiglia(checked);
+                      if (checked) {
+                        setSelectedFamiglia(null);
+                        setIsCapoFamiglia(false);
+                      } else {
+                        form.setValue("nomeFamiglia", "");
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Nome Nuova Famiglia - Conditional Field */}
+                {creaFamiglia && (
+                  <div className="space-y-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm text-green-900 font-medium mb-2">
+                      <PlusCircle className="h-4 w-4" />
+                      Nuova Famiglia
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="nome-famiglia" className={isMobile ? "text-base" : "text-sm"}>
+                        Nome Nuova Famiglia *
+                      </Label>
+                      <Input
+                        id="nome-famiglia"
+                        {...form.register("nomeFamiglia", {
+                          required: creaFamiglia ? "Il nome della famiglia è obbligatorio" : false,
+                        })}
+                        placeholder="es. Famiglia Rossi"
+                        className={`bg-white ${isMobile ? "h-12 text-base" : "h-10"}`}
+                      />
+                      {form.formState.errors.nomeFamiglia && (
+                        <p className="text-sm text-red-600">
+                          {form.formState.errors.nomeFamiglia.message}
+                        </p>
+                      )}
+                      <p className="text-xs text-green-700">
+                        Questo invitato diventerà automaticamente il capo famiglia
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Help text explaining the options */}
+                <div className="p-3 bg-muted rounded-lg border">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    <strong>Opzioni disponibili:</strong>
+                    <br />• <strong>Invitato singolo</strong>: Non selezionare nessuna famiglia
+                    <br />• <strong>Membro famiglia</strong>: Associa ad una famiglia esistente
+                    <br />• <strong>Capo famiglia</strong>: Associa ad una famiglia e attiva lo
+                    switch "È il capo famiglia"
+                    <br />• <strong>Nuova famiglia</strong>: Crea una nuova famiglia (diventerà
+                    automaticamente capo)
+                  </p>
+                </div>
+              </div>
 
               <Separator className="my-6" />
 

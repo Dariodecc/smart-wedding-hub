@@ -244,7 +244,8 @@ const Invitati = () => {
                     <TableHead>Cognome</TableHead>
                     <TableHead className="hidden sm:table-cell">Cellulare</TableHead>
                     <TableHead className="hidden md:table-cell">Tipo di Ospite</TableHead>
-                    <TableHead>Famiglia</TableHead>
+                    <TableHead className="hidden sm:table-cell">Famiglia</TableHead>
+                    <TableHead>RSVP</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -255,7 +256,8 @@ const Invitati = () => {
                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                         <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-32" /></TableCell>
                         <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                        <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-28" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                       </TableRow>
                     ))
                   ) : paginatedData && paginatedData.length > 0 ? (
@@ -265,7 +267,7 @@ const Invitati = () => {
                         <TableCell>{invitato.cognome}</TableCell>
                         <TableCell className="hidden sm:table-cell">{invitato.cellulare}</TableCell>
                         <TableCell className="hidden md:table-cell">{invitato.tipo_ospite}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           {invitato.famiglia ? (
                             <div className="flex items-center gap-2">
                               <span>{invitato.famiglia.nome}</span>
@@ -277,11 +279,27 @@ const Invitati = () => {
                             <span className="text-muted-foreground">-</span>
                           )}
                         </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              invitato.rsvp_status === 'Ci sarò' ? 'default' :
+                              invitato.rsvp_status === 'Non ci sarò' ? 'destructive' :
+                              'secondary'
+                            }
+                            className={
+                              invitato.rsvp_status === 'Ci sarò' ? 'bg-green-600 hover:bg-green-700' :
+                              invitato.rsvp_status === 'In attesa' ? 'bg-orange-600 hover:bg-orange-700' :
+                              ''
+                            }
+                          >
+                            {invitato.rsvp_status}
+                          </Badge>
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         Nessun invitato trovato
                       </TableCell>
                     </TableRow>
@@ -341,6 +359,24 @@ const Invitati = () => {
                             <span>{invitato.famiglia.nome}</span>
                           </div>
                         )}
+
+                        <div className="flex items-center gap-2 pt-1">
+                          <span className="text-xs font-medium text-foreground">RSVP:</span>
+                          <Badge
+                            variant={
+                              invitato.rsvp_status === 'Ci sarò' ? 'default' :
+                              invitato.rsvp_status === 'Non ci sarò' ? 'destructive' :
+                              'secondary'
+                            }
+                            className={
+                              invitato.rsvp_status === 'Ci sarò' ? 'bg-green-600 hover:bg-green-700' :
+                              invitato.rsvp_status === 'In attesa' ? 'bg-orange-600 hover:bg-orange-700' :
+                              ''
+                            }
+                          >
+                            {invitato.rsvp_status}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   </div>

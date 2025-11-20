@@ -74,12 +74,15 @@ const gestioneInvitatiItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const { isAdmin, signOut, user } = useAuth();
+  const { isAdmin, isImpersonating, stopImpersonation, signOut, user } = useAuth();
+
+  const showAdminMenu = isAdmin && !isImpersonating;
+  const showSposiMenu = !isAdmin || isImpersonating;
 
   return (
     <Sidebar className={isCollapsed ? "w-14" : "w-60"} collapsible="icon">
       <SidebarContent>
-        {isAdmin && (
+        {showAdminMenu && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground px-4">
               {!isCollapsed && "MATRIMONIO SMART"}
@@ -105,7 +108,8 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        <SidebarGroup>
+        {showSposiMenu && (
+          <SidebarGroup>
           <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground px-4">
             {!isCollapsed && "Gestione invitati"}
           </SidebarGroupLabel>
@@ -128,15 +132,26 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border p-4">
         {!isCollapsed && user && (
           <div className="mb-2 px-2">
             <p className="text-sm font-medium truncate">{user.email}</p>
             <p className="text-xs text-muted-foreground">
-              {isAdmin ? "Admin" : "Sposi"}
+              {isImpersonating ? "Admin (Impersonificazione)" : isAdmin ? "Admin" : "Sposi"}
             </p>
           </div>
+        )}
+        {isImpersonating && (
+          <Button
+            variant="outline"
+            onClick={stopImpersonation}
+            className="w-full justify-start mb-2 hover:bg-sidebar-accent"
+          >
+            <LogOut className="h-5 w-5" />
+            {!isCollapsed && <span>Esci da impersonificazione</span>}
+          </Button>
         )}
         <Button
           variant="ghost"

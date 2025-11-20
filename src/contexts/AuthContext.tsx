@@ -12,6 +12,10 @@ interface AuthContextType {
   isAdmin: boolean;
   isSposi: boolean;
   loading: boolean;
+  isImpersonating: boolean;
+  impersonatedWeddingId: string | null;
+  startImpersonation: (weddingId: string) => void;
+  stopImpersonation: () => void;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -23,6 +27,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isImpersonating, setIsImpersonating] = useState(false);
+  const [impersonatedWeddingId, setImpersonatedWeddingId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const fetchUserRoles = async (userId: string) => {
@@ -89,7 +95,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setRoles([]);
+    setIsImpersonating(false);
+    setImpersonatedWeddingId(null);
     navigate("/login");
+  };
+
+  const startImpersonation = (weddingId: string) => {
+    setIsImpersonating(true);
+    setImpersonatedWeddingId(weddingId);
+    navigate("/dashboard");
+  };
+
+  const stopImpersonation = () => {
+    setIsImpersonating(false);
+    setImpersonatedWeddingId(null);
+    navigate("/admin");
   };
 
   const isAdmin = roles.includes("admin");
@@ -104,6 +124,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isAdmin,
         isSposi,
         loading,
+        isImpersonating,
+        impersonatedWeddingId,
+        startImpersonation,
+        stopImpersonation,
         signIn,
         signOut,
       }}

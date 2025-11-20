@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, isImpersonating, loading } = useAuth();
 
   if (loading) {
     return (
@@ -24,7 +24,7 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
     return <Navigate to="/login" replace />;
   }
 
-  if (requireAdmin && !isAdmin) {
+  if (requireAdmin && (!isAdmin || isImpersonating)) {
     return <Navigate to="/dashboard" replace />;
   }
 

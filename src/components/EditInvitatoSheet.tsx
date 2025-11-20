@@ -398,16 +398,16 @@ export function EditInvitatoSheet({
                     Preferenze Alimentari
                   </Label>
                   <Select
-                    value={form.watch("preferenze_alimentari")?.[0] || ""}
+                    value={form.watch("preferenze_alimentari")?.[0] || "none"}
                     onValueChange={(value) =>
-                      form.setValue("preferenze_alimentari", value ? [value] : [])
+                      form.setValue("preferenze_alimentari", value === "none" ? [] : [value])
                     }
                   >
                     <SelectTrigger className={isMobile ? "h-12 text-base" : "h-10"}>
                       <SelectValue placeholder="Seleziona preferenza" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="" className={isMobile ? "h-12 text-base" : ""}>
+                      <SelectItem value="none" className={isMobile ? "h-12 text-base" : ""}>
                         Nessuna
                       </SelectItem>
                       {["Vegetariano", "Vegano", "Celiaco", "Intollerante al lattosio"].map(

@@ -45,6 +45,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    // Restore impersonation state from sessionStorage
+    const savedImpersonation = sessionStorage.getItem("impersonation");
+    if (savedImpersonation) {
+      const { targetWeddingId } = JSON.parse(savedImpersonation);
+      setIsImpersonating(true);
+      setImpersonatedWeddingId(targetWeddingId);
+    }
+
     // Set up auth state listener
     const {
       data: { subscription },
@@ -103,12 +111,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const startImpersonation = (weddingId: string) => {
     setIsImpersonating(true);
     setImpersonatedWeddingId(weddingId);
+    
+    // Save to sessionStorage for persistence
+    sessionStorage.setItem("impersonation", JSON.stringify({
+      targetWeddingId: weddingId,
+      startedAt: new Date().toISOString()
+    }));
+    
     navigate("/dashboard");
   };
 
   const stopImpersonation = () => {
     setIsImpersonating(false);
     setImpersonatedWeddingId(null);
+    
+    // Clear from sessionStorage
+    sessionStorage.removeItem("impersonation");
+    
     navigate("/admin");
   };
 

@@ -182,59 +182,59 @@ const Famiglie = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Page Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
             <SidebarTrigger className="-ml-1" />
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
                 Famiglie
               </h1>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
                 Gestisci le famiglie e i loro membri
               </p>
             </div>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2">
-            <Plus className="h-4 w-4 mr-2" />
-            Aggiungi Famiglia
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg shrink-0">
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Aggiungi Famiglia</span>
           </Button>
         </div>
       </div>
 
       {/* Page Content */}
-      <div className="p-6 space-y-6">
+      <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Card 1 - Famiglie Totali */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
+          <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                   Famiglie Totali
                 </p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
                   {totalFamiglie}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               </div>
             </div>
           </div>
 
           {/* Card 2 - Hanno Risposto */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
+          <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                   Hanno Risposto
                 </p>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <p className="text-3xl font-bold text-gray-900">
+                <div className="flex items-baseline gap-1 sm:gap-2 mt-1 sm:mt-2 flex-wrap">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                     {famiglieRisposto.length}
                   </p>
-                  <p className="text-sm font-medium text-green-600">
+                  <p className="text-xs sm:text-sm font-medium text-green-600">
                     ({totalFamiglie > 0
                       ? Math.round((famiglieRisposto.length / totalFamiglie) * 100)
                       : 0}
@@ -242,27 +242,27 @@ const Famiglie = () => {
                   </p>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 mt-1 sm:mt-2 truncate">
               Tutti i membri hanno risposto
             </p>
           </div>
 
           {/* Card 3 - Risposte Parziali */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
+          <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                   Risposte Parziali
                 </p>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <p className="text-3xl font-bold text-gray-900">
+                <div className="flex items-baseline gap-1 sm:gap-2 mt-1 sm:mt-2 flex-wrap">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                     {famiglieRisposteParziali.length}
                   </p>
-                  <p className="text-sm font-medium text-yellow-600">
+                  <p className="text-xs sm:text-sm font-medium text-yellow-600">
                     ({totalFamiglie > 0
                       ? Math.round(
                           (famiglieRisposteParziali.length / totalFamiglie) * 100
@@ -272,27 +272,27 @@ const Famiglie = () => {
                   </p>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-lg flex items-center justify-center shrink-0">
+                <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 mt-1 sm:mt-2 truncate">
               Almeno un membro ha risposto
             </p>
           </div>
 
           {/* Card 4 - Nessuna Risposta */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
+          <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                   Nessuna Risposta
                 </p>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <p className="text-3xl font-bold text-gray-900">
+                <div className="flex items-baseline gap-1 sm:gap-2 mt-1 sm:mt-2 flex-wrap">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                     {famiglieNessunaRisposta.length}
                   </p>
-                  <p className="text-sm font-medium text-red-600">
+                  <p className="text-xs sm:text-sm font-medium text-red-600">
                     ({totalFamiglie > 0
                       ? Math.round(
                           (famiglieNessunaRisposta.length / totalFamiglie) * 100
@@ -302,11 +302,11 @@ const Famiglie = () => {
                   </p>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <XCircle className="h-6 w-6 text-red-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 mt-1 sm:mt-2 truncate">
               Nessun membro ha risposto
             </p>
           </div>
@@ -453,106 +453,104 @@ const Famiglie = () => {
                             </p>
                           </div>
                         ) : (
-                          <div className="overflow-x-auto">
-                            <table className="w-full">
-                              <thead>
-                                <tr className="border-b border-gray-200 bg-gray-50">
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Nome
-                                  </th>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Cognome
-                                  </th>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Cellulare
-                                  </th>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Tipo
-                                  </th>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    RSVP
-                                  </th>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Ruolo
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-gray-200 bg-white">
-                                {membri.map((membro: any) => (
-                                  <tr
-                                    key={membro.id}
-                                    className="hover:bg-gray-50 cursor-pointer transition-colors"
-                                    onClick={() => openEditInvitatoPanel(membro)}
-                                  >
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="text-sm font-medium text-gray-900">
-                                        {membro.nome}
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="text-sm text-gray-900">
-                                        {membro.cognome}
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <a
-                                        href={`https://wa.me/${membro.cellulare.replace(
-                                          /[^0-9+]/g,
-                                          ""
-                                        )}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <Phone className="h-3.5 w-3.5" />
-                                        {membro.cellulare}
-                                      </a>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="text-sm text-gray-700">
-                                        {membro.tipo_ospite}
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <Badge
-                                        className={cn(
-                                          "rounded-full px-2.5 py-0.5 text-xs font-medium inline-flex items-center",
-                                          membro.rsvp_status === "Ci sarò" &&
-                                            "bg-green-100 text-green-800",
-                                          membro.rsvp_status === "In attesa" &&
-                                            "bg-yellow-100 text-yellow-800",
-                                          membro.rsvp_status === "Non ci sarò" &&
-                                            "bg-red-100 text-red-800"
-                                        )}
-                                      >
-                                        <div
-                                          className={cn(
-                                            "w-1.5 h-1.5 rounded-full mr-1.5",
-                                            membro.rsvp_status === "Ci sarò" &&
-                                              "bg-green-500",
-                                            membro.rsvp_status === "In attesa" &&
-                                              "bg-yellow-500",
-                                            membro.rsvp_status === "Non ci sarò" &&
-                                              "bg-red-500"
-                                          )}
-                                        />
-                                        {membro.rsvp_status}
-                                      </Badge>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      {membro.is_capo_famiglia && (
-                                        <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-2.5 py-0.5 text-xs font-medium inline-flex items-center">
-                                          <Crown className="h-3 w-3 mr-1" />
-                                          Capo
-                                        </Badge>
+                          <table className="w-full">
+                            <thead>
+                              <tr className="border-b border-gray-200 bg-gray-50">
+                                <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Nome
+                                </th>
+                                <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Cognome
+                                </th>
+                                <th className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Cellulare
+                                </th>
+                                <th className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Tipo
+                                </th>
+                                <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  RSVP
+                                </th>
+                                <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Ruolo
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200 bg-white">
+                              {membri.map((membro: any) => (
+                                <tr
+                                  key={membro.id}
+                                  className="hover:bg-gray-50 cursor-pointer transition-colors"
+                                  onClick={() => openEditInvitatoPanel(membro)}
+                                >
+                                  <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                    <div className="text-xs sm:text-sm font-medium text-gray-900">
+                                      {membro.nome}
+                                    </div>
+                                  </td>
+                                  <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                    <div className="text-xs sm:text-sm text-gray-900">
+                                      {membro.cognome}
+                                    </div>
+                                  </td>
+                                  <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                    <a
+                                      href={`https://wa.me/${membro.cellulare.replace(
+                                        /[^0-9+]/g,
+                                        ""
+                                      )}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <Phone className="h-3 w-3 shrink-0" />
+                                      <span>{membro.cellulare}</span>
+                                    </a>
+                                  </td>
+                                  <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                    <div className="text-xs sm:text-sm text-gray-700">
+                                      {membro.tipo_ospite}
+                                    </div>
+                                  </td>
+                                  <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                    <Badge
+                                      className={cn(
+                                        "rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center shrink-0",
+                                        membro.rsvp_status === "Ci sarò" &&
+                                          "bg-green-100 text-green-800",
+                                        membro.rsvp_status === "In attesa" &&
+                                          "bg-yellow-100 text-yellow-800",
+                                        membro.rsvp_status === "Non ci sarò" &&
+                                          "bg-red-100 text-red-800"
                                       )}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                                    >
+                                      <div
+                                        className={cn(
+                                          "w-1.5 h-1.5 rounded-full mr-1",
+                                          membro.rsvp_status === "Ci sarò" &&
+                                            "bg-green-500",
+                                          membro.rsvp_status === "In attesa" &&
+                                            "bg-yellow-500",
+                                          membro.rsvp_status === "Non ci sarò" &&
+                                            "bg-red-500"
+                                        )}
+                                      />
+                                      {membro.rsvp_status}
+                                    </Badge>
+                                  </td>
+                                  <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                    {membro.is_capo_famiglia && (
+                                      <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center shrink-0">
+                                        <Crown className="h-3 w-3 mr-1 shrink-0" />
+                                        Capo
+                                      </Badge>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         )}
                       </div>
                     </CollapsibleContent>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Users, Plus, CheckCircle, Clock, XCircle, Table2, Grid3x3, Phone, User, Crown, Mail, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Users, Plus, CheckCircle, Clock, XCircle, Table2, Grid3x3, Phone, User, Crown, Mail, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, SlidersHorizontal, X, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AddInvitatoDialog } from "@/components/AddInvitatoDialog";
@@ -11,6 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandSeparator } from "@/components/ui/command";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 
 const Invitati = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -21,6 +28,15 @@ const Invitati = () => {
   });
   const [selectedInvitato, setSelectedInvitato] = useState<any>(null);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  
+  const [filters, setFilters] = useState({
+    search: '',
+    tipo: 'all',
+    famiglia: 'all',
+    rsvp: 'all'
+  });
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [tempFilters, setTempFilters] = useState(filters);
   
   const { wedding, isLoading: isLoadingWedding } = useCurrentMatrimonio();
   const isMobile = useIsMobile();
@@ -61,6 +77,22 @@ const Invitati = () => {
     enabled: !!wedding?.id,
   });
 
+  const { data: famiglie } = useQuery({
+    queryKey: ["famiglie", wedding?.id],
+    queryFn: async () => {
+      if (!wedding?.id) return [];
+      const { data, error } = await supabase
+        .from("famiglie")
+        .select("id, nome")
+        .eq("wedding_id", wedding.id)
+        .order("nome");
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!wedding?.id,
+  });
+
   const isLoading = isLoadingWedding || isLoadingInvitati;
   const hasGuests = invitati && invitati.length > 0;
 
@@ -77,16 +109,60 @@ const Invitati = () => {
     return ((count / stats.total) * 100).toFixed(0);
   };
 
+  // Initialize tempFilters when mobile panel opens
+  useEffect(() => {
+    if (showMobileFilters) {
+      setTempFilters(filters);
+    }
+  }, [showMobileFilters, filters]);
+
+  // Filter invitati
+  const filteredInvitati = useMemo(() => {
+    if (!invitati) return [];
+    
+    let filtered = [...invitati];
+    
+    // Search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(inv => 
+        inv.nome.toLowerCase().includes(searchLower) ||
+        inv.cognome.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Tipo filter
+    if (filters.tipo !== 'all') {
+      filtered = filtered.filter(inv => inv.tipo_ospite === filters.tipo);
+    }
+    
+    // Famiglia filter
+    if (filters.famiglia !== 'all') {
+      if (filters.famiglia === 'singles') {
+        filtered = filtered.filter(inv => !inv.famiglia_id);
+      } else {
+        filtered = filtered.filter(inv => inv.famiglia_id === filters.famiglia);
+      }
+    }
+    
+    // RSVP filter
+    if (filters.rsvp !== 'all') {
+      filtered = filtered.filter(inv => inv.rsvp_status === filters.rsvp);
+    }
+    
+    return filtered;
+  }, [invitati, filters]);
+
   // Process invitati to group by family
   const processedInvitati = useMemo(() => {
-    if (!invitati) return [];
+    if (!filteredInvitati) return [];
     
     const grouped: any[] = [];
     const singles: any[] = [];
     const familyMap = new Map();
     
     // Separate singles and family members
-    invitati.forEach(invitato => {
+    filteredInvitati.forEach(invitato => {
       if (!invitato.famiglia_id) {
         singles.push(invitato);
       } else {
@@ -127,15 +203,16 @@ const Invitati = () => {
     });
     
     return grouped;
-  }, [invitati]);
+  }, [filteredInvitati]);
 
   // Pagination
   const itemsPerPage = isMobile ? 15 : 20;
-  const totalPages = Math.ceil((invitati?.length || 0) / itemsPerPage);
-  const paginatedData = invitati?.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.ceil((filteredInvitati?.length || 0) / itemsPerPage);
+  
+  // Reset to page 1 if filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -322,9 +399,10 @@ const Invitati = () => {
               </div>
             </div>
 
-            {/* View Toggle */}
+            {/* View Toggle & Filters */}
             <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                {/* View Toggle */}
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
@@ -352,6 +430,155 @@ const Invitati = () => {
                     <Grid3x3 className="h-4 w-4 mr-2" />
                     Box
                   </Button>
+                  
+                  {/* Mobile Filter Button */}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="lg:hidden border-gray-200 rounded-lg"
+                    onClick={() => setShowMobileFilters(true)}
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {/* Desktop Filters */}
+                <div className="hidden lg:flex items-center gap-3 flex-1 justify-end">
+                  {/* Search */}
+                  <div className="relative w-[250px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Cerca per nome o cognome..."
+                      value={filters.search}
+                      onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                      className="pl-9 h-10 border-gray-200 rounded-lg"
+                    />
+                  </div>
+                  
+                  {/* Tipo Filter */}
+                  <Select
+                    value={filters.tipo}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, tipo: value }))}
+                  >
+                    <SelectTrigger className="w-[150px] h-10 border-gray-200 rounded-lg">
+                      <SelectValue placeholder="Tipo ospite" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tutti i tipi</SelectItem>
+                      <SelectItem value="Neonato">Neonato</SelectItem>
+                      <SelectItem value="Bambino">Bambino</SelectItem>
+                      <SelectItem value="Ragazzo">Ragazzo</SelectItem>
+                      <SelectItem value="Adulto">Adulto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Famiglia Filter */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-[180px] h-10 justify-between border-gray-200 rounded-lg"
+                      >
+                        {filters.famiglia === 'all' 
+                          ? "Tutte le famiglie" 
+                          : filters.famiglia === 'singles'
+                          ? "Invitati singoli"
+                          : famiglie?.find(f => f.id === filters.famiglia)?.nome || "Famiglia"}
+                        <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[250px] p-0" align="end">
+                      <Command>
+                        <CommandInput placeholder="Cerca famiglia..." />
+                        <CommandEmpty>Nessuna famiglia trovata</CommandEmpty>
+                        <CommandGroup className="max-h-[250px] overflow-auto">
+                          <CommandItem
+                            onSelect={() => setFilters(prev => ({ ...prev, famiglia: 'all' }))}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                filters.famiglia === 'all' ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            Tutte le famiglie
+                          </CommandItem>
+                          <CommandItem
+                            onSelect={() => setFilters(prev => ({ ...prev, famiglia: 'singles' }))}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                filters.famiglia === 'singles' ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            Invitati singoli
+                          </CommandItem>
+                          <CommandSeparator />
+                          {famiglie?.map((famiglia) => (
+                            <CommandItem
+                              key={famiglia.id}
+                              onSelect={() => setFilters(prev => ({ ...prev, famiglia: famiglia.id }))}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  filters.famiglia === famiglia.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <Users className="mr-2 h-3.5 w-3.5 text-gray-400" />
+                              {famiglia.nome}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  
+                  {/* RSVP Filter */}
+                  <Select
+                    value={filters.rsvp}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, rsvp: value }))}
+                  >
+                    <SelectTrigger className="w-[160px] h-10 border-gray-200 rounded-lg">
+                      <SelectValue placeholder="Stato RSVP" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tutti gli stati</SelectItem>
+                      <SelectItem value="Ci sarò">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
+                          Ci sarò
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="In attesa">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                          In attesa
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Non ci sarò">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-red-500" />
+                          Non ci sarò
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Clear Filters Button */}
+                  {(filters.search || filters.tipo !== 'all' || filters.famiglia !== 'all' || filters.rsvp !== 'all') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-600 hover:text-gray-900"
+                      onClick={() => setFilters({ search: '', tipo: 'all', famiglia: 'all', rsvp: 'all' })}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Cancella
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -854,6 +1081,211 @@ const Invitati = () => {
           matrimonioId={wedding.id}
         />
       )}
+
+      {/* Mobile Filter Panel */}
+      <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>
+        <SheetContent side="right" className="w-full h-full p-0 flex flex-col overflow-hidden">
+          {/* Header */}
+          <div className="shrink-0 border-b border-gray-200 px-6 py-4 bg-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Filtri</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Filtra gli invitati per trovare ciò che cerchi
+                </p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setShowMobileFilters(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+          
+          {/* Filter Form */}
+          <div className="flex-1 overflow-y-auto bg-gray-50 px-6 py-6">
+            <div className="space-y-6 pb-24">
+              {/* Search */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium text-gray-900">Cerca</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    placeholder="Nome o cognome..."
+                    value={tempFilters.search}
+                    onChange={(e) => setTempFilters(prev => ({ ...prev, search: e.target.value }))}
+                    className="pl-10 h-12 text-base border-gray-200 rounded-lg"
+                  />
+                </div>
+              </div>
+              
+              <Separator className="bg-gray-200" />
+              
+              {/* Tipo */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium text-gray-900">Tipo Ospite</Label>
+                <Select
+                  value={tempFilters.tipo}
+                  onValueChange={(value) => setTempFilters(prev => ({ ...prev, tipo: value }))}
+                >
+                  <SelectTrigger className="h-12 text-base border-gray-200 rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="h-12 text-base">Tutti i tipi</SelectItem>
+                    <SelectItem value="Neonato" className="h-12 text-base">Neonato</SelectItem>
+                    <SelectItem value="Bambino" className="h-12 text-base">Bambino</SelectItem>
+                    <SelectItem value="Ragazzo" className="h-12 text-base">Ragazzo</SelectItem>
+                    <SelectItem value="Adulto" className="h-12 text-base">Adulto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Separator className="bg-gray-200" />
+              
+              {/* Famiglia */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium text-gray-900">Famiglia</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full h-12 justify-between text-base border-gray-200 rounded-lg"
+                    >
+                      {tempFilters.famiglia === 'all' 
+                        ? "Tutte le famiglie"
+                        : tempFilters.famiglia === 'singles'
+                        ? "Invitati singoli"
+                        : famiglie?.find(f => f.id === tempFilters.famiglia)?.nome || "Famiglia"}
+                      <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent 
+                    className="w-[calc(100vw-3rem)] p-0" 
+                    align="start"
+                    side="bottom"
+                  >
+                    <Command>
+                      <CommandInput placeholder="Cerca famiglia..." className="h-12" />
+                      <CommandEmpty>Nessuna famiglia trovata</CommandEmpty>
+                      <CommandGroup className="max-h-[300px] overflow-auto">
+                        <CommandItem
+                          onSelect={() => setTempFilters(prev => ({ ...prev, famiglia: 'all' }))}
+                          className="h-12"
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              tempFilters.famiglia === 'all' ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          Tutte le famiglie
+                        </CommandItem>
+                        <CommandItem
+                          onSelect={() => setTempFilters(prev => ({ ...prev, famiglia: 'singles' }))}
+                          className="h-12"
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              tempFilters.famiglia === 'singles' ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          Invitati singoli
+                        </CommandItem>
+                        <CommandSeparator />
+                        {famiglie?.map((famiglia) => (
+                          <CommandItem
+                            key={famiglia.id}
+                            onSelect={() => setTempFilters(prev => ({ ...prev, famiglia: famiglia.id }))}
+                            className="h-12"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                tempFilters.famiglia === famiglia.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <Users className="mr-2 h-4 w-4 text-gray-400" />
+                            {famiglia.nome}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <Separator className="bg-gray-200" />
+              
+              {/* RSVP */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium text-gray-900">Stato RSVP</Label>
+                <Select
+                  value={tempFilters.rsvp}
+                  onValueChange={(value) => setTempFilters(prev => ({ ...prev, rsvp: value }))}
+                >
+                  <SelectTrigger className="h-12 text-base border-gray-200 rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="h-12 text-base">Tutti gli stati</SelectItem>
+                    <SelectItem value="Ci sarò" className="h-12 text-base">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        Ci sarò
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="In attesa" className="h-12 text-base">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                        In attesa
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Non ci sarò" className="h-12 text-base">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500" />
+                        Non ci sarò
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          
+          {/* Footer Actions */}
+          <div className="shrink-0 border-t border-gray-200 bg-white px-6 py-4">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 h-12 border-gray-200 rounded-lg"
+                onClick={() => {
+                  setTempFilters({ search: '', tipo: 'all', famiglia: 'all', rsvp: 'all' });
+                  setFilters({ search: '', tipo: 'all', famiglia: 'all', rsvp: 'all' });
+                  setShowMobileFilters(false);
+                }}
+              >
+                <X className="h-5 w-5 mr-2" />
+                Cancella Filtri
+              </Button>
+              <Button
+                className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                onClick={() => {
+                  setFilters(tempFilters);
+                  setShowMobileFilters(false);
+                }}
+              >
+                <Check className="h-5 w-5 mr-2" />
+                Applica
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

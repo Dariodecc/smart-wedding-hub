@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
@@ -118,6 +119,14 @@ export function EditInvitatoSheet({
     return "bg-red-500";
   };
   const handleSave = async (data: any) => {
+    // Validation: Preferenze Alimentari is required
+    if (!data.preferenze_alimentari || data.preferenze_alimentari.length === 0) {
+      toast.error("Seleziona almeno una preferenza alimentare", {
+        position: isMobile ? "top-center" : "bottom-right"
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       let famigliaId = null;
@@ -344,24 +353,60 @@ export function EditInvitatoSheet({
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-sm font-medium text-gray-700">
-                      Preferenze Alimentari
+                      Preferenze Alimentari *
                     </Label>
-                    <Select value={form.watch("preferenze_alimentari")?.[0] || "none"} onValueChange={value => form.setValue("preferenze_alimentari", value === "none" ? [] : [value])}>
-                      <SelectTrigger className="h-10 bg-white border-gray-200 rounded-lg">
-                        <SelectValue placeholder="Seleziona preferenza" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">
-                          Nessuna
-                        </SelectItem>
-                        {["Vegetariano", "Vegano", "Celiaco", "Intollerante al lattosio"].map(pref => <SelectItem key={pref} value={pref}>
+                    <div className="space-y-3">
+                      <MultiSelect
+                        options={[
+                          { value: "Vegetariano", label: "Vegetariano" },
+                          { value: "Vegano", label: "Vegano" },
+                          { value: "Celiaco", label: "Celiaco" },
+                          { value: "Intollerante al lattosio", label: "Intollerante al lattosio" },
+                          { value: "Altro", label: "Altro" }
+                        ]}
+                        selected={form.watch("preferenze_alimentari") || []}
+                        onChange={(values) => form.setValue("preferenze_alimentari", values)}
+                        placeholder="Seleziona preferenze alimentari"
+                        className="h-10 bg-white border-gray-200 rounded-lg"
+                      />
+                      
+                      {/* Selected items displayed below */}
+                      {form.watch("preferenze_alimentari")?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {form.watch("preferenze_alimentari").map((pref: string) => (
+                            <Badge
+                              key={pref}
+                              variant="secondary"
+                              className="bg-gray-100 text-gray-700 border border-gray-200 px-3 py-1 text-xs font-medium rounded-full flex items-center gap-1.5"
+                            >
                               {pref}
-                            </SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-gray-500">Opzionale</p>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const current = form.watch("preferenze_alimentari") || [];
+                                  form.setValue(
+                                    "preferenze_alimentari",
+                                    current.filter((p: string) => p !== pref)
+                                  );
+                                }}
+                                className="hover:bg-gray-200 rounded-full p-0.5 transition-colors"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {form.watch("preferenze_alimentari")?.length > 0 
+                        ? `${form.watch("preferenze_alimentari").length} preferenza/e selezionata/e` 
+                        : "Seleziona almeno una preferenza alimentare"}
+                    </p>
                   </div>
                 </div>
               </div>

@@ -47,48 +47,18 @@ export function MultiSelect({
           aria-expanded={open}
           className={cn("w-full justify-between", className)}
         >
-          <div className="flex gap-1 flex-wrap">
-            {selected.length > 0 ? (
-              selected.map((item) => (
-                <Badge
-                  variant="secondary"
-                  key={item}
-                  className="mr-1"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUnselect(item);
-                  }}
-                >
-                  {options.find((opt) => opt.value === item)?.label}
-                  <button
-                    className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleUnselect(item);
-                      }
-                    }}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleUnselect(item);
-                    }}
-                  >
-                    <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                  </button>
-                </Badge>
-              ))
-            ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
-            )}
-          </div>
+          <span className={cn(
+            "flex-1 text-left truncate",
+            selected.length === 0 && "text-muted-foreground"
+          )}>
+            {selected.length > 0 
+              ? `${selected.length} selezionato/i` 
+              : placeholder}
+          </span>
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent className="w-full p-0 bg-white z-50" align="start">
         <Command>
           <CommandInput placeholder="Cerca..." />
           <CommandList>

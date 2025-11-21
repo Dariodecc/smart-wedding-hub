@@ -43,7 +43,6 @@ export function EditInvitatoSheet({
   const [famigliaHasCapo, setFamigliaHasCapo] = useState(false);
 
   // Placeholder data - will be replaced with real data later
-  const gruppi: any[] = [];
   const tavoli: any[] = [];
 
   // Fetch famiglie
@@ -56,6 +55,22 @@ export function EditInvitatoSheet({
         data,
         error
       } = await supabase.from("famiglie").select("*").eq("wedding_id", matrimonioId).order("nome");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: isOpen
+  });
+
+  // Fetch gruppi
+  const {
+    data: gruppi = []
+  } = useQuery({
+    queryKey: ["gruppi-select", matrimonioId],
+    queryFn: async () => {
+      const {
+        data,
+        error
+      } = await supabase.from("gruppi").select("*").eq("wedding_id", matrimonioId).order("nome");
       if (error) throw error;
       return data || [];
     },
@@ -88,8 +103,16 @@ export function EditInvitatoSheet({
       setSelectedFamiglia(invitato.famiglia || null);
       setIsCapoFamiglia(invitato.is_capo_famiglia || false);
       setCreaFamiglia(false);
+      
+      // Set gruppo if exists
+      if (invitato.gruppo_id && gruppi.length > 0) {
+        const gruppo = gruppi.find(g => g.id === invitato.gruppo_id);
+        setSelectedGruppo(gruppo || null);
+      } else {
+        setSelectedGruppo(null);
+      }
     }
-  }, [invitato, form]);
+  }, [invitato, form, gruppi]);
 
   // Check if selected famiglia already has a capo
   const checkCapoFamiglia = async (famigliaId: string) => {
@@ -170,6 +193,7 @@ export function EditInvitatoSheet({
         rsvp_status: data.rsvp_status,
         famiglia_id: famigliaId,
         is_capo_famiglia: shouldBeCapo,
+        gruppo_id: selectedGruppo?.id || null,
       };
       
       // Handle rsvp_uuid logic
@@ -644,14 +668,34 @@ export function EditInvitatoSheet({
                           <CommandInput placeholder="Cerca gruppo..." />
                           <CommandEmpty>
                             <div className="py-6 text-center text-sm text-gray-500">
-                              Nessun gruppo disponibile
-                              <p className="text-xs text-gray-400 mt-1">(Da implementare)</p>
+                              Nessun gruppo trovato
                             </div>
                           </CommandEmpty>
                           <CommandGroup className="max-h-[200px] overflow-auto">
-                            {gruppi.length > 0 && gruppi.map(gruppo => <CommandItem key={gruppo.id} onSelect={() => setSelectedGruppo(gruppo)}>
-                                {gruppo.nome}
-                              </CommandItem>)}
+                            {/* Option to clear selection */}
+                            {selectedGruppo && (
+                              <CommandItem 
+                                onSelect={() => setSelectedGruppo(null)}
+                                className="text-gray-500"
+                              >
+                                <X className="h-4 w-4 mr-2" />
+                                Nessun gruppo
+                              </CommandItem>
+                            )}
+                            {gruppi.map(gruppo => (
+                              <CommandItem 
+                                key={gruppo.id} 
+                                onSelect={() => setSelectedGruppo(gruppo)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: gruppo.colore }}
+                                  />
+                                  {gruppo.nome}
+                                </div>
+                              </CommandItem>
+                            ))}
                           </CommandGroup>
                         </Command>
                       </PopoverContent>

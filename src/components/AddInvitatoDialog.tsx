@@ -124,9 +124,46 @@ export function AddInvitatoDialog({
   const creaFamiglia = form.watch("crea_famiglia");
   const famigliaId = form.watch("famiglia_id");
 
+  // Check if phone number already exists for this matrimonio
+  const checkDuplicatePhone = async (phoneNumber: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('invitati')
+        .select('id, nome, cognome')
+        .eq('wedding_id', weddingId)
+        .eq('cellulare', phoneNumber)
+        .limit(1);
+      
+      if (error) throw error;
+      return data && data.length > 0;
+    } catch (error) {
+      console.error('Error checking duplicate phone:', error);
+      return false;
+    }
+  };
+
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
+      // CRITICAL: Check for duplicate phone number
+      const isDuplicate = await checkDuplicatePhone(values.cellulare);
+      
+      if (isDuplicate) {
+        toast({
+          title: "Invitato già presente in lista",
+          description: "Controlla il numero di cellulare inserito.",
+          variant: "destructive",
+        });
+        
+        form.setError('cellulare', {
+          type: 'manual',
+          message: 'Questo numero è già presente in lista'
+        });
+        
+        setIsSubmitting(false);
+        return;
+      }
+
       let targetFamigliaId = values.famiglia_id;
 
       // Scenario 1: Create new famiglia

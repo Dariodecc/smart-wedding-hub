@@ -57,6 +57,7 @@ const Gruppi = () => {
   const [showManageMembersDialog, setShowManageMembersDialog] = useState(false);
   const [selectedGruppo, setSelectedGruppo] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -118,10 +119,17 @@ const Gruppi = () => {
 
   // Filter guests by search query
   const filteredGuests = useMemo(() => {
-    if (!searchQuery) return allGuests;
-    const query = searchQuery.toLowerCase();
+    if (!memberSearchQuery) return allGuests;
+    const query = memberSearchQuery.toLowerCase();
     return allGuests.filter(guest => guest.nome.toLowerCase().includes(query) || guest.cognome.toLowerCase().includes(query));
-  }, [allGuests, searchQuery]);
+  }, [allGuests, memberSearchQuery]);
+
+  // Filter groups by search query
+  const filteredGruppi = useMemo(() => {
+    if (!searchQuery) return gruppi;
+    const query = searchQuery.toLowerCase();
+    return gruppi.filter(gruppo => gruppo.nome.toLowerCase().includes(query));
+  }, [gruppi, searchQuery]);
   const handleCreateGroup = async (data: {
     nome: string;
     colore: string;
@@ -271,7 +279,7 @@ const Gruppi = () => {
         position: isMobile ? 'top-center' : 'bottom-right'
       });
       setShowManageMembersDialog(false);
-      setSearchQuery('');
+      setMemberSearchQuery('');
       setSelectedMembers([]);
     } catch (error) {
       console.error('Error updating group members:', error);
@@ -311,29 +319,116 @@ const Gruppi = () => {
       {/* Page Content */}
       <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
         {/* Total Count Banner */}
-        
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-100 text-xs sm:text-sm font-medium">
+                Gruppi Totali
+              </p>
+              <p className="text-white text-3xl sm:text-4xl font-bold mt-1">
+                {gruppi.length}
+              </p>
+            </div>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+              <Layers className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 shadow-sm">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            {/* Group Count */}
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-medium text-gray-700">
+                Gruppi
+              </h3>
+              <Badge className="bg-blue-100 text-blue-800 rounded-full px-2.5 py-1 text-xs font-medium">
+                {filteredGruppi.length}
+              </Badge>
+            </div>
+            
+            {/* Search */}
+            <div className="relative w-full sm:w-[300px] md:w-[350px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Cerca gruppo per nome..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={cn(
+                  "pl-9 border-gray-200 rounded-lg",
+                  isMobile ? "h-12 text-base" : "h-10"
+                )}
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-gray-600"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+          
+          {/* Active Filter Info */}
+          {searchQuery && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <p className="text-sm text-gray-600">
+                Stai visualizzando <strong className="text-gray-900">{filteredGruppi.length}</strong> di{' '}
+                <strong className="text-gray-900">{gruppi.length}</strong> gruppi totali
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Groups Grid */}
         {isLoadingGruppi ? <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          </div> : gruppi.length === 0 ?
+          </div> : filteredGruppi.length === 0 ?
       // Empty State
       <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Layers className="h-8 w-8 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Nessun gruppo creato
-            </h3>
-            <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
-              Inizia a organizzare i tuoi invitati creando il primo gruppo
-            </p>
-            <Button onClick={() => setShowCreateDialog(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Crea Primo Gruppo
-            </Button>
+            
+            {searchQuery ? (
+              // No results from search
+              <>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Nessun gruppo trovato
+                </h3>
+                <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
+                  Nessun gruppo corrisponde a "{searchQuery}"
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setSearchQuery('')}
+                  className="border-gray-200"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancella ricerca
+                </Button>
+              </>
+            ) : (
+              // No groups created yet
+              <>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Nessun gruppo creato
+                </h3>
+                <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
+                  Inizia a organizzare i tuoi invitati creando il primo gruppo
+                </p>
+                <Button onClick={() => setShowCreateDialog(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crea Primo Gruppo
+                </Button>
+              </>
+            )}
           </div> : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {gruppi.map(gruppo => {
+            {filteredGruppi.map(gruppo => {
           const membri = gruppo.invitati || [];
           const totaleMembri = membri.length;
           const confermati = membri.filter((m: any) => m.rsvp_status === "Ci sarò").length;
@@ -688,7 +783,7 @@ const Gruppi = () => {
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input placeholder="Cerca ospiti..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={cn("pl-9 border-gray-200 rounded-lg bg-white", isMobile ? "h-12 text-base" : "h-10")} />
+                <Input placeholder="Cerca ospiti..." value={memberSearchQuery} onChange={e => setMemberSearchQuery(e.target.value)} className={cn("pl-9 border-gray-200 rounded-lg bg-white", isMobile ? "h-12 text-base" : "h-10")} />
               </div>
               
               {/* Selection Summary and Actions */}
@@ -717,7 +812,7 @@ const Gruppi = () => {
                   <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
                     <Users className="h-8 w-8 text-gray-400" />
                   </div>
-                  {searchQuery ? <>
+                  {memberSearchQuery ? <>
                       <h3 className="text-base font-semibold text-gray-900 mb-1">
                         Nessun ospite trovato
                       </h3>
@@ -788,7 +883,7 @@ const Gruppi = () => {
             <div className="flex items-center gap-3 w-full">
               <Button type="button" variant="outline" onClick={() => {
               setShowManageMembersDialog(false);
-              setSearchQuery('');
+              setMemberSearchQuery('');
               setSelectedMembers([]);
             }} disabled={isLoading} className={cn(isMobile ? "flex-1 h-12" : "")}>
                 Annulla

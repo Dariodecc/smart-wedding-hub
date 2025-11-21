@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
 import { DndContext, DragOverlay, DragEndEvent, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { Search, Users, User, Crown, Plus, ZoomIn, ZoomOut, Maximize2, CheckCircle, Loader2, Circle, RectangleHorizontal } from "lucide-react";
+import { Search, Users, User, Crown, Plus, ZoomIn, ZoomOut, Maximize2, CheckCircle, Loader2, Circle, RectangleHorizontal, RotateCcw, RotateCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ interface Tavolo {
   capienza: number;
   posizione_x: number;
   posizione_y: number;
+  rotazione: number;
 }
 
 interface Guest {
@@ -50,6 +51,9 @@ const Tavoli = () => {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [showAddTableDialog, setShowAddTableDialog] = useState(false);
   const [activeGuest, setActiveGuest] = useState<Guest | null>(null);
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [isDraggingTable, setIsDraggingTable] = useState(false);
+  const [tableDragStart, setTableDragStart] = useState({ x: 0, y: 0, tableX: 0, tableY: 0 });
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -277,21 +281,38 @@ const Tavoli = () => {
     const { active, over } = event;
     setActiveGuest(null);
 
-    if (!over) return;
+    if (!over) {
+      console.log("No drop target");
+      return;
+    }
 
     const guestId = active.id as string;
-    const overId = over.id as string;
+    const dropData = over.data.current;
 
-    // Parse seat ID: "seat-{tavoloId}-{seatIndex}"
-    if (!overId.startsWith("seat-")) return;
+    if (!dropData?.tavoloId || dropData?.seatIndex === undefined) {
+      console.log("Invalid drop data", dropData);
+      return;
+    }
 
-    const parts = overId.split("-");
-    if (parts.length !== 3) return;
+    const { tavoloId, seatIndex } = dropData;
 
-    const tavoloId = parts[1];
-    const seatIndex = parseInt(parts[2], 10);
+    console.log("Assigning guest", guestId, "to table", tavoloId, "seat", seatIndex);
 
     try {
+      // Check if seat is already occupied
+      const { data: existingAssignment } = await supabase
+        .from("invitati")
+        .select("id")
+        .eq("tavolo_id", tavoloId)
+        .eq("posto_numero", seatIndex)
+        .maybeSingle();
+
+      if (existingAssignment) {
+        toast.error("Questo posto è già occupato");
+        return;
+      }
+
+      // Assign guest to table and seat
       const { error } = await supabase
         .from("invitati")
         .update({
@@ -302,12 +323,19 @@ const Tavoli = () => {
 
       if (error) throw error;
 
+      // Refresh data
       await queryClient.invalidateQueries({ queryKey: ["invitati", wedding?.id] });
       toast.success("Ospite assegnato al tavolo");
     } catch (error) {
       console.error("Error assigning guest:", error);
       toast.error("Errore nell'assegnare l'ospite");
     }
+  };
+
+  const handleDragStart = (event: any) => {
+    const { active } = event;
+    const guest = active.data.current?.guest;
+    setActiveGuest(guest);
   };
 
   // Handle seat click (to remove assignment)
@@ -332,6 +360,183 @@ const Tavoli = () => {
       console.error("Error removing guest:", error);
       toast.error("Errore nella rimozione dell'ospite");
     }
+  };
+
+  // Table interaction handlers
+  const handleTableClick = (tavoloId: string) => {
+    setSelectedTableId(tavoloId);
+  };
+
+  const handleTableDragStart = (tavoloId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const tavolo = tavoli.find((t) => t.id === tavoloId);
+    if (!tavolo) return;
+
+    setSelectedTableId(tavoloId);
+    setIsDraggingTable(true);
+
+    // Get SVG coordinates
+    const svg = (e.target as SVGElement).ownerSVGElement;
+    if (!svg) return;
+
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+
+    setTableDragStart({
+      x: svgP.x,
+      y: svgP.y,
+      tableX: tavolo.posizione_x,
+      tableY: tavolo.posizione_y,
+    });
+  };
+
+  const handleTableDragMove = (e: React.MouseEvent) => {
+    if (!isDraggingTable || !selectedTableId) return;
+
+    const svg = canvasRef.current?.querySelector("svg");
+    if (!svg) return;
+
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+
+    const deltaX = svgP.x - tableDragStart.x;
+    const deltaY = svgP.y - tableDragStart.y;
+
+    // Update position optimistically in query cache
+    queryClient.setQueryData(["tavoli", wedding?.id], (old: Tavolo[] | undefined) => {
+      if (!old) return old;
+      return old.map((t) =>
+        t.id === selectedTableId
+          ? {
+              ...t,
+              posizione_x: tableDragStart.tableX + deltaX,
+              posizione_y: tableDragStart.tableY + deltaY,
+            }
+          : t
+      );
+    });
+  };
+
+  const handleTableDragEnd = async () => {
+    if (!isDraggingTable || !selectedTableId) return;
+
+    setIsDraggingTable(false);
+
+    const tavolo = tavoli.find((t) => t.id === selectedTableId);
+    if (!tavolo) return;
+
+    // Save to database
+    try {
+      const { error } = await supabase
+        .from("tavoli")
+        .update({
+          posizione_x: tavolo.posizione_x,
+          posizione_y: tavolo.posizione_y,
+        })
+        .eq("id", selectedTableId);
+
+      if (error) throw error;
+
+      toast.success("Posizione tavolo salvata");
+    } catch (error) {
+      console.error("Error saving table position:", error);
+      toast.error("Errore nel salvare la posizione");
+      // Revert on error
+      await queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
+    }
+  };
+
+  const rotateTable = async (degrees: number) => {
+    if (!selectedTableId) return;
+
+    const tavolo = tavoli.find((t) => t.id === selectedTableId);
+    if (!tavolo) return;
+
+    const newRotation = (tavolo.rotazione || 0) + degrees;
+
+    // Update locally
+    queryClient.setQueryData(["tavoli", wedding?.id], (old: Tavolo[] | undefined) => {
+      if (!old) return old;
+      return old.map((t) => (t.id === selectedTableId ? { ...t, rotazione: newRotation } : t));
+    });
+
+    // Save to database
+    try {
+      const { error } = await supabase
+        .from("tavoli")
+        .update({ rotazione: newRotation })
+        .eq("id", selectedTableId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error rotating table:", error);
+      toast.error("Errore nella rotazione");
+      await queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
+    }
+  };
+
+  const handleDeleteTable = async () => {
+    if (!selectedTableId) return;
+
+    const tavolo = tavoli.find((t) => t.id === selectedTableId);
+    if (!tavolo) return;
+
+    if (!confirm(`Eliminare il tavolo "${tavolo.nome}"? Gli ospiti assegnati torneranno disponibili.`)) {
+      return;
+    }
+
+    try {
+      // Unassign all guests from this table
+      await supabase
+        .from("invitati")
+        .update({ tavolo_id: null, posto_numero: null })
+        .eq("tavolo_id", selectedTableId);
+
+      // Delete table
+      const { error } = await supabase.from("tavoli").delete().eq("id", selectedTableId);
+
+      if (error) throw error;
+
+      setSelectedTableId(null);
+
+      await queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
+      await queryClient.invalidateQueries({ queryKey: ["invitati", wedding?.id] });
+
+      toast.success("Tavolo eliminato");
+    } catch (error) {
+      console.error("Error deleting table:", error);
+      toast.error("Errore nell'eliminare il tavolo");
+    }
+  };
+
+  // Canvas mouse handlers
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    if (isDraggingTable) {
+      handleTableDragMove(e);
+    } else if (isPanning) {
+      handleMouseMove(e);
+    }
+  };
+
+  const handleCanvasMouseUp = () => {
+    if (isDraggingTable) {
+      handleTableDragEnd();
+    } else {
+      handleMouseUp();
+    }
+  };
+
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    // Deselect table if clicking on canvas background
+    if ((e.target as HTMLElement).tagName === "svg" || (e.target as HTMLElement).tagName === "rect") {
+      setSelectedTableId(null);
+    }
+    handleMouseDown(e);
   };
 
   if (!wedding) {
@@ -474,6 +679,42 @@ const Tavoli = () => {
 
               <Separator orientation="vertical" className="h-8 mx-2" />
 
+              {/* Rotation & Delete Controls - Only shown when table selected */}
+              {selectedTableId && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-700">Ruota:</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => rotateTable(-15)}
+                      className="border-gray-200"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => rotateTable(15)}
+                      className="border-gray-200"
+                    >
+                      <RotateCw className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDeleteTable}
+                    className="border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+
+                  <Separator orientation="vertical" className="h-8 mx-2" />
+                </>
+              )}
+
               {/* Add Table Button */}
               <Button
                 onClick={() => setShowAddTableDialog(true)}
@@ -489,11 +730,14 @@ const Tavoli = () => {
         {/* Canvas */}
         <div
           ref={canvasRef}
-          className="flex-1 overflow-hidden relative cursor-move"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
+          className={cn(
+            "flex-1 overflow-hidden relative",
+            isDraggingTable ? "cursor-grabbing" : isPanning ? "cursor-grabbing" : "cursor-move"
+          )}
+          onMouseDown={handleCanvasMouseDown}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseUp={handleCanvasMouseUp}
+          onMouseLeave={handleCanvasMouseUp}
         >
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
@@ -520,11 +764,8 @@ const Tavoli = () => {
             </div>
           ) : (
             <DndContext
+              onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
-              onDragStart={(e) => {
-                const guest = availableGuests.find((g) => g.id === e.active.id);
-                setActiveGuest(guest || null);
-              }}
               sensors={sensors}
               collisionDetection={closestCenter}
             >
@@ -561,6 +802,9 @@ const Tavoli = () => {
                     tavolo={tavolo}
                     assignments={getAssignmentsForTable(tavolo.id)}
                     onSeatClick={handleSeatClick}
+                    isSelected={selectedTableId === tavolo.id}
+                    onTableClick={() => handleTableClick(tavolo.id)}
+                    onTableDragStart={(e) => handleTableDragStart(tavolo.id, e)}
                   />
                 ))}
               </svg>

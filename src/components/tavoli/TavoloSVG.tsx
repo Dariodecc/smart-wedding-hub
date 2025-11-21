@@ -9,9 +9,13 @@ interface TavoloSVGProps {
     capienza: number;
     posizione_x: number;
     posizione_y: number;
+    rotazione?: number;
   };
   assignments: Record<number, { guest: any }>;
   onSeatClick: (tavoloId: string, seatIndex: number) => void;
+  isSelected: boolean;
+  onTableClick: () => void;
+  onTableDragStart: (e: React.MouseEvent) => void;
 }
 
 // Calculate seats in circle (for round table)
@@ -75,8 +79,15 @@ const calculateDoubleSideSeats = (count: number, width: number, height: number) 
   return seats;
 };
 
-const TavoloSVG = ({ tavolo, assignments, onSeatClick }: TavoloSVGProps) => {
-  const { tipo, capienza, posizione_x, posizione_y, nome, id } = tavolo;
+const TavoloSVG = ({
+  tavolo,
+  assignments,
+  onSeatClick,
+  isSelected,
+  onTableClick,
+  onTableDragStart,
+}: TavoloSVGProps) => {
+  const { tipo, capienza, posizione_x, posizione_y, nome, id, rotazione } = tavolo;
 
   // Calculate seat positions based on table type
   const seatPositions = useMemo(() => {
@@ -93,7 +104,39 @@ const TavoloSVG = ({ tavolo, assignments, onSeatClick }: TavoloSVGProps) => {
   }, [tipo, capienza]);
 
   return (
-    <g transform={`translate(${posizione_x}, ${posizione_y})`}>
+    <g transform={`translate(${posizione_x}, ${posizione_y}) rotate(${rotazione || 0})`}>
+      {/* Selection Highlight */}
+      {isSelected && (
+        <>
+          {tipo === "rotondo" && (
+            <circle
+              cx="0"
+              cy="0"
+              r="110"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="4"
+              strokeDasharray="10 5"
+              opacity="0.8"
+            />
+          )}
+          {(tipo === "rettangolare_singolo" || tipo === "rettangolare_doppio") && (
+            <rect
+              x={tipo === "rettangolare_singolo" ? -210 : -210}
+              y={tipo === "rettangolare_singolo" ? -50 : -60}
+              width={tipo === "rettangolare_singolo" ? 420 : 420}
+              height={tipo === "rettangolare_singolo" ? 90 : 110}
+              rx="15"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="4"
+              strokeDasharray="10 5"
+              opacity="0.8"
+            />
+          )}
+        </>
+      )}
+
       {/* Table Shape */}
       {tipo === "rotondo" && (
         <circle
@@ -101,8 +144,18 @@ const TavoloSVG = ({ tavolo, assignments, onSeatClick }: TavoloSVGProps) => {
           cy="0"
           r="100"
           fill="#f9fafb"
-          stroke="#d1d5db"
-          strokeWidth="3"
+          stroke={isSelected ? "#3B82F6" : "#d1d5db"}
+          strokeWidth={isSelected ? "4" : "3"}
+          className="cursor-move"
+          onClick={(e) => {
+            e.stopPropagation();
+            onTableClick();
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onTableDragStart(e);
+          }}
+          style={{ pointerEvents: "all" } as any}
         />
       )}
 
@@ -114,8 +167,18 @@ const TavoloSVG = ({ tavolo, assignments, onSeatClick }: TavoloSVGProps) => {
           height="80"
           rx="10"
           fill="#f9fafb"
-          stroke="#d1d5db"
-          strokeWidth="3"
+          stroke={isSelected ? "#3B82F6" : "#d1d5db"}
+          strokeWidth={isSelected ? "4" : "3"}
+          className="cursor-move"
+          onClick={(e) => {
+            e.stopPropagation();
+            onTableClick();
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onTableDragStart(e);
+          }}
+          style={{ pointerEvents: "all" } as any}
         />
       )}
 
@@ -127,8 +190,18 @@ const TavoloSVG = ({ tavolo, assignments, onSeatClick }: TavoloSVGProps) => {
           height="100"
           rx="10"
           fill="#f9fafb"
-          stroke="#d1d5db"
-          strokeWidth="3"
+          stroke={isSelected ? "#3B82F6" : "#d1d5db"}
+          strokeWidth={isSelected ? "4" : "3"}
+          className="cursor-move"
+          onClick={(e) => {
+            e.stopPropagation();
+            onTableClick();
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onTableDragStart(e);
+          }}
+          style={{ pointerEvents: "all" } as any}
         />
       )}
 
@@ -140,6 +213,7 @@ const TavoloSVG = ({ tavolo, assignments, onSeatClick }: TavoloSVGProps) => {
         fontSize="24"
         fontWeight="bold"
         fill="#374151"
+        style={{ pointerEvents: "none", userSelect: "none" } as any}
       >
         {nome}
       </text>

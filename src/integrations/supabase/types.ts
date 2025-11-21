@@ -222,6 +222,7 @@ export type Database = {
           nome: string
           posizione_x: number | null
           posizione_y: number | null
+          rotazione: number | null
           tipo: string
           wedding_id: string
         }
@@ -232,6 +233,7 @@ export type Database = {
           nome: string
           posizione_x?: number | null
           posizione_y?: number | null
+          rotazione?: number | null
           tipo: string
           wedding_id: string
         }
@@ -242,6 +244,7 @@ export type Database = {
           nome?: string
           posizione_x?: number | null
           posizione_y?: number | null
+          rotazione?: number | null
           tipo?: string
           wedding_id?: string
         }

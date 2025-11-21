@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
@@ -301,13 +302,16 @@ const Impostazioni = () => {
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
-              Impostazioni
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
-              Configura le impostazioni del matrimonio
-            </p>
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <SidebarTrigger className="text-gray-600 hover:text-gray-900 shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
+                Impostazioni
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
+                Configura le impostazioni del matrimonio
+              </p>
+            </div>
           </div>
         </div>
       </div>

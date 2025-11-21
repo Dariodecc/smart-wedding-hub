@@ -89,9 +89,11 @@ export type Database = {
           id: string
           is_capo_famiglia: boolean | null
           nome: string
+          posto_numero: number | null
           preferenze_alimentari: string[] | null
           rsvp_status: string | null
           rsvp_uuid: string | null
+          tavolo_id: string | null
           tipo_ospite: string
           wedding_id: string
         }
@@ -105,9 +107,11 @@ export type Database = {
           id?: string
           is_capo_famiglia?: boolean | null
           nome: string
+          posto_numero?: number | null
           preferenze_alimentari?: string[] | null
           rsvp_status?: string | null
           rsvp_uuid?: string | null
+          tavolo_id?: string | null
           tipo_ospite: string
           wedding_id: string
         }
@@ -121,9 +125,11 @@ export type Database = {
           id?: string
           is_capo_famiglia?: boolean | null
           nome?: string
+          posto_numero?: number | null
           preferenze_alimentari?: string[] | null
           rsvp_status?: string | null
           rsvp_uuid?: string | null
+          tavolo_id?: string | null
           tipo_ospite?: string
           wedding_id?: string
         }
@@ -140,6 +146,13 @@ export type Database = {
             columns: ["gruppo_id"]
             isOneToOne: false
             referencedRelation: "gruppi"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitati_tavolo_id_fkey"
+            columns: ["tavolo_id"]
+            isOneToOne: false
+            referencedRelation: "tavoli"
             referencedColumns: ["id"]
           },
           {
@@ -200,6 +213,47 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      tavoli: {
+        Row: {
+          capienza: number
+          created_at: string | null
+          id: string
+          nome: string
+          posizione_x: number | null
+          posizione_y: number | null
+          tipo: string
+          wedding_id: string
+        }
+        Insert: {
+          capienza: number
+          created_at?: string | null
+          id?: string
+          nome: string
+          posizione_x?: number | null
+          posizione_y?: number | null
+          tipo: string
+          wedding_id: string
+        }
+        Update: {
+          capienza?: number
+          created_at?: string | null
+          id?: string
+          nome?: string
+          posizione_x?: number | null
+          posizione_y?: number | null
+          tipo?: string
+          wedding_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_tavoli_wedding"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

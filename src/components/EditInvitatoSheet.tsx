@@ -76,6 +76,35 @@ export function EditInvitatoSheet({
     },
     enabled: isOpen
   });
+
+  // Fetch custom dietary preferences
+  const DEFAULT_PREFERENCES = [
+    "Vegetariano",
+    "Vegano",
+    "Celiaco",
+    "Intollerante al lattosio",
+  ];
+
+  const { data: customPreferences = [] } = useQuery({
+    queryKey: ["custom-preferences", matrimonioId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("preferenze_alimentari_custom")
+        .select("*")
+        .eq("wedding_id", matrimonioId)
+        .order("nome");
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: isOpen,
+  });
+
+  // Combined dietary options
+  const dietaryOptions = [
+    ...DEFAULT_PREFERENCES.map((pref) => ({ value: pref, label: pref })),
+    ...customPreferences.map((pref) => ({ value: pref.nome, label: pref.nome })),
+  ];
   const form = useForm({
     defaultValues: {
       nome: invitato?.nome || "",
@@ -423,13 +452,7 @@ export function EditInvitatoSheet({
                     </Label>
                     <div className="space-y-3">
                       <MultiSelect
-                        options={[
-                          { value: "Vegetariano", label: "Vegetariano" },
-                          { value: "Vegano", label: "Vegano" },
-                          { value: "Celiaco", label: "Celiaco" },
-                          { value: "Intollerante al lattosio", label: "Intollerante al lattosio" },
-                          { value: "Altro", label: "Altro" }
-                        ]}
+                        options={dietaryOptions}
                         selected={form.watch("preferenze_alimentari") || []}
                         onChange={(values) => form.setValue("preferenze_alimentari", values)}
                         placeholder="Seleziona preferenze alimentari"

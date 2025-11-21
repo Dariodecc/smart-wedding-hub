@@ -72,13 +72,11 @@ interface AddInvitatoDialogProps {
   weddingId: string;
 }
 
-const DIETARY_OPTIONS = [
-  { value: "Vegetariano", label: "Vegetariano" },
-  { value: "Vegano", label: "Vegano" },
-  { value: "Celiaco", label: "Celiaco" },
-  { value: "Kosher", label: "Kosher" },
-  { value: "Halal", label: "Halal" },
-  { value: "Nessuna Preferenza", label: "Nessuna Preferenza" },
+const DEFAULT_PREFERENCES = [
+  "Vegetariano",
+  "Vegano",
+  "Celiaco",
+  "Intollerante al lattosio",
 ];
 
 export function AddInvitatoDialog({
@@ -104,6 +102,28 @@ export function AddInvitatoDialog({
     },
     enabled: !!weddingId && open,
   });
+
+  // Fetch custom dietary preferences
+  const { data: customPreferences = [] } = useQuery({
+    queryKey: ["custom-preferences", weddingId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("preferenze_alimentari_custom")
+        .select("*")
+        .eq("wedding_id", weddingId)
+        .order("nome");
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!weddingId && open,
+  });
+
+  // Combined dietary options
+  const dietaryOptions = [
+    ...DEFAULT_PREFERENCES.map((pref) => ({ value: pref, label: pref })),
+    ...customPreferences.map((pref) => ({ value: pref.nome, label: pref.nome })),
+  ];
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -393,7 +413,7 @@ export function AddInvitatoDialog({
                             </FormLabel>
                             <FormControl>
                               <MultiSelect
-                                options={DIETARY_OPTIONS}
+                                options={dietaryOptions}
                                 selected={field.value}
                                 onChange={field.onChange}
                                 placeholder="Seleziona preferenze"

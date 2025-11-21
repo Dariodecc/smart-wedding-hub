@@ -88,14 +88,14 @@ export function EditInvitatoSheet({
   
   // Fetch famiglie
   const { data: famiglie = [] } = useQuery({
-    queryKey: ["famiglie", matrimonioId],
+    queryKey: ["famiglie-select", matrimonioId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("famiglie")
         .select("*")
         .eq("wedding_id", matrimonioId)
         .order("nome");
-      
+
       if (error) throw error;
       return data || [];
     },

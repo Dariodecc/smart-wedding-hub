@@ -467,7 +467,10 @@ export function EditInvitatoSheet({
                           {selectedFamiglia ? <div className="flex items-center gap-2">
                               <Users className="h-4 w-4 text-gray-500" />
                               {selectedFamiglia.nome}
-                            </div> : <span className="text-gray-500">Seleziona famiglia...</span>}
+                            </div> : <div className="flex items-center gap-2">
+                              <X className="h-4 w-4 text-gray-500" />
+                              <span className="text-gray-500">Nessuna</span>
+                            </div>}
                           <ChevronDown className="h-4 w-4 opacity-50" />
                         </Button>
                       </PopoverTrigger>
@@ -476,6 +479,24 @@ export function EditInvitatoSheet({
                           <CommandInput placeholder="Cerca famiglia..." />
                           <CommandEmpty>Nessuna famiglia trovata</CommandEmpty>
                           <CommandGroup className="max-h-[200px] overflow-auto">
+                            {/* Opzione Nessuna */}
+                            <CommandItem 
+                              key="none" 
+                              value="nessuna" 
+                              onSelect={() => {
+                                setSelectedFamiglia(null);
+                                setIsCapoFamiglia(false);
+                                setFamigliaHasCapo(false);
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Check className={`h-4 w-4 ${!selectedFamiglia ? "opacity-100" : "opacity-0"}`} />
+                                <X className="h-4 w-4 text-gray-500" />
+                                <span>Nessuna</span>
+                              </div>
+                            </CommandItem>
+                            
+                            {/* Famiglie esistenti */}
                             {famiglie.map(famiglia => <CommandItem key={famiglia.id} value={famiglia.nome} onSelect={() => {
                             setSelectedFamiglia(famiglia);
                             checkCapoFamiglia(famiglia.id);

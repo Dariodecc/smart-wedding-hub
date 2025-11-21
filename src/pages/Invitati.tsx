@@ -257,31 +257,31 @@ const Invitati = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Page Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <SidebarTrigger className="text-gray-600 hover:text-gray-900" />
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <SidebarTrigger className="text-gray-600 hover:text-gray-900 shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
                 Invitati
               </h1>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
                 Gestisci gli invitati del matrimonio
               </p>
             </div>
           </div>
           <Button 
             onClick={() => setIsDialogOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg shrink-0"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Aggiungi Invitato
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Aggiungi Invitato</span>
           </Button>
         </div>
       </div>
       
       {/* Page Content */}
-      <div className="p-6 space-y-6">
+      <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
 
         {!hasGuests ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -298,144 +298,146 @@ const Invitati = () => {
         ) : (
           <>
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {/* Card 1 - Totale Invitati */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
+              <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                       Totale Invitati
                     </p>
                     {isLoading ? (
-                      <Skeleton className="h-8 w-16 mt-2" />
+                      <Skeleton className="h-8 w-16 mt-1 sm:mt-2" />
                     ) : (
-                      <p className="text-3xl font-bold text-gray-900 mt-2">
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
                         {stats.total}
                       </p>
                     )}
                   </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Users className="h-6 w-6 text-blue-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                   </div>
                 </div>
               </div>
               
               {/* Card 2 - Confermati */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
+              <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                       Confermati
                     </p>
                     {isLoading ? (
-                      <Skeleton className="h-8 w-24 mt-2" />
+                      <Skeleton className="h-8 w-16 mt-1 sm:mt-2" />
                     ) : (
-                      <div className="flex items-baseline gap-2 mt-2">
-                        <p className="text-3xl font-bold text-gray-900">
+                      <div className="flex items-baseline gap-1 sm:gap-2 mt-1 sm:mt-2">
+                        <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                           {stats.confermati}
                         </p>
-                        <p className="text-sm font-medium text-green-600">
+                        <p className="text-xs sm:text-sm font-medium text-green-600 truncate">
                           ({getPercentage(stats.confermati)}%)
                         </p>
                       </div>
                     )}
                   </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                    <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                   </div>
                 </div>
               </div>
               
               {/* Card 3 - In Attesa */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
+              <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                       In Attesa
                     </p>
                     {isLoading ? (
-                      <Skeleton className="h-8 w-24 mt-2" />
+                      <Skeleton className="h-8 w-16 mt-1 sm:mt-2" />
                     ) : (
-                      <div className="flex items-baseline gap-2 mt-2">
-                        <p className="text-3xl font-bold text-gray-900">
+                      <div className="flex items-baseline gap-1 sm:gap-2 mt-1 sm:mt-2">
+                        <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                           {stats.inAttesa}
                         </p>
-                        <p className="text-sm font-medium text-yellow-600">
+                        <p className="text-xs sm:text-sm font-medium text-yellow-600 truncate">
                           ({getPercentage(stats.inAttesa)}%)
                         </p>
                       </div>
                     )}
                   </div>
-                  <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Clock className="h-6 w-6 text-yellow-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-lg flex items-center justify-center shrink-0">
+                    <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
                   </div>
                 </div>
               </div>
               
               {/* Card 4 - Declinati */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
+              <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                       Declinati
                     </p>
                     {isLoading ? (
-                      <Skeleton className="h-8 w-24 mt-2" />
+                      <Skeleton className="h-8 w-16 mt-1 sm:mt-2" />
                     ) : (
-                      <div className="flex items-baseline gap-2 mt-2">
-                        <p className="text-3xl font-bold text-gray-900">
+                      <div className="flex items-baseline gap-1 sm:gap-2 mt-1 sm:mt-2">
+                        <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                           {stats.declinati}
                         </p>
-                        <p className="text-sm font-medium text-red-600">
+                        <p className="text-xs sm:text-sm font-medium text-red-600 truncate">
                           ({getPercentage(stats.declinati)}%)
                         </p>
                       </div>
                     )}
                   </div>
-                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <XCircle className="h-6 w-6 text-red-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                    <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
                   </div>
                 </div>
               </div>
             </div>
 
             {/* View Toggle & Filters */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 shadow-sm">
+              <div className="flex items-center justify-between gap-2 sm:gap-4 flex-wrap">
                 {/* View Toggle */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <Button
                     variant="ghost"
+                    size="sm"
                     className={cn(
-                      "rounded-lg",
+                      "rounded-lg h-9 px-3 text-xs sm:text-sm",
                       viewMode === 'table' 
                         ? "bg-gray-900 text-white hover:bg-gray-800 hover:text-white" 
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                     )}
                     onClick={() => handleViewChange('table')}
                   >
-                    <Table2 className="h-4 w-4 mr-2" />
-                    Tabella
+                    <Table2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Tabella</span>
                   </Button>
                   <Button
                     variant="ghost"
+                    size="sm"
                     className={cn(
-                      "rounded-lg",
+                      "rounded-lg h-9 px-3 text-xs sm:text-sm",
                       viewMode === 'box' 
                         ? "bg-gray-900 text-white hover:bg-gray-800 hover:text-white" 
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                     )}
                     onClick={() => handleViewChange('box')}
                   >
-                    <Grid3x3 className="h-4 w-4 mr-2" />
-                    Box
+                    <Grid3x3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Box</span>
                   </Button>
                   
                   {/* Mobile Filter Button */}
                   <Button
                     variant="outline"
-                    size="icon"
-                    className="lg:hidden border-gray-200 rounded-lg"
+                    size="sm"
+                    className="lg:hidden border-gray-200 rounded-lg h-9 w-9 p-0"
                     onClick={() => setShowMobileFilters(true)}
                   >
                     <SlidersHorizontal className="h-4 w-4" />
@@ -585,27 +587,27 @@ const Invitati = () => {
 
             {/* Table View */}
             {viewMode === 'table' && (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full min-w-[640px]">
                     <thead>
                       <tr className="border-b border-gray-200 bg-gray-50">
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Nome
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Cognome
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                        <th className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Cellulare
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                        <th className="hidden md:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Tipo
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                        <th className="hidden md:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Famiglia
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           RSVP
                         </th>
                       </tr>
@@ -614,12 +616,12 @@ const Invitati = () => {
                       {isLoading ? (
                         Array.from({ length: 5 }).map((_, i) => (
                           <tr key={i}>
-                            <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
-                            <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
-                            <td className="px-6 py-4 hidden sm:table-cell"><Skeleton className="h-4 w-32" /></td>
-                            <td className="px-6 py-4 hidden md:table-cell"><Skeleton className="h-4 w-20" /></td>
-                            <td className="px-6 py-4 hidden sm:table-cell"><Skeleton className="h-4 w-28" /></td>
-                            <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                            <td className="px-4 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-24" /></td>
+                            <td className="px-4 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-24" /></td>
+                            <td className="hidden sm:table-cell px-4 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-32" /></td>
+                            <td className="hidden md:table-cell px-4 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-20" /></td>
+                            <td className="hidden md:table-cell px-4 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-28" /></td>
+                            <td className="px-4 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-20" /></td>
                           </tr>
                         ))
                       ) : processedInvitati && processedInvitati.length > 0 ? (
@@ -629,14 +631,14 @@ const Invitati = () => {
                               <>
                                 {/* Family Header Row */}
                                 <tr key={`family-${item.famiglia.id}`} className="bg-purple-50 border-y border-purple-200">
-                                  <td colSpan={6} className="px-6 py-3">
+                                  <td colSpan={6} className="px-4 sm:px-6 py-2 sm:py-3">
                                     <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-purple-600" />
-                                      <span className="text-sm font-semibold text-purple-900">
+                                      <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 shrink-0" />
+                                      <span className="text-xs sm:text-sm font-semibold text-purple-900 truncate">
                                         {item.famiglia.nome}
                                       </span>
-                                      <span className="text-xs text-purple-600">
-                                        ({item.membri.length} {item.membri.length === 1 ? 'ospite' : 'ospiti'})
+                                      <span className="text-xs text-purple-600 shrink-0">
+                                        ({item.membri.length})
                                       </span>
                                     </div>
                                   </td>
@@ -652,64 +654,64 @@ const Invitati = () => {
                                     )}
                                     onClick={() => handleInvitatoClick(membro)}
                                   >
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="flex items-center gap-2">
+                                    <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                      <div className="flex items-center gap-1.5">
                                         {membro.is_capo_famiglia && (
-                                          <Crown className="h-3.5 w-3.5 text-yellow-600" />
+                                          <Crown className="h-3 w-3 text-yellow-600 shrink-0" />
                                         )}
-                                        <span className="text-sm font-medium text-gray-900">
+                                        <span className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                                           {membro.nome}
                                         </span>
                                       </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="text-sm text-gray-900">
+                                    <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                      <div className="text-xs sm:text-sm text-gray-900 truncate">
                                         {membro.cognome}
                                       </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                       <a
                                         href={`https://wa.me/${membro.cellulare.replace(/[^0-9+]/g, '')}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                                        className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
                                         onClick={(e) => e.stopPropagation()}
                                       >
-                                        <Phone className="h-3.5 w-3.5" />
+                                        <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                                         {membro.cellulare}
                                       </a>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                                      <div className="text-sm text-gray-700">
+                                    <td className="hidden md:table-cell px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                      <div className="text-xs sm:text-sm text-gray-700">
                                         {membro.tipo_ospite}
                                       </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm text-gray-700">
+                                    <td className="hidden md:table-cell px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-xs sm:text-sm text-gray-700 truncate">
                                           {item.famiglia.nome}
                                         </span>
                                         {membro.is_capo_famiglia && (
-                                          <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-2 py-0.5 text-xs">
+                                          <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-1.5 py-0.5 text-xs shrink-0">
                                             Capo
                                           </Badge>
                                         )}
                                       </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                       <Badge className={cn(
-                                        "rounded-full px-2.5 py-0.5 text-xs font-medium inline-flex items-center",
+                                        "rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center",
                                         membro.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800",
                                         membro.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800",
                                         membro.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800"
                                       )}>
                                         <div className={cn(
-                                          "w-1.5 h-1.5 rounded-full mr-1.5",
+                                          "w-1.5 h-1.5 rounded-full mr-1",
                                           membro.rsvp_status === "Ci sarò" && "bg-green-500",
                                           membro.rsvp_status === "In attesa" && "bg-yellow-500",
                                           membro.rsvp_status === "Non ci sarò" && "bg-red-500"
                                         )} />
-                                        {membro.rsvp_status}
+                                        <span className="hidden sm:inline">{membro.rsvp_status}</span>
                                       </Badge>
                                     </td>
                                   </tr>
@@ -725,50 +727,50 @@ const Invitati = () => {
                                 className="hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-200"
                                 onClick={() => handleInvitatoClick(invitato)}
                               >
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm font-medium text-gray-900">
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                  <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                                     {invitato.nome}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                  <div className="text-xs sm:text-sm text-gray-900 truncate">
                                     {invitato.cognome}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                                <td className="hidden sm:table-cell px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                   <a
                                     href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                                    className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    <Phone className="h-3.5 w-3.5" />
+                                    <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                                     {invitato.cellulare}
                                   </a>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                                  <div className="text-sm text-gray-700">
+                                <td className="hidden md:table-cell px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                  <div className="text-xs sm:text-sm text-gray-700">
                                     {invitato.tipo_ospite}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                                  <span className="text-sm text-gray-400">-</span>
+                                <td className="hidden md:table-cell px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                  <span className="text-xs sm:text-sm text-gray-400">-</span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                   <Badge className={cn(
-                                    "rounded-full px-2.5 py-0.5 text-xs font-medium inline-flex items-center",
+                                    "rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center",
                                     invitato.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800",
                                     invitato.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800",
                                     invitato.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800"
                                   )}>
                                     <div className={cn(
-                                      "w-1.5 h-1.5 rounded-full mr-1.5",
+                                      "w-1.5 h-1.5 rounded-full mr-1",
                                       invitato.rsvp_status === "Ci sarò" && "bg-green-500",
                                       invitato.rsvp_status === "In attesa" && "bg-yellow-500",
                                       invitato.rsvp_status === "Non ci sarò" && "bg-red-500"
                                     )} />
-                                    {invitato.rsvp_status}
+                                    <span className="hidden sm:inline">{invitato.rsvp_status}</span>
                                   </Badge>
                                 </td>
                               </tr>
@@ -777,7 +779,7 @@ const Invitati = () => {
                         })
                       ) : (
                         <tr>
-                          <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                          <td colSpan={6} className="px-4 sm:px-6 py-8 text-center text-xs sm:text-sm text-gray-500">
                             Nessun invitato trovato
                           </td>
                         </tr>
@@ -790,11 +792,11 @@ const Invitati = () => {
 
             {/* Box View */}
             {viewMode === 'box' && (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {isLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     {Array.from({ length: 6 }).map((_, i) => (
-                      <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                      <div key={i} className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm">
                         <Skeleton className="h-6 w-32 mb-3" />
                         <div className="space-y-2">
                           <Skeleton className="h-4 w-full" />
@@ -808,26 +810,26 @@ const Invitati = () => {
                   processedInvitati.map((item) => {
                     if (item.type === 'family') {
                       return (
-                        <div key={`family-${item.famiglia.id}`} className="space-y-3">
-                          {/* Family Header */}
-                          <div className="bg-purple-50 border border-purple-200 rounded-lg px-4 py-3">
+                        <div key={`family-${item.famiglia.id}`} className="col-span-full space-y-3">
+                          {/* Family Header - Full width */}
+                          <div className="bg-purple-50 border border-purple-200 rounded-lg px-3 sm:px-4 py-2 sm:py-3">
                             <div className="flex items-center gap-2">
-                              <Users className="h-5 w-5 text-purple-600" />
-                              <h3 className="text-base font-semibold text-purple-900">
+                              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 shrink-0" />
+                              <h3 className="text-sm sm:text-base font-semibold text-purple-900 truncate">
                                 {item.famiglia.nome}
                               </h3>
-                              <span className="text-sm text-purple-600">
-                                ({item.membri.length} {item.membri.length === 1 ? 'ospite' : 'ospiti'})
+                              <span className="text-xs sm:text-sm text-purple-600 shrink-0">
+                                ({item.membri.length})
                               </span>
                             </div>
                           </div>
                           
-                          {/* Family Members Cards */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pl-6">
+                          {/* Member Cards - Nested grid */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                             {item.membri.map((membro: any) => (
                               <div
                                 key={membro.id}
-                                className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md cursor-pointer transition-all relative"
+                                className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition-all relative"
                                 onClick={() => handleInvitatoClick(membro)}
                               >
                                 {/* Capo famiglia indicator */}
@@ -840,25 +842,22 @@ const Invitati = () => {
                                 )}
                                 
                                 {/* Header with avatar and RSVP badge */}
-                                <div className="flex items-start justify-between mb-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+                                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm shrink-0">
                                       {membro.nome[0]}{membro.cognome[0]}
                                     </div>
-                                    <div>
-                                      <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
+                                    <div className="min-w-0">
+                                      <p className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-1 truncate">
                                         {membro.nome} {membro.cognome}
-                                        {membro.is_capo_famiglia && (
-                                          <Crown className="h-3 w-3 text-yellow-600" />
-                                        )}
                                       </p>
-                                      <p className="text-xs text-gray-500">
+                                      <p className="text-xs text-gray-500 truncate">
                                         {membro.tipo_ospite}
                                       </p>
                                     </div>
                                   </div>
                                   <Badge className={cn(
-                                    "rounded-full px-2 py-0.5 text-xs font-medium",
+                                    "rounded-full px-1.5 sm:px-2 py-0.5 text-xs font-medium shrink-0",
                                     membro.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800",
                                     membro.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800",
                                     membro.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800"
@@ -869,33 +868,32 @@ const Invitati = () => {
                                       membro.rsvp_status === "In attesa" && "bg-yellow-500",
                                       membro.rsvp_status === "Non ci sarò" && "bg-red-500"
                                     )} />
-                                    {membro.rsvp_status}
                                   </Badge>
                                 </div>
                                 
                                 {/* Details */}
-                                <div className="space-y-2">
+                                <div className="space-y-1.5 sm:space-y-2">
                                   <a
                                     href={`https://wa.me/${membro.cellulare.replace(/[^0-9+]/g, '')}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                                    className="flex items-center gap-1.5 sm:gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    <Phone className="h-3.5 w-3.5" />
-                                    <span>{membro.cellulare}</span>
+                                    <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                                    <span className="truncate">{membro.cellulare}</span>
                                   </a>
                                   
                                   {membro.email && (
-                                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                                      <Mail className="h-3.5 w-3.5 text-gray-400" />
+                                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-600">
+                                      <Mail className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 shrink-0" />
                                       <span className="truncate">{membro.email}</span>
                                     </div>
                                   )}
                                   
-                                  <div className="flex items-center gap-2 text-xs text-purple-600">
-                                    <Users className="h-3.5 w-3.5" />
-                                    <span className="font-medium">{item.famiglia.nome}</span>
+                                  <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-purple-600">
+                                    <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                                    <span className="font-medium truncate">{item.famiglia.nome}</span>
                                   </div>
                                 </div>
                               </div>
@@ -909,26 +907,26 @@ const Invitati = () => {
                       return (
                         <div
                           key={invitato.id}
-                          className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md cursor-pointer transition-all"
+                          className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition-all"
                           onClick={() => handleInvitatoClick(invitato)}
                         >
                           {/* Header with avatar and RSVP badge */}
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                          <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+                            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm shrink-0">
                                 {invitato.nome[0]}{invitato.cognome[0]}
                               </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900">
+                              <div className="min-w-0">
+                                <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
                                   {invitato.nome} {invitato.cognome}
                                 </p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-500 truncate">
                                   {invitato.tipo_ospite}
                                 </p>
                               </div>
                             </div>
                             <Badge className={cn(
-                              "rounded-full px-2 py-0.5 text-xs font-medium flex-shrink-0",
+                              "rounded-full px-1.5 sm:px-2 py-0.5 text-xs font-medium shrink-0",
                               invitato.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800",
                               invitato.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800",
                               invitato.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800"
@@ -939,32 +937,31 @@ const Invitati = () => {
                                 invitato.rsvp_status === "In attesa" && "bg-yellow-500",
                                 invitato.rsvp_status === "Non ci sarò" && "bg-red-500"
                               )} />
-                              {invitato.rsvp_status}
                             </Badge>
                           </div>
                           
                           {/* Details */}
-                          <div className="space-y-2">
+                          <div className="space-y-1.5 sm:space-y-2">
                             <a
                               href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                              className="flex items-center gap-1.5 sm:gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Phone className="h-3.5 w-3.5" />
-                              <span>{invitato.cellulare}</span>
+                              <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                              <span className="truncate">{invitato.cellulare}</span>
                             </a>
                             
                             {invitato.email && (
-                              <div className="flex items-center gap-2 text-xs text-gray-600">
-                                <Mail className="h-3.5 w-3.5 text-gray-400" />
+                              <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-600">
+                                <Mail className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 shrink-0" />
                                 <span className="truncate">{invitato.email}</span>
                               </div>
                             )}
                             
-                            <div className="flex items-center gap-2 text-xs text-gray-400">
-                              <Users className="h-3.5 w-3.5" />
+                            <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-400">
+                              <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                               <span className="italic">Invitato singolo</span>
                             </div>
                           </div>
@@ -973,7 +970,7 @@ const Invitati = () => {
                     }
                   })
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-xs sm:text-sm text-gray-500">
                     Nessun invitato trovato
                   </div>
                 )}
@@ -982,17 +979,18 @@ const Invitati = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <p className="text-sm text-gray-700">
-                    Mostrando <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> - <span className="font-medium">{Math.min(currentPage * itemsPerPage, stats.total)}</span> di{' '}
-                    <span className="font-medium">{stats.total}</span> risultati
+              <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 shadow-sm">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <p className="text-xs sm:text-sm text-gray-700">
+                    <span className="hidden sm:inline">Mostrando </span>
+                    <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> - <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredInvitati.length)}</span>
+                    <span className="hidden sm:inline"> di{' '}<span className="font-medium">{filteredInvitati.length}</span> risultati</span>
                   </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-gray-200 rounded-lg h-9 w-9 p-0"
+                      className="hidden sm:inline-flex border-gray-200 rounded-lg h-8 w-8 p-0"
                       disabled={currentPage === 1}
                       onClick={() => handlePageChange(1)}
                     >
@@ -1001,49 +999,52 @@ const Invitati = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-gray-200 rounded-lg h-9 w-9 p-0"
+                      className="border-gray-200 rounded-lg h-8 w-8 p-0"
                       disabled={currentPage === 1}
                       onClick={() => handlePageChange(currentPage - 1)}
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     
-                    {/* Page numbers */}
-                    {!isMobile && (
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1)
-                          .filter(page => 
-                            page === 1 || 
-                            page === totalPages || 
-                            (page >= currentPage - 1 && page <= currentPage + 1)
-                          )
-                          .map((page, idx, arr) => (
-                            <div key={page} className="flex items-center">
-                              {idx > 0 && arr[idx - 1] !== page - 1 && (
-                                <span className="px-2 text-gray-400">...</span>
+                    {/* Page numbers - hide on mobile */}
+                    <div className="hidden sm:flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => 
+                          page === 1 || 
+                          page === totalPages || 
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        )
+                        .map((page, idx, arr) => (
+                          <div key={page} className="flex items-center">
+                            {idx > 0 && arr[idx - 1] !== page - 1 && (
+                              <span className="px-2 text-gray-400">...</span>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={cn(
+                                "rounded-lg min-w-[32px] h-8",
+                                page === currentPage 
+                                  ? "bg-gray-900 text-white hover:bg-gray-800 hover:text-white" 
+                                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                               )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className={cn(
-                                  "rounded-lg min-w-[36px] h-9",
-                                  page === currentPage 
-                                    ? "bg-gray-900 text-white hover:bg-gray-800 hover:text-white" 
-                                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                                )}
-                                onClick={() => handlePageChange(page)}
-                              >
-                                {page}
-                              </Button>
-                            </div>
-                          ))}
-                      </div>
-                    )}
+                              onClick={() => handlePageChange(page)}
+                            >
+                              {page}
+                            </Button>
+                          </div>
+                        ))}
+                    </div>
+                    
+                    {/* Current page indicator on mobile */}
+                    <div className="sm:hidden text-xs font-medium text-gray-700 px-2">
+                      {currentPage} / {totalPages}
+                    </div>
                     
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-gray-200 rounded-lg h-9 w-9 p-0"
+                      className="border-gray-200 rounded-lg h-8 w-8 p-0"
                       disabled={currentPage === totalPages}
                       onClick={() => handlePageChange(currentPage + 1)}
                     >
@@ -1052,7 +1053,7 @@ const Invitati = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-gray-200 rounded-lg h-9 w-9 p-0"
+                      className="hidden sm:inline-flex border-gray-200 rounded-lg h-8 w-8 p-0"
                       disabled={currentPage === totalPages}
                       onClick={() => handlePageChange(totalPages)}
                     >

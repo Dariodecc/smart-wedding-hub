@@ -39,14 +39,14 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Sidebar Apple style */
+    /* Sidebar modern clean style */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 6% 10%;
+    --sidebar-foreground: 240 5% 26%;
     --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4% 96%;
+    --sidebar-accent: 240 5% 97%;
     --sidebar-accent-foreground: 240 6% 10%;
-    --sidebar-border: 240 6% 90%;
+    --sidebar-border: 240 6% 92%;
     --sidebar-ring: 221 83% 53%;
 
     /* Custom tokens */

@@ -4,69 +4,28 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
-  X,
-  Copy,
-  Check,
-  Trash2,
-  Loader2,
-  Users,
-  Crown,
-  ChevronDown,
-  AlertCircle,
-  PlusCircle,
-} from "lucide-react";
-
+import { X, Copy, Check, Trash2, Loader2, Users, Crown, ChevronDown, AlertCircle, PlusCircle } from "lucide-react";
 interface EditInvitatoSheetProps {
   invitato: any;
   isOpen: boolean;
   onClose: () => void;
   matrimonioId: string;
 }
-
 export function EditInvitatoSheet({
   invitato,
   isOpen,
   onClose,
-  matrimonioId,
+  matrimonioId
 }: EditInvitatoSheetProps) {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
@@ -75,33 +34,32 @@ export function EditInvitatoSheet({
   const [copied, setCopied] = useState(false);
   const [selectedGruppo, setSelectedGruppo] = useState<any>(null);
   const [selectedTavolo, setSelectedTavolo] = useState<any>(null);
-  
+
   // Famiglia state
   const [selectedFamiglia, setSelectedFamiglia] = useState<any>(invitato?.famiglia || null);
   const [isCapoFamiglia, setIsCapoFamiglia] = useState(invitato?.is_capo_famiglia || false);
   const [creaFamiglia, setCreaFamiglia] = useState(false);
   const [famigliaHasCapo, setFamigliaHasCapo] = useState(false);
-  
+
   // Placeholder data - will be replaced with real data later
   const gruppi: any[] = [];
   const tavoli: any[] = [];
-  
+
   // Fetch famiglie
-  const { data: famiglie = [] } = useQuery({
+  const {
+    data: famiglie = []
+  } = useQuery({
     queryKey: ["famiglie-select", matrimonioId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("famiglie")
-        .select("*")
-        .eq("wedding_id", matrimonioId)
-        .order("nome");
-
+      const {
+        data,
+        error
+      } = await supabase.from("famiglie").select("*").eq("wedding_id", matrimonioId).order("nome");
       if (error) throw error;
       return data || [];
     },
-    enabled: isOpen,
+    enabled: isOpen
   });
-
   const form = useForm({
     defaultValues: {
       nome: invitato?.nome || "",
@@ -111,10 +69,9 @@ export function EditInvitatoSheet({
       tipo_ospite: invitato?.tipo_ospite || "Adulto",
       preferenze_alimentari: invitato?.preferenze_alimentari || [],
       rsvp_status: invitato?.rsvp_status || "In attesa",
-      nomeFamiglia: "",
-    },
+      nomeFamiglia: ""
+    }
   });
-
   useEffect(() => {
     if (invitato) {
       form.reset({
@@ -125,70 +82,57 @@ export function EditInvitatoSheet({
         tipo_ospite: invitato.tipo_ospite,
         preferenze_alimentari: invitato.preferenze_alimentari || [],
         rsvp_status: invitato.rsvp_status || "In attesa",
-        nomeFamiglia: "",
+        nomeFamiglia: ""
       });
       setSelectedFamiglia(invitato.famiglia || null);
       setIsCapoFamiglia(invitato.is_capo_famiglia || false);
       setCreaFamiglia(false);
     }
   }, [invitato, form]);
-  
+
   // Check if selected famiglia already has a capo
   const checkCapoFamiglia = async (famigliaId: string) => {
-    const { data } = await supabase
-      .from("invitati")
-      .select("id")
-      .eq("famiglia_id", famigliaId)
-      .eq("is_capo_famiglia", true)
-      .neq("id", invitato.id)
-      .single();
-    
+    const {
+      data
+    } = await supabase.from("invitati").select("id").eq("famiglia_id", famigliaId).eq("is_capo_famiglia", true).neq("id", invitato.id).single();
     setFamigliaHasCapo(!!data);
   };
-
   const rsvpLink = `${window.location.origin}/rsvp/${invitato?.rsvp_uuid}`;
-
   const copyToClipboard = () => {
     navigator.clipboard.writeText(rsvpLink);
     setCopied(true);
     toast.success("Link copiato!", {
       position: isMobile ? "top-center" : "bottom-right",
-      duration: 2000,
+      duration: 2000
     });
     setTimeout(() => setCopied(false), 2000);
   };
-
   const getBadgeVariant = (status: string) => {
     if (status === "Ci sarò") return "default";
     if (status === "In attesa") return "secondary";
     return "destructive";
   };
-
   const getStatusColor = (status: string) => {
     if (status === "Ci sarò") return "bg-green-500";
     if (status === "In attesa") return "bg-yellow-500";
     return "bg-red-500";
   };
-
   const handleSave = async (data: any) => {
     setIsLoading(true);
     try {
       let famigliaId = null;
       let shouldBeCapo = false;
-      
+
       // Scenario 1: Creating new famiglia
       if (creaFamiglia && data.nomeFamiglia) {
-        const { data: newFamiglia, error: famigliaError } = await supabase
-          .from("famiglie")
-          .insert({
-            nome: data.nomeFamiglia,
-            wedding_id: matrimonioId,
-          })
-          .select()
-          .single();
-        
+        const {
+          data: newFamiglia,
+          error: famigliaError
+        } = await supabase.from("famiglie").insert({
+          nome: data.nomeFamiglia,
+          wedding_id: matrimonioId
+        }).select().single();
         if (famigliaError) throw famigliaError;
-        
         famigliaId = newFamiglia.id;
         shouldBeCapo = true; // Auto-capo when creating famiglia
       }
@@ -202,82 +146,74 @@ export function EditInvitatoSheet({
         famigliaId = null;
         shouldBeCapo = false;
       }
-      
-      const { error } = await supabase
-        .from("invitati")
-        .update({
-          nome: data.nome,
-          cognome: data.cognome,
-          cellulare: data.cellulare,
-          email: data.email || null,
-          tipo_ospite: data.tipo_ospite,
-          preferenze_alimentari: data.preferenze_alimentari,
-          rsvp_status: data.rsvp_status,
-          famiglia_id: famigliaId,
-          is_capo_famiglia: shouldBeCapo,
-        })
-        .eq("id", invitato.id);
-
+      const {
+        error
+      } = await supabase.from("invitati").update({
+        nome: data.nome,
+        cognome: data.cognome,
+        cellulare: data.cellulare,
+        email: data.email || null,
+        tipo_ospite: data.tipo_ospite,
+        preferenze_alimentari: data.preferenze_alimentari,
+        rsvp_status: data.rsvp_status,
+        famiglia_id: famigliaId,
+        is_capo_famiglia: shouldBeCapo
+      }).eq("id", invitato.id);
       if (error) throw error;
 
       // Close sheet BEFORE invalidating queries to prevent UI flickering
       onClose();
-
-      await queryClient.invalidateQueries({ queryKey: ["invitati", matrimonioId] });
-      await queryClient.invalidateQueries({ queryKey: ["famiglie", matrimonioId] });
-
+      await queryClient.invalidateQueries({
+        queryKey: ["invitati", matrimonioId]
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["famiglie", matrimonioId]
+      });
       toast.success("Modifiche salvate con successo", {
-        position: isMobile ? "top-center" : "bottom-right",
+        position: isMobile ? "top-center" : "bottom-right"
       });
     } catch (error) {
       console.error("Error updating invitato:", error);
       toast.error("Errore nel salvare le modifiche", {
-        position: isMobile ? "top-center" : "bottom-right",
+        position: isMobile ? "top-center" : "bottom-right"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleDelete = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from("invitati")
-        .delete()
-        .eq("id", invitato.id);
-
+      const {
+        error
+      } = await supabase.from("invitati").delete().eq("id", invitato.id);
       if (error) throw error;
 
       // Close sheet and dialog BEFORE invalidating queries
       setShowDeleteDialog(false);
       onClose();
-
-      await queryClient.invalidateQueries({ queryKey: ["invitati", matrimonioId] });
-      await queryClient.invalidateQueries({ queryKey: ["famiglie", matrimonioId] });
-
+      await queryClient.invalidateQueries({
+        queryKey: ["invitati", matrimonioId]
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["famiglie", matrimonioId]
+      });
       toast.success("Invitato eliminato con successo", {
-        position: isMobile ? "top-center" : "bottom-right",
+        position: isMobile ? "top-center" : "bottom-right"
       });
     } catch (error) {
       console.error("Error deleting invitato:", error);
       toast.error("Errore nell'eliminare l'invitato", {
-        position: isMobile ? "top-center" : "bottom-right",
+        position: isMobile ? "top-center" : "bottom-right"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   if (!invitato) return null;
-
-  return (
-    <>
+  return <>
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent
-          side="right"
-          className="w-full sm:w-[85vw] md:w-[45vw] lg:w-[45vw] h-full p-0 flex flex-col overflow-hidden"
-        >
+        <SheetContent side="right" className="w-full sm:w-[85vw] md:w-[45vw] lg:w-[45vw] h-full p-0 flex flex-col overflow-hidden">
           {/* Header */}
           <div className="shrink-0 bg-white border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -287,23 +223,13 @@ export function EditInvitatoSheet({
                 </h2>
                 <p className="text-sm text-gray-500 mt-0.5">Modifica i dettagli dell'invitato</p>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="h-8 w-8"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              
             </div>
           </div>
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-            <form
-              onSubmit={form.handleSubmit(handleSave)}
-              className="space-y-6"
-            >
+            <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
               {/* RSVP Status Card */}
               <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h3 className="text-sm font-semibold text-gray-900 mb-4">Status RSVP</h3>
@@ -321,10 +247,7 @@ export function EditInvitatoSheet({
                         </span>
                       </div>
                     </div>
-                    <Select
-                      value={form.watch("rsvp_status")}
-                      onValueChange={(value) => form.setValue("rsvp_status", value)}
-                    >
+                    <Select value={form.watch("rsvp_status")} onValueChange={value => form.setValue("rsvp_status", value)}>
                       <SelectTrigger className="h-10 bg-white border-gray-200 rounded-lg">
                         <SelectValue />
                       </SelectTrigger>
@@ -356,23 +279,9 @@ export function EditInvitatoSheet({
                       Link RSVP
                     </Label>
                     <div className="flex gap-2">
-                      <Input
-                        value={rsvpLink}
-                        readOnly
-                        className="flex-1 text-sm bg-gray-50 border-gray-200 text-gray-600"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={copyToClipboard}
-                        className="h-10 w-10 border-gray-200"
-                      >
-                        {copied ? (
-                          <Check className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
+                      <Input value={rsvpLink} readOnly className="flex-1 text-sm bg-gray-50 border-gray-200 text-gray-600" />
+                      <Button type="button" variant="outline" size="icon" onClick={copyToClipboard} className="h-10 w-10 border-gray-200">
+                        {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
                       </Button>
                     </div>
                     <p className="text-xs text-gray-500">
@@ -390,17 +299,15 @@ export function EditInvitatoSheet({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-sm font-medium text-gray-700">Nome *</Label>
-                      <Input
-                        {...form.register("nome", { required: true })}
-                        className="h-10 bg-white border-gray-200 rounded-lg"
-                      />
+                      <Input {...form.register("nome", {
+                      required: true
+                    })} className="h-10 bg-white border-gray-200 rounded-lg" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-sm font-medium text-gray-700">Cognome *</Label>
-                      <Input
-                        {...form.register("cognome", { required: true })}
-                        className="h-10 bg-white border-gray-200 rounded-lg"
-                      />
+                      <Input {...form.register("cognome", {
+                      required: true
+                    })} className="h-10 bg-white border-gray-200 rounded-lg" />
                     </div>
                   </div>
 
@@ -408,22 +315,16 @@ export function EditInvitatoSheet({
                     <Label className="text-sm font-medium text-gray-700">
                       Cellulare *
                     </Label>
-                    <Input
-                      type="tel"
-                      {...form.register("cellulare", { required: true })}
-                      className="h-10 bg-white border-gray-200 rounded-lg"
-                    />
+                    <Input type="tel" {...form.register("cellulare", {
+                    required: true
+                  })} className="h-10 bg-white border-gray-200 rounded-lg" />
                   </div>
 
                   <div className="space-y-1.5">
                     <Label className="text-sm font-medium text-gray-700">
                       Email
                     </Label>
-                    <Input
-                      type="email"
-                      {...form.register("email")}
-                      className="h-10 bg-white border-gray-200 rounded-lg"
-                    />
+                    <Input type="email" {...form.register("email")} className="h-10 bg-white border-gray-200 rounded-lg" />
                     <p className="text-xs text-gray-500">Opzionale</p>
                   </div>
 
@@ -431,19 +332,14 @@ export function EditInvitatoSheet({
                     <Label className="text-sm font-medium text-gray-700">
                       Tipo Ospite *
                     </Label>
-                    <Select
-                      value={form.watch("tipo_ospite")}
-                      onValueChange={(value) => form.setValue("tipo_ospite", value)}
-                    >
+                    <Select value={form.watch("tipo_ospite")} onValueChange={value => form.setValue("tipo_ospite", value)}>
                       <SelectTrigger className="h-10 bg-white border-gray-200 rounded-lg">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {["Neonato", "Bambino", "Ragazzo", "Adulto"].map((tipo) => (
-                          <SelectItem key={tipo} value={tipo}>
+                        {["Neonato", "Bambino", "Ragazzo", "Adulto"].map(tipo => <SelectItem key={tipo} value={tipo}>
                             {tipo}
-                          </SelectItem>
-                        ))}
+                          </SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -452,12 +348,7 @@ export function EditInvitatoSheet({
                     <Label className="text-sm font-medium text-gray-700">
                       Preferenze Alimentari
                     </Label>
-                    <Select
-                      value={form.watch("preferenze_alimentari")?.[0] || "none"}
-                      onValueChange={(value) =>
-                        form.setValue("preferenze_alimentari", value === "none" ? [] : [value])
-                      }
-                    >
+                    <Select value={form.watch("preferenze_alimentari")?.[0] || "none"} onValueChange={value => form.setValue("preferenze_alimentari", value === "none" ? [] : [value])}>
                       <SelectTrigger className="h-10 bg-white border-gray-200 rounded-lg">
                         <SelectValue placeholder="Seleziona preferenza" />
                       </SelectTrigger>
@@ -465,13 +356,9 @@ export function EditInvitatoSheet({
                         <SelectItem value="none">
                           Nessuna
                         </SelectItem>
-                        {["Vegetariano", "Vegano", "Celiaco", "Intollerante al lattosio"].map(
-                          (pref) => (
-                            <SelectItem key={pref} value={pref}>
+                        {["Vegetariano", "Vegano", "Celiaco", "Intollerante al lattosio"].map(pref => <SelectItem key={pref} value={pref}>
                               {pref}
-                            </SelectItem>
-                          )
-                        )}
+                            </SelectItem>)}
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-gray-500">Opzionale</p>
@@ -491,20 +378,11 @@ export function EditInvitatoSheet({
                     </Label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className="w-full h-10 justify-between border-gray-200 rounded-lg"
-                          disabled={creaFamiglia}
-                        >
-                          {selectedFamiglia ? (
-                            <div className="flex items-center gap-2">
+                        <Button variant="outline" role="combobox" className="w-full h-10 justify-between border-gray-200 rounded-lg" disabled={creaFamiglia}>
+                          {selectedFamiglia ? <div className="flex items-center gap-2">
                               <Users className="h-4 w-4 text-gray-500" />
                               {selectedFamiglia.nome}
-                            </div>
-                          ) : (
-                            <span className="text-gray-500">Seleziona famiglia...</span>
-                          )}
+                            </div> : <span className="text-gray-500">Seleziona famiglia...</span>}
                           <ChevronDown className="h-4 w-4 opacity-50" />
                         </Button>
                       </PopoverTrigger>
@@ -513,28 +391,16 @@ export function EditInvitatoSheet({
                           <CommandInput placeholder="Cerca famiglia..." />
                           <CommandEmpty>Nessuna famiglia trovata</CommandEmpty>
                           <CommandGroup className="max-h-[200px] overflow-auto">
-                            {famiglie.map((famiglia) => (
-                              <CommandItem
-                                key={famiglia.id}
-                                value={famiglia.nome}
-                                onSelect={() => {
-                                  setSelectedFamiglia(famiglia);
-                                  checkCapoFamiglia(famiglia.id);
-                                }}
-                              >
+                            {famiglie.map(famiglia => <CommandItem key={famiglia.id} value={famiglia.nome} onSelect={() => {
+                            setSelectedFamiglia(famiglia);
+                            checkCapoFamiglia(famiglia.id);
+                          }}>
                                 <div className="flex items-center gap-2">
-                                  <Check
-                                    className={`h-4 w-4 ${
-                                      selectedFamiglia?.id === famiglia.id
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    }`}
-                                  />
+                                  <Check className={`h-4 w-4 ${selectedFamiglia?.id === famiglia.id ? "opacity-100" : "opacity-0"}`} />
                                   <Users className="h-4 w-4 text-gray-500" />
                                   <span>{famiglia.nome}</span>
                                 </div>
-                              </CommandItem>
-                            ))}
+                              </CommandItem>)}
                           </CommandGroup>
                         </Command>
                       </PopoverContent>
@@ -554,32 +420,25 @@ export function EditInvitatoSheet({
                         Riceverà il link RSVP per tutta la famiglia
                       </p>
                     </div>
-                    <Switch
-                      checked={isCapoFamiglia}
-                      onCheckedChange={(checked) => {
-                        if (selectedFamiglia && checked) {
-                          if (famigliaHasCapo) {
-                            toast.error("Questa famiglia ha già un capo famiglia", {
-                              position: isMobile ? "top-center" : "bottom-right",
-                            });
-                            return;
-                          }
-                        }
-                        setIsCapoFamiglia(checked);
-                      }}
-                      disabled={!selectedFamiglia}
-                    />
+                    <Switch checked={isCapoFamiglia} onCheckedChange={checked => {
+                    if (selectedFamiglia && checked) {
+                      if (famigliaHasCapo) {
+                        toast.error("Questa famiglia ha già un capo famiglia", {
+                          position: isMobile ? "top-center" : "bottom-right"
+                        });
+                        return;
+                      }
+                    }
+                    setIsCapoFamiglia(checked);
+                  }} disabled={!selectedFamiglia} />
                   </div>
 
-                  {!selectedFamiglia && !creaFamiglia && (
-                    <p className="text-xs text-yellow-600 flex items-center gap-1 bg-yellow-50 p-2 rounded-lg border border-yellow-200">
+                  {!selectedFamiglia && !creaFamiglia && <p className="text-xs text-yellow-600 flex items-center gap-1 bg-yellow-50 p-2 rounded-lg border border-yellow-200">
                       <AlertCircle className="h-3 w-3" />
                       Seleziona prima una famiglia per abilitare questa opzione
-                    </p>
-                  )}
+                    </p>}
 
-                  {selectedFamiglia && isCapoFamiglia && (
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  {selectedFamiglia && isCapoFamiglia && <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="flex items-center gap-2 text-sm text-blue-900 font-medium">
                         <Crown className="h-4 w-4" />
                         <span>Questo invitato sarà il capo famiglia</span>
@@ -587,8 +446,7 @@ export function EditInvitatoSheet({
                       <p className="text-xs text-blue-700 mt-1">
                         Riceverà un link RSVP univoco per gestire tutta la famiglia
                       </p>
-                    </div>
-                  )}
+                    </div>}
 
                   {/* Divider */}
                   <div className="relative">
@@ -610,22 +468,18 @@ export function EditInvitatoSheet({
                         Crea una nuova famiglia e assegna questo invitato come capo
                       </p>
                     </div>
-                    <Switch
-                      checked={creaFamiglia}
-                      onCheckedChange={(checked) => {
-                        setCreaFamiglia(checked);
-                        if (checked) {
-                          setSelectedFamiglia(null);
-                          setIsCapoFamiglia(false);
-                        } else {
-                          form.setValue("nomeFamiglia", "");
-                        }
-                      }}
-                    />
+                    <Switch checked={creaFamiglia} onCheckedChange={checked => {
+                    setCreaFamiglia(checked);
+                    if (checked) {
+                      setSelectedFamiglia(null);
+                      setIsCapoFamiglia(false);
+                    } else {
+                      form.setValue("nomeFamiglia", "");
+                    }
+                  }} />
                   </div>
 
-                  {creaFamiglia && (
-                    <div className="space-y-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  {creaFamiglia && <div className="space-y-3 p-4 bg-green-50 border border-green-200 rounded-lg">
                       <div className="flex items-center gap-2 text-sm text-green-900 font-medium">
                         <PlusCircle className="h-4 w-4" />
                         Nuova Famiglia
@@ -635,24 +489,17 @@ export function EditInvitatoSheet({
                         <Label className="text-sm font-medium text-gray-700">
                           Nome Nuova Famiglia *
                         </Label>
-                        <Input
-                          {...form.register("nomeFamiglia", {
-                            required: creaFamiglia ? "Il nome della famiglia è obbligatorio" : false,
-                          })}
-                          placeholder="es. Famiglia Rossi"
-                          className="h-10 bg-white border-gray-200 rounded-lg"
-                        />
-                        {form.formState.errors.nomeFamiglia && (
-                          <p className="text-xs text-red-600">
+                        <Input {...form.register("nomeFamiglia", {
+                      required: creaFamiglia ? "Il nome della famiglia è obbligatorio" : false
+                    })} placeholder="es. Famiglia Rossi" className="h-10 bg-white border-gray-200 rounded-lg" />
+                        {form.formState.errors.nomeFamiglia && <p className="text-xs text-red-600">
                             {form.formState.errors.nomeFamiglia.message}
-                          </p>
-                        )}
+                          </p>}
                         <p className="text-xs text-green-700">
                           Questo invitato diventerà automaticamente il capo famiglia
                         </p>
                       </div>
-                    </div>
-                  )}
+                    </div>}
 
                   {/* Info Box */}
                   <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -679,11 +526,7 @@ export function EditInvitatoSheet({
                     </Label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className="w-full h-10 justify-between border-gray-200 rounded-lg"
-                        >
+                        <Button variant="outline" role="combobox" className="w-full h-10 justify-between border-gray-200 rounded-lg">
                           <span className="text-gray-500">
                             {selectedGruppo ? selectedGruppo.nome : "Seleziona gruppo (opzionale)"}
                           </span>
@@ -700,14 +543,9 @@ export function EditInvitatoSheet({
                             </div>
                           </CommandEmpty>
                           <CommandGroup className="max-h-[200px] overflow-auto">
-                            {gruppi.length > 0 && gruppi.map((gruppo) => (
-                              <CommandItem
-                                key={gruppo.id}
-                                onSelect={() => setSelectedGruppo(gruppo)}
-                              >
+                            {gruppi.length > 0 && gruppi.map(gruppo => <CommandItem key={gruppo.id} onSelect={() => setSelectedGruppo(gruppo)}>
                                 {gruppo.nome}
-                              </CommandItem>
-                            ))}
+                              </CommandItem>)}
                           </CommandGroup>
                         </Command>
                       </PopoverContent>
@@ -724,11 +562,7 @@ export function EditInvitatoSheet({
                     </Label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className="w-full h-10 justify-between border-gray-200 rounded-lg"
-                        >
+                        <Button variant="outline" role="combobox" className="w-full h-10 justify-between border-gray-200 rounded-lg">
                           <span className="text-gray-500">
                             {selectedTavolo ? `Tavolo ${selectedTavolo.numero}` : "Seleziona tavolo (opzionale)"}
                           </span>
@@ -744,19 +578,14 @@ export function EditInvitatoSheet({
                             </div>
                           </CommandEmpty>
                           <CommandGroup className="max-h-[200px] overflow-auto">
-                            {tavoli.map((tavolo) => (
-                              <CommandItem
-                                key={tavolo.id}
-                                onSelect={() => setSelectedTavolo(tavolo)}
-                              >
+                            {tavoli.map(tavolo => <CommandItem key={tavolo.id} onSelect={() => setSelectedTavolo(tavolo)}>
                                 <div className="flex items-center justify-between w-full">
                                   <span>Tavolo {tavolo.numero}</span>
                                   <span className="text-xs text-gray-500">
                                     {tavolo.postiOccupati}/{tavolo.postiTotali} posti
                                   </span>
                                 </div>
-                              </CommandItem>
-                            ))}
+                              </CommandItem>)}
                           </CommandGroup>
                         </Command>
                       </PopoverContent>
@@ -773,33 +602,18 @@ export function EditInvitatoSheet({
           {/* Footer - Fixed at bottom */}
           <div className="shrink-0 bg-white border-t border-gray-200 p-4 shadow-lg">
             <div className="flex items-center justify-between gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowDeleteDialog(true)}
-                className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                disabled={isLoading}
-              >
+              <Button type="button" variant="outline" onClick={() => setShowDeleteDialog(true)} className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700" disabled={isLoading}>
                 <Trash2 className="h-4 w-4" />
                 Elimina
               </Button>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                onClick={form.handleSubmit(handleSave)}
-                className="flex items-center gap-2 min-w-[120px] bg-blue-600 hover:bg-blue-700"
-              >
-                {isLoading ? (
-                  <>
+              <Button type="submit" disabled={isLoading} onClick={form.handleSubmit(handleSave)} className="flex items-center gap-2 min-w-[120px] bg-blue-600 hover:bg-blue-700">
+                {isLoading ? <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Salvando...
-                  </>
-                ) : (
-                  <>
+                  </> : <>
                     <Check className="h-4 w-4" />
                     Salva
-                  </>
-                )}
+                  </>}
               </Button>
             </div>
           </div>
@@ -822,23 +636,14 @@ export function EditInvitatoSheet({
             <AlertDialogCancel disabled={isLoading}>
               Annulla
             </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              onClick={handleDelete}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={handleDelete} disabled={isLoading}>
+              {isLoading ? <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Eliminando...
-                </>
-              ) : (
-                "Elimina"
-              )}
+                </> : "Elimina"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
-  );
+    </>;
 }

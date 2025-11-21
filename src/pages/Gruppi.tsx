@@ -319,21 +319,7 @@ const Gruppi = () => {
       {/* Page Content */}
       <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
         {/* Total Count Banner */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-100 text-xs sm:text-sm font-medium">
-                Gruppi Totali
-              </p>
-              <p className="text-white text-3xl sm:text-4xl font-bold mt-1">
-                {gruppi.length}
-              </p>
-            </div>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-              <Layers className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-            </div>
-          </div>
-        </div>
+        
 
         {/* Filter Bar */}
         <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 shadow-sm">
@@ -351,37 +337,20 @@ const Gruppi = () => {
             {/* Search */}
             <div className="relative w-full sm:w-[300px] md:w-[350px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Cerca gruppo per nome..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={cn(
-                  "pl-9 border-gray-200 rounded-lg",
-                  isMobile ? "h-12 text-base" : "h-10"
-                )}
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-gray-600"
-                  onClick={() => setSearchQuery('')}
-                >
+              <Input placeholder="Cerca gruppo per nome..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={cn("pl-9 border-gray-200 rounded-lg", isMobile ? "h-12 text-base" : "h-10")} />
+              {searchQuery && <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-gray-600" onClick={() => setSearchQuery('')}>
                   <X className="h-4 w-4" />
-                </Button>
-              )}
+                </Button>}
             </div>
           </div>
           
           {/* Active Filter Info */}
-          {searchQuery && (
-            <div className="mt-3 pt-3 border-t border-gray-200">
+          {searchQuery && <div className="mt-3 pt-3 border-t border-gray-200">
               <p className="text-sm text-gray-600">
                 Stai visualizzando <strong className="text-gray-900">{filteredGruppi.length}</strong> di{' '}
                 <strong className="text-gray-900">{gruppi.length}</strong> gruppi totali
               </p>
-            </div>
-          )}
+            </div>}
         </div>
 
         {/* Groups Grid */}
@@ -394,27 +363,22 @@ const Gruppi = () => {
               <Layers className="h-8 w-8 text-blue-600" />
             </div>
             
-            {searchQuery ? (
-              // No results from search
-              <>
+            {searchQuery ?
+        // No results from search
+        <>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   Nessun gruppo trovato
                 </h3>
                 <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
                   Nessun gruppo corrisponde a "{searchQuery}"
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setSearchQuery('')}
-                  className="border-gray-200"
-                >
+                <Button variant="outline" onClick={() => setSearchQuery('')} className="border-gray-200">
                   <X className="h-4 w-4 mr-2" />
                   Cancella ricerca
                 </Button>
-              </>
-            ) : (
-              // No groups created yet
-              <>
+              </> :
+        // No groups created yet
+        <>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   Nessun gruppo creato
                 </h3>
@@ -425,8 +389,7 @@ const Gruppi = () => {
                   <Plus className="h-4 w-4 mr-2" />
                   Crea Primo Gruppo
                 </Button>
-              </>
-            )}
+              </>}
           </div> : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredGruppi.map(gruppo => {
           const membri = gruppo.invitati || [];

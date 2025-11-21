@@ -203,6 +203,11 @@ export function AddInvitatoDialog({
         }
       }
 
+      // Determine if guest should have RSVP link
+      // Only capo famiglia and single guests have rsvp_uuid
+      const shouldBeCapo = values.crea_famiglia ? true : values.is_capo_famiglia;
+      const shouldHaveRsvpLink = !targetFamigliaId || shouldBeCapo;
+      
       // Insert invitato
       const { error: invitatoError } = await supabase.from("invitati").insert({
         wedding_id: weddingId,
@@ -213,7 +218,9 @@ export function AddInvitatoDialog({
         email: values.email || null,
         tipo_ospite: values.tipo_ospite,
         preferenze_alimentari: values.preferenze_alimentari,
-        is_capo_famiglia: values.crea_famiglia ? true : values.is_capo_famiglia,
+        is_capo_famiglia: shouldBeCapo,
+        // Only set rsvp_uuid if shouldHaveRsvpLink is true
+        ...(shouldHaveRsvpLink && { rsvp_uuid: crypto.randomUUID() })
       });
 
       if (invitatoError) throw invitatoError;

@@ -155,9 +155,12 @@ export function EditInvitatoSheet({
         famigliaId = null;
         shouldBeCapo = false;
       }
-      const {
-        error
-      } = await supabase.from("invitati").update({
+      
+      // Determine if guest should have RSVP link
+      const shouldHaveRsvpLink = !famigliaId || shouldBeCapo;
+      
+      // Prepare update data
+      const updateData: any = {
         nome: data.nome,
         cognome: data.cognome,
         cellulare: data.cellulare,
@@ -166,8 +169,22 @@ export function EditInvitatoSheet({
         preferenze_alimentari: data.preferenze_alimentari,
         rsvp_status: data.rsvp_status,
         famiglia_id: famigliaId,
-        is_capo_famiglia: shouldBeCapo
-      }).eq("id", invitato.id);
+        is_capo_famiglia: shouldBeCapo,
+      };
+      
+      // Handle rsvp_uuid logic
+      if (!shouldHaveRsvpLink) {
+        // Remove rsvp_uuid if becoming a non-capo family member
+        updateData.rsvp_uuid = null;
+      } else if (!invitato.rsvp_uuid) {
+        // Generate new rsvp_uuid if becoming capo or single and doesn't have one
+        updateData.rsvp_uuid = crypto.randomUUID();
+      }
+      // If shouldHaveRsvpLink and already has rsvp_uuid, keep it (don't include in update)
+      
+      const {
+        error
+      } = await supabase.from("invitati").update(updateData).eq("id", invitato.id);
       if (error) throw error;
 
       // Close sheet BEFORE invalidating queries to prevent UI flickering
@@ -283,20 +300,43 @@ export function EditInvitatoSheet({
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      Link RSVP
-                    </Label>
-                    <div className="flex gap-2">
-                      <Input value={rsvpLink} readOnly className="flex-1 text-sm bg-gray-50 border-gray-200 text-gray-600" />
-                      <Button type="button" variant="outline" size="icon" onClick={copyToClipboard} className="h-10 w-10 border-gray-200">
-                        {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                      </Button>
+                  {/* RSVP Link - Only show if guest should have one */}
+                  {(invitato.rsvp_uuid && (!invitato.famiglia_id || invitato.is_capo_famiglia)) && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Link RSVP
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input value={rsvpLink} readOnly className="flex-1 text-sm bg-gray-50 border-gray-200 text-gray-600" />
+                        <Button type="button" variant="outline" size="icon" onClick={copyToClipboard} className="h-10 w-10 border-gray-200">
+                          {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      {invitato.is_capo_famiglia ? (
+                        <p className="text-xs text-blue-600 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          Questo link serve per gestire tutta la famiglia
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-500">
+                          Condividi questo link con l'invitato per confermare la presenza
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-gray-500">
-                      Condividi questo link con l'invitato per confermare la presenza
-                    </p>
-                  </div>
+                  )}
+                  
+                  {/* Show info if member doesn't have link */}
+                  {invitato.famiglia_id && !invitato.is_capo_famiglia && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-900 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <span>
+                          Questo invitato è un membro della famiglia. 
+                          Il capo famiglia gestisce l'RSVP per tutti.
+                        </span>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

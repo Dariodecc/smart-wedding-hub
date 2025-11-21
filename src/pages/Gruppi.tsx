@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 const AVAILABLE_COLORS = [{
   hex: '#3B82F6',
   name: 'Blu'
@@ -299,13 +300,16 @@ const Gruppi = () => {
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
-              Gruppi
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
-              Organizza gli invitati in gruppi personalizzati
-            </p>
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <SidebarTrigger className="text-gray-600 hover:text-gray-900 shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
+                Gruppi
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
+                Organizza gli invitati in gruppi personalizzati
+              </p>
+            </div>
           </div>
 
           {/* Add Group Button - Icon only on mobile */}

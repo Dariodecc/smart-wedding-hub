@@ -339,6 +339,9 @@ const Famiglie = () => {
               const noneResponded = membri.every(
                 (m: any) => m.rsvp_status === "In attesa"
               );
+              
+              // Check if family has a capo famiglia
+              const hasCapoFamiglia = membri.some((m: any) => m.is_capo_famiglia);
 
               let badgeStatus = "Nessuna risposta";
               let badgeColor = "bg-red-100 text-red-800";
@@ -399,6 +402,16 @@ const Famiglie = () => {
                             >
                               {badgeStatus}
                             </Badge>
+                            
+                            {!hasCapoFamiglia && numeroMembri > 0 && (
+                              <Badge
+                                variant="outline"
+                                className="rounded-full px-3 py-1 text-xs font-medium bg-yellow-50 text-yellow-700 border-yellow-300"
+                              >
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                Nessun capofamiglia
+                              </Badge>
+                            )}
 
                             <div className="flex items-center gap-1">
                               <Button

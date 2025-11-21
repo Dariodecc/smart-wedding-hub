@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
@@ -37,7 +37,10 @@ import {
   X,
   Loader2,
   Info,
+  Search,
+  Crown,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -64,7 +67,10 @@ const Gruppi = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showManageMembersDialog, setShowManageMembersDialog] = useState(false);
   const [selectedGruppo, setSelectedGruppo] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -107,6 +113,37 @@ const Gruppi = () => {
     },
     enabled: !!wedding?.id,
   });
+
+  // Fetch guests for members management
+  const { data: allGuests = [] } = useQuery({
+    queryKey: ['invitati-for-group', wedding?.id, selectedGruppo?.id],
+    queryFn: async () => {
+      if (!wedding?.id || !selectedGruppo?.id) return [];
+
+      const { data, error } = await supabase
+        .from('invitati')
+        .select('*')
+        .eq('wedding_id', wedding.id)
+        .or(`gruppo_id.is.null,gruppo_id.eq.${selectedGruppo.id}`)
+        .order('cognome')
+        .order('nome');
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: showManageMembersDialog && !!wedding?.id && !!selectedGruppo?.id,
+  });
+
+  // Filter guests by search query
+  const filteredGuests = useMemo(() => {
+    if (!searchQuery) return allGuests;
+    
+    const query = searchQuery.toLowerCase();
+    return allGuests.filter(guest => 
+      guest.nome.toLowerCase().includes(query) ||
+      guest.cognome.toLowerCase().includes(query)
+    );
+  }, [allGuests, searchQuery]);
 
   const handleCreateGroup = async (data: { nome: string; colore: string }) => {
     try {
@@ -226,6 +263,53 @@ const Gruppi = () => {
     }
   };
 
+  const handleSaveMembers = async () => {
+    if (!selectedGruppo) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Step 1: Remove all current members from this group
+      const { error: removeError } = await supabase
+        .from('invitati')
+        .update({ gruppo_id: null })
+        .eq('gruppo_id', selectedGruppo.id);
+      
+      if (removeError) throw removeError;
+      
+      // Step 2: Add selected members to this group
+      if (selectedMembers.length > 0) {
+        const { error: addError } = await supabase
+          .from('invitati')
+          .update({ gruppo_id: selectedGruppo.id })
+          .in('id', selectedMembers);
+        
+        if (addError) throw addError;
+      }
+      
+      // Invalidate queries to refresh UI
+      await queryClient.invalidateQueries({ queryKey: ['gruppi', wedding?.id] });
+      await queryClient.invalidateQueries({ queryKey: ['invitati', wedding?.id] });
+      await queryClient.invalidateQueries({ queryKey: ['invitati-for-group', wedding?.id, selectedGruppo.id] });
+      
+      toast.success('Ospiti del gruppo aggiornati', {
+        description: `${selectedMembers.length} ospiti assegnati a ${selectedGruppo.nome}`,
+        position: isMobile ? 'top-center' : 'bottom-right'
+      });
+      
+      setShowManageMembersDialog(false);
+      setSearchQuery('');
+      setSelectedMembers([]);
+    } catch (error) {
+      console.error('Error updating group members:', error);
+      toast.error('Errore nell\'aggiornare gli ospiti', {
+        position: isMobile ? 'top-center' : 'bottom-right'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoadingWedding || !wedding) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -315,7 +399,14 @@ const Gruppi = () => {
               return (
                 <div
                   key={gruppo.id}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden group"
+                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden group cursor-pointer"
+                  onClick={(e) => {
+                    // Don't open dialog if clicking on action buttons
+                    if ((e.target as HTMLElement).closest('button')) return;
+                    setSelectedGruppo(gruppo);
+                    setSelectedMembers(gruppo.invitati?.map((m: any) => m.id) || []);
+                    setShowManageMembersDialog(true);
+                  }}
                 >
                   {/* Color Header */}
                   <div className="h-2" style={{ backgroundColor: gruppo.colore }} />
@@ -342,7 +433,10 @@ const Gruppi = () => {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-gray-400 hover:text-blue-600"
-                          onClick={() => openEditDialog(gruppo)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditDialog(gruppo);
+                          }}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -350,7 +444,10 @@ const Gruppi = () => {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-gray-400 hover:text-red-600"
-                          onClick={() => openDeleteConfirm(gruppo)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDeleteConfirm(gruppo);
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -767,6 +864,291 @@ const Gruppi = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Manage Members Dialog */}
+      <Dialog open={showManageMembersDialog} onOpenChange={setShowManageMembersDialog}>
+        <DialogContent className={cn(
+          "p-0 max-h-[90vh] flex flex-col",
+          isMobile ? "w-full h-full max-w-full rounded-none" : "sm:max-w-[600px]"
+        )}>
+          {/* Header */}
+          <DialogHeader className={cn(
+            "shrink-0 border-b border-gray-200",
+            isMobile ? "px-4 pt-4 pb-3" : "px-6 pt-6 pb-4"
+          )}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {selectedGruppo && (
+                  <div 
+                    className={cn(
+                      "rounded-xl flex items-center justify-center shrink-0",
+                      isMobile ? "w-12 h-12" : "w-10 h-10"
+                    )}
+                    style={{ backgroundColor: `${selectedGruppo.colore}20` }}
+                  >
+                    <Layers 
+                      className={cn(isMobile ? "h-6 w-6" : "h-5 w-5")}
+                      style={{ color: selectedGruppo.colore }}
+                    />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <DialogTitle className={cn(
+                    "font-bold text-gray-900 truncate",
+                    isMobile ? "text-lg" : "text-xl"
+                  )}>
+                    {selectedGruppo?.nome}
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-gray-500 mt-0.5">
+                    Gestisci gli ospiti del gruppo
+                  </DialogDescription>
+                </div>
+              </div>
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowManageMembersDialog(false)}
+                  className="shrink-0"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
+          </DialogHeader>
+          
+          {/* Content */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {/* Search and Actions Bar */}
+            <div className={cn(
+              "shrink-0 border-b border-gray-200 bg-gray-50",
+              isMobile ? "px-4 py-3 space-y-3" : "px-6 py-4"
+            )}>
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Cerca ospiti..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={cn(
+                    "pl-9 border-gray-200 rounded-lg bg-white",
+                    isMobile ? "h-12 text-base" : "h-10"
+                  )}
+                />
+              </div>
+              
+              {/* Selection Summary and Actions */}
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium text-gray-900">{selectedMembers.length}</span> di{' '}
+                  <span className="font-medium text-gray-900">{filteredGuests.length}</span> ospiti assegnati
+                </p>
+                
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMembers(filteredGuests.map((g: any) => g.id))}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-3"
+                  >
+                    Seleziona tutti
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMembers([])}
+                    className="text-gray-600 hover:text-gray-700 hover:bg-gray-100 h-8 px-3"
+                  >
+                    Deseleziona tutti
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Guest List */}
+            <div className={cn(
+              "flex-1 overflow-y-auto",
+              isMobile ? "px-4 py-3" : "px-6 py-4"
+            )}>
+              {filteredGuests.length === 0 ? (
+                // Empty State
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+                    <Users className="h-8 w-8 text-gray-400" />
+                  </div>
+                  {searchQuery ? (
+                    <>
+                      <h3 className="text-base font-semibold text-gray-900 mb-1">
+                        Nessun ospite trovato
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Prova a modificare la ricerca
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-base font-semibold text-gray-900 mb-1">
+                        Nessun ospite disponibile
+                      </h3>
+                      <p className="text-sm text-gray-500 max-w-xs">
+                        Tutti gli ospiti sono già assegnati a questo gruppo
+                      </p>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredGuests.map((guest: any) => {
+                    const isSelected = selectedMembers.includes(guest.id);
+                    const isCapoFamiglia = guest.is_capo_famiglia;
+                    
+                    return (
+                      <div
+                        key={guest.id}
+                        onClick={() => {
+                          setSelectedMembers(prev => 
+                            prev.includes(guest.id)
+                              ? prev.filter(id => id !== guest.id)
+                              : [...prev, guest.id]
+                          );
+                        }}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg border-2 transition-all cursor-pointer",
+                          isMobile ? "p-4" : "p-3",
+                          isSelected
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                        )}
+                      >
+                        {/* Checkbox */}
+                        <div className={cn(
+                          "shrink-0 rounded-full border-2 flex items-center justify-center transition-all",
+                          isMobile ? "w-6 h-6" : "w-5 h-5",
+                          isSelected
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-gray-300 bg-white"
+                        )}>
+                          {isSelected && (
+                            <Check className={cn(
+                              "text-white",
+                              isMobile ? "h-4 w-4" : "h-3 w-3"
+                            )} />
+                          )}
+                        </div>
+                        
+                        {/* Guest Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className={cn(
+                              "font-medium text-gray-900 truncate",
+                              isMobile ? "text-base" : "text-sm"
+                            )}>
+                              {guest.nome} {guest.cognome}
+                            </p>
+                            {isCapoFamiglia && (
+                              <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-2 py-0.5 text-xs shrink-0">
+                                <Crown className="h-3 w-3 mr-1" />
+                                Capo
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <p className={cn(
+                              "text-gray-500 truncate",
+                              isMobile ? "text-sm" : "text-xs"
+                            )}>
+                              RSVP: {guest.rsvp_status}
+                            </p>
+                            <span className="text-gray-300">•</span>
+                            <p className={cn(
+                              "text-gray-500",
+                              isMobile ? "text-sm" : "text-xs"
+                            )}>
+                              {guest.cellulare}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Badge variant="outline" className={cn(
+                              "text-gray-600 border-gray-300",
+                              isMobile ? "text-xs" : "text-xs"
+                            )}>
+                              {guest.tipo_ospite}
+                            </Badge>
+                            {guest.famiglia_id && (
+                              <Badge variant="outline" className={cn(
+                                "text-purple-600 border-purple-300",
+                                isMobile ? "text-xs" : "text-xs"
+                              )}>
+                                <Users className="h-3 w-3 mr-1" />
+                                Famiglia
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* RSVP Status Indicator */}
+                        <div className={cn(
+                          "shrink-0 rounded-full",
+                          isMobile ? "w-3 h-3" : "w-2.5 h-2.5",
+                          guest.rsvp_status === "Ci sarò" && "bg-green-500",
+                          guest.rsvp_status === "In attesa" && "bg-yellow-500",
+                          guest.rsvp_status === "Non ci sarò" && "bg-red-500"
+                        )} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Footer */}
+          <DialogFooter className={cn(
+            "shrink-0 border-t border-gray-200 bg-white",
+            isMobile ? "sticky bottom-0 px-4 py-4" : "px-6 py-4"
+          )}>
+            <div className="flex items-center gap-3 w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowManageMembersDialog(false);
+                  setSearchQuery('');
+                  setSelectedMembers([]);
+                }}
+                disabled={isLoading}
+                className={cn(isMobile ? "flex-1 h-12" : "")}
+              >
+                Annulla
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSaveMembers}
+                disabled={isLoading}
+                className={cn(
+                  "bg-blue-600 hover:bg-blue-700 text-white",
+                  isMobile ? "flex-1 h-12" : ""
+                )}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Salva Modifiche
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

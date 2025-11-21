@@ -151,6 +151,35 @@ export type Database = {
           },
         ]
       }
+      preferenze_alimentari_custom: {
+        Row: {
+          created_at: string | null
+          id: string
+          nome: string
+          wedding_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          nome: string
+          wedding_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          nome?: string
+          wedding_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preferenze_alimentari_custom_wedding_id_fkey"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -229,6 +258,7 @@ export type Database = {
           created_at: string | null
           enable_multi_rsvp: boolean
           id: string
+          password: string | null
           reception_location: string | null
           service_cost: number
           updated_at: string | null
@@ -241,6 +271,7 @@ export type Database = {
           created_at?: string | null
           enable_multi_rsvp?: boolean
           id?: string
+          password?: string | null
           reception_location?: string | null
           service_cost: number
           updated_at?: string | null
@@ -253,6 +284,7 @@ export type Database = {
           created_at?: string | null
           enable_multi_rsvp?: boolean
           id?: string
+          password?: string | null
           reception_location?: string | null
           service_cost?: number
           updated_at?: string | null

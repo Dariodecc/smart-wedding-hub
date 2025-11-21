@@ -1,4 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
+import { cn } from "@/lib/utils";
 
 interface DroppableSeatProps {
   tavoloId: string;
@@ -25,23 +26,45 @@ const DroppableSeat = ({
   return (
     <g
       transform={`translate(${position.x}, ${position.y}) rotate(${position.rotation})`}
-      ref={setNodeRef as any}
-      onClick={onSeatClick}
-      className="cursor-pointer"
+      style={{ pointerEvents: "all" } as any}
     >
-      {/* Seat Background */}
-      <rect
-        x="-35"
-        y="-25"
-        width="70"
-        height="50"
-        rx="8"
-        fill={isOver ? "#DBEAFE" : guest ? "#ffffff" : "#F3F4F6"}
-        stroke={borderColor}
-        strokeWidth="3"
-      />
+      {/* Foreign object for React droppable */}
+      <foreignObject x="-35" y="-25" width="70" height="50">
+        <div
+          ref={setNodeRef}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSeatClick();
+          }}
+          className={cn(
+            "w-full h-full rounded-lg border-[3px] flex flex-col items-center justify-center cursor-pointer transition-all",
+            isOver ? "bg-blue-100 border-blue-500" : guest ? "bg-white" : "bg-gray-100",
+            !guest && !isOver && "border-gray-400"
+          )}
+          style={{
+            borderColor: guest && !isOver ? borderColor : undefined,
+          }}
+        >
+          {guest ? (
+            <>
+              <span className="text-xs font-bold text-gray-900">
+                {guest.nome[0]}
+                {guest.cognome[0]}
+              </span>
+              <span className="text-[8px] text-gray-600 leading-tight text-center truncate max-w-full px-1">
+                {guest.nome}
+              </span>
+              <span className="text-[8px] text-gray-600 leading-tight text-center truncate max-w-full px-1">
+                {guest.cognome}
+              </span>
+            </>
+          ) : (
+            <span className="text-[10px] text-gray-400">Libero</span>
+          )}
+        </div>
+      </foreignObject>
 
-      {/* Chair Icon/Shape */}
+      {/* Chair back visual indicator */}
       <rect
         x="-30"
         y="-28"
@@ -49,36 +72,8 @@ const DroppableSeat = ({
         height="6"
         rx="3"
         fill={borderColor}
+        style={{ pointerEvents: "none" } as any}
       />
-
-      {guest ? (
-        <>
-          {/* Guest Initials */}
-          <text
-            x="0"
-            y="-5"
-            textAnchor="middle"
-            fontSize="14"
-            fontWeight="bold"
-            fill="#374151"
-          >
-            {guest.nome[0]}
-            {guest.cognome[0]}
-          </text>
-
-          {/* Guest Name */}
-          <text x="0" y="10" textAnchor="middle" fontSize="10" fill="#6B7280">
-            {guest.nome}
-          </text>
-          <text x="0" y="20" textAnchor="middle" fontSize="10" fill="#6B7280">
-            {guest.cognome}
-          </text>
-        </>
-      ) : (
-        <text x="0" y="5" textAnchor="middle" fontSize="12" fill="#9CA3AF">
-          Libero
-        </text>
-      )}
     </g>
   );
 };

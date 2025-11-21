@@ -588,209 +588,204 @@ const Invitati = () => {
             {/* Table View */}
             {viewMode === 'table' && (
               <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                {/* Scrollable table container */}
-                <div className="overflow-x-auto -mx-0">
-                  <div className="inline-block min-w-full align-middle">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="sticky left-0 z-10 bg-gray-50 px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                            Nome
-                          </th>
-                          <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                            Cognome
-                          </th>
-                          <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                            Cellulare
-                          </th>
-                          <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                            Tipo
-                          </th>
-                          <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                            Famiglia
-                          </th>
-                          <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                            RSVP
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {isLoading ? (
-                          Array.from({ length: 5 }).map((_, i) => (
-                            <tr key={i}>
-                              <td className="px-3 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-24" /></td>
-                              <td className="px-3 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-24" /></td>
-                              <td className="px-3 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-32" /></td>
-                              <td className="px-3 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-20" /></td>
-                              <td className="px-3 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-28" /></td>
-                              <td className="px-3 sm:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-20" /></td>
-                            </tr>
-                          ))
-                        ) : processedInvitati && processedInvitati.length > 0 ? (
-                          processedInvitati.map((item) => {
-                            if (item.type === 'family') {
-                              return (
-                                <>
-                                  {/* Family Header Row */}
-                                  <tr key={`family-${item.famiglia.id}`} className="bg-purple-50 border-y border-purple-200">
-                                    <td colSpan={6} className="px-3 sm:px-6 py-2 sm:py-3">
-                                      <div className="flex items-center gap-2">
-                                        <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 shrink-0" />
-                                        <span className="text-xs sm:text-sm font-semibold text-purple-900">
-                                          {item.famiglia.nome}
-                                        </span>
-                                        <span className="text-xs text-purple-600 shrink-0">
-                                          ({item.membri.length})
+                <div className="overflow-hidden">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-gray-50">
+                        <th className="px-3 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Nome
+                        </th>
+                        <th className="px-3 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Cognome
+                        </th>
+                        <th className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Cellulare
+                        </th>
+                        <th className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Tipo
+                        </th>
+                        <th className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Famiglia
+                        </th>
+                        <th className="px-3 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          RSVP
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {isLoading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                          <tr key={i}>
+                            <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-24" /></td>
+                            <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-24" /></td>
+                            <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-32" /></td>
+                            <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-20" /></td>
+                            <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-28" /></td>
+                            <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-20" /></td>
+                          </tr>
+                        ))
+                      ) : processedInvitati && processedInvitati.length > 0 ? (
+                        processedInvitati.map((item) => {
+                          if (item.type === 'family') {
+                            return (
+                              <>
+                                {/* Family Header Row */}
+                                <tr key={`family-${item.famiglia.id}`} className="bg-purple-50 border-y border-purple-200">
+                                  <td colSpan={6} className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
+                                    <div className="flex items-center gap-2">
+                                      <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 shrink-0" />
+                                      <span className="text-xs sm:text-sm font-semibold text-purple-900 truncate">
+                                        {item.famiglia.nome}
+                                      </span>
+                                      <span className="text-xs text-purple-600 shrink-0">
+                                        ({item.membri.length})
+                                      </span>
+                                    </div>
+                                  </td>
+                                </tr>
+                                
+                                {/* Family Members Rows */}
+                                {item.membri.map((membro: any, membroIndex: number) => (
+                                  <tr
+                                    key={membro.id}
+                                    className={cn(
+                                      "hover:bg-gray-50 cursor-pointer transition-colors",
+                                      membroIndex === item.membri.length - 1 && "border-b-2 border-gray-300"
+                                    )}
+                                    onClick={() => handleInvitatoClick(membro)}
+                                  >
+                                    <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                      <div className="flex items-center gap-1.5">
+                                        {membro.is_capo_famiglia && (
+                                          <Crown className="h-3 w-3 text-yellow-600 shrink-0" />
+                                        )}
+                                        <span className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                          {membro.nome}
                                         </span>
                                       </div>
                                     </td>
+                                    <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                      <div className="text-xs sm:text-sm text-gray-900 truncate">
+                                        {membro.cognome}
+                                      </div>
+                                    </td>
+                                    <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                      <a
+                                        href={`https://wa.me/${membro.cellulare.replace(/[^0-9+]/g, '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                        {membro.cellulare}
+                                      </a>
+                                    </td>
+                                    <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                      <div className="text-xs sm:text-sm text-gray-700">
+                                        {membro.tipo_ospite}
+                                      </div>
+                                    </td>
+                                    <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-xs sm:text-sm text-gray-700 truncate">
+                                          {item.famiglia.nome}
+                                        </span>
+                                        {membro.is_capo_famiglia && (
+                                          <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-1.5 py-0.5 text-xs shrink-0">
+                                            Capo
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                      <Badge className={cn(
+                                        "rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center",
+                                        membro.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800",
+                                        membro.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800",
+                                        membro.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800"
+                                      )}>
+                                        <div className={cn(
+                                          "w-1.5 h-1.5 rounded-full mr-1",
+                                          membro.rsvp_status === "Ci sarò" && "bg-green-500",
+                                          membro.rsvp_status === "In attesa" && "bg-yellow-500",
+                                          membro.rsvp_status === "Non ci sarò" && "bg-red-500"
+                                        )} />
+                                        <span className="hidden sm:inline">{membro.rsvp_status}</span>
+                                      </Badge>
+                                    </td>
                                   </tr>
-                                  
-                                  {/* Family Members Rows */}
-                                  {item.membri.map((membro: any, membroIndex: number) => (
-                                    <tr
-                                      key={membro.id}
-                                      className={cn(
-                                        "hover:bg-gray-50 cursor-pointer transition-colors",
-                                        membroIndex === item.membri.length - 1 && "border-b-2 border-gray-300"
-                                      )}
-                                      onClick={() => handleInvitatoClick(membro)}
-                                    >
-                                      <td className="sticky left-0 z-10 bg-white hover:bg-gray-50 px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-1.5 min-w-[100px]">
-                                          {membro.is_capo_famiglia && (
-                                            <Crown className="h-3 w-3 text-yellow-600 shrink-0" />
-                                          )}
-                                          <span className="text-xs sm:text-sm font-medium text-gray-900">
-                                            {membro.nome}
-                                          </span>
-                                        </div>
-                                      </td>
-                                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                        <div className="text-xs sm:text-sm text-gray-900 min-w-[100px]">
-                                          {membro.cognome}
-                                        </div>
-                                      </td>
-                                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                        <a
-                                          href={`https://wa.me/${membro.cellulare.replace(/[^0-9+]/g, '')}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 min-w-[120px]"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          <Phone className="h-3 w-3 shrink-0" />
-                                          <span>{membro.cellulare}</span>
-                                        </a>
-                                      </td>
-                                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                        <div className="text-xs sm:text-sm text-gray-700 min-w-[80px]">
-                                          {membro.tipo_ospite}
-                                        </div>
-                                      </td>
-                                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-1.5 min-w-[120px]">
-                                          <span className="text-xs sm:text-sm text-gray-700">
-                                            {item.famiglia.nome}
-                                          </span>
-                                          {membro.is_capo_famiglia && (
-                                            <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-1.5 py-0.5 text-xs shrink-0">
-                                              Capo
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      </td>
-                                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                        <Badge className={cn(
-                                          "rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center shrink-0",
-                                          membro.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800",
-                                          membro.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800",
-                                          membro.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800"
-                                        )}>
-                                          <div className={cn(
-                                            "w-1.5 h-1.5 rounded-full mr-1",
-                                            membro.rsvp_status === "Ci sarò" && "bg-green-500",
-                                            membro.rsvp_status === "In attesa" && "bg-yellow-500",
-                                            membro.rsvp_status === "Non ci sarò" && "bg-red-500"
-                                          )} />
-                                          {membro.rsvp_status}
-                                        </Badge>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </>
-                              );
-                            } else {
-                              // Single guest (no family)
-                              const invitato = item.invitato;
-                              return (
-                                <tr
-                                  key={invitato.id}
-                                  className="hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-200"
-                                  onClick={() => handleInvitatoClick(invitato)}
-                                >
-                                  <td className="sticky left-0 z-10 bg-white hover:bg-gray-50 px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                    <div className="text-xs sm:text-sm font-medium text-gray-900 min-w-[100px]">
-                                      {invitato.nome}
-                                    </div>
-                                  </td>
-                                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                    <div className="text-xs sm:text-sm text-gray-900 min-w-[100px]">
-                                      {invitato.cognome}
-                                    </div>
-                                  </td>
-                                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                    <a
-                                      href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 min-w-[120px]"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <Phone className="h-3 w-3 shrink-0" />
-                                      <span>{invitato.cellulare}</span>
-                                    </a>
-                                  </td>
-                                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                    <div className="text-xs sm:text-sm text-gray-700 min-w-[80px]">
-                                      {invitato.tipo_ospite}
-                                    </div>
-                                  </td>
-                                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                    <span className="text-xs sm:text-sm text-gray-400 italic min-w-[120px] inline-block">
-                                      Invitato singolo
-                                    </span>
-                                  </td>
-                                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                    <Badge className={cn(
-                                      "rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center shrink-0",
-                                      invitato.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800",
-                                      invitato.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800",
-                                      invitato.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800"
-                                    )}>
-                                      <div className={cn(
-                                        "w-1.5 h-1.5 rounded-full mr-1",
-                                        invitato.rsvp_status === "Ci sarò" && "bg-green-500",
-                                        invitato.rsvp_status === "In attesa" && "bg-yellow-500",
-                                        invitato.rsvp_status === "Non ci sarò" && "bg-red-500"
-                                      )} />
-                                      {invitato.rsvp_status}
-                                    </Badge>
-                                  </td>
-                                </tr>
-                              );
-                            }
-                          })
-                        ) : (
-                          <tr>
-                            <td colSpan={6} className="px-3 sm:px-6 py-8 text-center text-xs sm:text-sm text-gray-500">
-                              Nessun invitato trovato
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                                ))}
+                              </>
+                            );
+                          } else {
+                            // Single guest (no family)
+                            const invitato = item.invitato;
+                            return (
+                              <tr
+                                key={invitato.id}
+                                className="hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-200"
+                                onClick={() => handleInvitatoClick(invitato)}
+                              >
+                                <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                  <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                    {invitato.nome}
+                                  </div>
+                                </td>
+                                <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                  <div className="text-xs sm:text-sm text-gray-900 truncate">
+                                    {invitato.cognome}
+                                  </div>
+                                </td>
+                                <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                  <a
+                                    href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                    {invitato.cellulare}
+                                  </a>
+                                </td>
+                                <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                  <div className="text-xs sm:text-sm text-gray-700">
+                                    {invitato.tipo_ospite}
+                                  </div>
+                                </td>
+                                <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                  <span className="text-xs sm:text-sm text-gray-400 italic">Invitato singolo</span>
+                                </td>
+                                <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                                  <Badge className={cn(
+                                    "rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center",
+                                    invitato.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800",
+                                    invitato.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800",
+                                    invitato.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800"
+                                  )}>
+                                    <div className={cn(
+                                      "w-1.5 h-1.5 rounded-full mr-1",
+                                      invitato.rsvp_status === "Ci sarò" && "bg-green-500",
+                                      invitato.rsvp_status === "In attesa" && "bg-yellow-500",
+                                      invitato.rsvp_status === "Non ci sarò" && "bg-red-500"
+                                    )} />
+                                    <span className="hidden sm:inline">{invitato.rsvp_status}</span>
+                                  </Badge>
+                                </td>
+                              </tr>
+                            );
+                          }
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={6} className="px-3 sm:px-4 lg:px-6 py-8 text-center text-xs sm:text-sm text-gray-500">
+                            Nessun invitato trovato
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}

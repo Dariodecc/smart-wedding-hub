@@ -33,6 +33,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   ChevronDown,
@@ -50,19 +58,26 @@ import {
   X,
   Check,
   Info,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { EditInvitatoSheet } from "@/components/EditInvitatoSheet";
+import { useForm } from "react-hook-form";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Famiglie = () => {
   const { wedding, isLoading: isLoadingWedding } = useCurrentMatrimonio();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
   const [expandedFamilies, setExpandedFamilies] = useState<string[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedFamiglia, setSelectedFamiglia] = useState<any>(null);
   const [selectedInvitato, setSelectedInvitato] = useState<any>(null);
   const [showEditSheet, setShowEditSheet] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Filter state
   const [filters, setFilters] = useState({
@@ -72,6 +87,13 @@ const Famiglie = () => {
   });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [tempFilters, setTempFilters] = useState(filters);
+
+  // Edit form
+  const editForm = useForm({
+    defaultValues: {
+      nome: ''
+    }
+  });
 
   // Fetch families with their members
   const { data: famiglie = [], isLoading: isLoadingFamiglie } = useQuery({
@@ -101,30 +123,39 @@ const Famiglie = () => {
 
   const deleteFamigliaMutation = useMutation({
     mutationFn: async (famigliaId: string) => {
-      // Set famiglia_id to NULL for all members
-      await supabase
+      // Step 1: Set famiglia_id to NULL for all members
+      const { error: updateError } = await supabase
         .from("invitati")
         .update({ famiglia_id: null, is_capo_famiglia: false })
         .eq("famiglia_id", famigliaId);
 
-      // Delete famiglia
-      const { error } = await supabase
+      if (updateError) throw updateError;
+
+      // Step 2: Delete famiglia
+      const { error: deleteError } = await supabase
         .from("famiglie")
         .delete()
         .eq("id", famigliaId);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["famiglie"] });
-      queryClient.invalidateQueries({ queryKey: ["invitati"] });
-      toast.success("Famiglia eliminata con successo");
+      queryClient.invalidateQueries({ queryKey: ["famiglie", wedding?.id] });
+      queryClient.invalidateQueries({ queryKey: ["invitati", wedding?.id] });
+      toast.success("Famiglia eliminata con successo", {
+        description: "Gli invitati sono ora singoli",
+        position: isMobile ? "top-center" : "bottom-right"
+      });
       setShowDeleteDialog(false);
       setSelectedFamiglia(null);
+      setIsDeleting(false);
     },
     onError: (error: any) => {
-      toast.error("Errore durante l'eliminazione della famiglia");
+      toast.error("Errore nell'eliminare la famiglia", {
+        position: isMobile ? "top-center" : "bottom-right"
+      });
       console.error(error);
+      setIsDeleting(false);
     },
   });
 
@@ -143,6 +174,7 @@ const Famiglie = () => {
 
   const handleDeleteFamiglia = () => {
     if (selectedFamiglia) {
+      setIsDeleting(true);
       deleteFamigliaMutation.mutate(selectedFamiglia.id);
     }
   };
@@ -152,12 +184,56 @@ const Famiglie = () => {
     setShowEditSheet(true);
   };
 
+  const handleEditSave = async (data: { nome: string }) => {
+    if (!selectedFamiglia) return;
+    
+    try {
+      setIsSaving(true);
+      
+      const { error } = await supabase
+        .from('famiglie')
+        .update({
+          nome: data.nome.trim()
+        })
+        .eq('id', selectedFamiglia.id);
+      
+      if (error) throw error;
+      
+      await queryClient.invalidateQueries({ queryKey: ['famiglie', wedding?.id] });
+      await queryClient.invalidateQueries({ queryKey: ['invitati', wedding?.id] });
+      
+      toast.success('Famiglia aggiornata con successo', {
+        position: isMobile ? 'top-center' : 'bottom-right'
+      });
+      
+      setShowEditDialog(false);
+      setSelectedFamiglia(null);
+      editForm.reset();
+    } catch (error) {
+      console.error('Error updating famiglia:', error);
+      toast.error('Errore nell\'aggiornare la famiglia', {
+        position: isMobile ? 'top-center' : 'bottom-right'
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Sync tempFilters when opening mobile panel
   useEffect(() => {
     if (showMobileFilters) {
       setTempFilters(filters);
     }
   }, [showMobileFilters, filters]);
+
+  // Reset edit form when famiglia changes
+  useEffect(() => {
+    if (selectedFamiglia && showEditDialog) {
+      editForm.reset({
+        nome: selectedFamiglia.nome
+      });
+    }
+  }, [selectedFamiglia, showEditDialog, editForm]);
 
   // Filter logic
   const filteredFamiglie = useMemo(() => {
@@ -639,7 +715,8 @@ const Famiglie = () => {
                                 className="h-8 w-8 text-gray-400 hover:text-blue-600"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  toast.info("Funzionalità in arrivo");
+                                  setSelectedFamiglia(famiglia);
+                                  setShowEditDialog(true);
                                 }}
                               >
                                 <Pencil className="h-4 w-4" />
@@ -783,25 +860,199 @@ const Famiglie = () => {
 
       {/* Delete Family Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Eliminare questa famiglia?</AlertDialogTitle>
-            <AlertDialogDescription>
-              La famiglia "{selectedFamiglia?.nome}" sarà eliminata. Gli invitati
-              diventeranno "singoli" e non verranno eliminati.
+        <AlertDialogContent className={isMobile ? "w-[calc(100vw-2rem)] max-w-md" : "max-w-md"}>
+          <AlertDialogHeader className={isMobile ? "space-y-3" : ""}>
+            <AlertDialogTitle className={isMobile ? "text-lg" : "text-xl"}>
+              Eliminare questa famiglia?
+            </AlertDialogTitle>
+            <AlertDialogDescription className={isMobile ? "text-base leading-relaxed" : "text-base"}>
+              La famiglia <strong>"{selectedFamiglia?.nome}"</strong> sarà eliminata.
+              <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-900 font-medium flex items-center gap-2">
+                  <Info className="h-4 w-4 shrink-0" />
+                  Gli invitati NON verranno eliminati
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  I {selectedFamiglia?.invitati?.length || 0} membri diventeranno "invitati singoli"
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              onClick={handleDeleteFamiglia}
+          <AlertDialogFooter className={isMobile ? "flex-col gap-2 sm:flex-row" : ""}>
+            <AlertDialogCancel
+              className={isMobile ? "h-12 w-full sm:w-auto" : ""}
+              disabled={isDeleting}
             >
-              Elimina Famiglia
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className={
+                isMobile
+                  ? "h-12 w-full sm:w-auto bg-red-600 hover:bg-red-700"
+                  : "bg-red-600 hover:bg-red-700"
+              }
+              onClick={handleDeleteFamiglia}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Elimina Famiglia
+                </>
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Family Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className={cn(
+          "p-0",
+          isMobile ? "w-full h-full max-w-full rounded-none" : "sm:max-w-[500px]"
+        )}>
+          {/* Header */}
+          <DialogHeader className={cn(
+            "border-b border-gray-200",
+            isMobile ? "px-4 pt-4 pb-3" : "px-6 pt-6 pb-4"
+          )}>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className={cn(
+                  "font-bold text-gray-900",
+                  isMobile ? "text-lg" : "text-xl"
+                )}>
+                  Modifica Famiglia
+                </DialogTitle>
+                <DialogDescription className="text-sm text-gray-500 mt-0.5">
+                  Aggiorna i dettagli della famiglia
+                </DialogDescription>
+              </div>
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowEditDialog(false)}
+                  className="shrink-0"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
+          </DialogHeader>
+          
+          {/* Form - Scrollable on mobile */}
+          <div className={cn(
+            isMobile ? "flex-1 overflow-y-auto" : ""
+          )}>
+            <form 
+              onSubmit={editForm.handleSubmit(handleEditSave)} 
+              className={cn(
+                isMobile ? "px-4 py-6 pb-24" : "px-6 py-6"
+              )}
+            >
+              <div className="space-y-4">
+                {/* Nome Famiglia */}
+                <div className="space-y-2">
+                  <Label htmlFor="nome-famiglia" className="text-sm font-medium text-gray-700">
+                    Nome Famiglia *
+                  </Label>
+                  <Input
+                    id="nome-famiglia"
+                    {...editForm.register('nome', {
+                      required: 'Il nome della famiglia è obbligatorio',
+                      minLength: {
+                        value: 2,
+                        message: 'Il nome deve essere di almeno 2 caratteri'
+                      }
+                    })}
+                    placeholder="es. Famiglia Rossi"
+                    className="h-10 border-gray-200 rounded-lg"
+                  />
+                  {editForm.formState.errors.nome && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      {editForm.formState.errors.nome.message}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Family Info */}
+                {selectedFamiglia && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Membri totali:</span>
+                        <span className="font-medium text-gray-900">
+                          {selectedFamiglia.invitati?.length || 0}
+                        </span>
+                      </div>
+                      {selectedFamiglia.invitati?.some((m: any) => m.is_capo_famiglia) && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">Capo famiglia:</span>
+                          <div className="flex items-center gap-1.5">
+                            <Crown className="h-3.5 w-3.5 text-yellow-600" />
+                            <span className="font-medium text-gray-900">
+                              {selectedFamiglia.invitati.find((m: any) => m.is_capo_famiglia)?.nome}{' '}
+                              {selectedFamiglia.invitati.find((m: any) => m.is_capo_famiglia)?.cognome}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </form>
+          </div>
+          
+          {/* Footer - Sticky on mobile */}
+          <DialogFooter className={cn(
+            "border-t border-gray-200 bg-gray-50",
+            isMobile ? "sticky bottom-0 px-4 py-4" : "px-6 py-4"
+          )}>
+            <div className="flex items-center gap-3 w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowEditDialog(false)}
+                disabled={isSaving}
+                className={cn(
+                  isMobile ? "flex-1 h-12" : ""
+                )}
+              >
+                Annulla
+              </Button>
+              <Button
+                type="submit"
+                onClick={editForm.handleSubmit(handleEditSave)}
+                disabled={isSaving}
+                className={cn(
+                  "bg-blue-600 hover:bg-blue-700 text-white",
+                  isMobile ? "flex-1 h-12" : ""
+                )}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Salva
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Mobile Filter Panel */}
       <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>

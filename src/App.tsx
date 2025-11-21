@@ -29,12 +29,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => (
     <div className="flex min-h-screen w-full">
       <AppSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-10 h-14 flex items-center gap-4 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 px-4">
-          <SidebarTrigger className="h-9 w-9" />
-        </header>
-        <div className="flex-1 p-6">
-          {children}
-        </div>
+        {children}
       </SidebarInset>
     </div>
   </SidebarProvider>

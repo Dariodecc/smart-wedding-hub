@@ -220,14 +220,15 @@ export function EditInvitatoSheet({
 
       if (error) throw error;
 
+      // Close sheet BEFORE invalidating queries to prevent UI flickering
+      onClose();
+
       await queryClient.invalidateQueries({ queryKey: ["invitati", matrimonioId] });
       await queryClient.invalidateQueries({ queryKey: ["famiglie", matrimonioId] });
 
       toast.success("Modifiche salvate con successo", {
         position: isMobile ? "top-center" : "bottom-right",
       });
-
-      onClose();
     } catch (error) {
       console.error("Error updating invitato:", error);
       toast.error("Errore nel salvare le modifiche", {
@@ -248,14 +249,16 @@ export function EditInvitatoSheet({
 
       if (error) throw error;
 
+      // Close sheet and dialog BEFORE invalidating queries
+      setShowDeleteDialog(false);
+      onClose();
+
       await queryClient.invalidateQueries({ queryKey: ["invitati", matrimonioId] });
+      await queryClient.invalidateQueries({ queryKey: ["famiglie", matrimonioId] });
 
       toast.success("Invitato eliminato con successo", {
         position: isMobile ? "top-center" : "bottom-right",
       });
-
-      setShowDeleteDialog(false);
-      onClose();
     } catch (error) {
       console.error("Error deleting invitato:", error);
       toast.error("Errore nell'eliminare l'invitato", {

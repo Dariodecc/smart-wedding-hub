@@ -480,7 +480,7 @@ const Famiglie = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                       <a
-                                        href={`https://api.whatsapp.com/send?phone=${membro.cellulare.replace(
+                                        href={`https://wa.me/${membro.cellulare.replace(
                                           /[^0-9+]/g,
                                           ""
                                         )}`}

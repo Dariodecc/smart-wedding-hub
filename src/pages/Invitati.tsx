@@ -361,9 +361,16 @@ const Invitati = () => {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                              <div className="text-sm text-gray-700">
+                              <a
+                                href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Phone className="h-3.5 w-3.5" />
                                 {invitato.cellulare}
-                              </div>
+                              </a>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                               <div className="text-sm text-gray-700">
@@ -474,9 +481,17 @@ const Invitati = () => {
                       
                       {/* Details */}
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <div className="flex items-center gap-2 text-xs">
                           <Phone className="h-3.5 w-3.5 text-gray-400" />
-                          <span>{invitato.cellulare}</span>
+                          <a
+                            href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {invitato.cellulare}
+                          </a>
                         </div>
                         
                         {invitato.email && (

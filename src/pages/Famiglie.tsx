@@ -56,7 +56,10 @@ const Famiglie = () => {
         .select(
           `
           *,
-          invitati(*)
+          invitati(
+            *,
+            famiglia:famiglie!invitati_famiglia_id_fkey(id, nome)
+          )
         `
         )
         .eq("wedding_id", wedding.id)

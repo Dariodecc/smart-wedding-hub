@@ -43,6 +43,41 @@ export type Database = {
           },
         ]
       }
+      gruppi: {
+        Row: {
+          colore: string
+          created_at: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+          wedding_id: string
+        }
+        Insert: {
+          colore: string
+          created_at?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+          wedding_id: string
+        }
+        Update: {
+          colore?: string
+          created_at?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+          wedding_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gruppi_wedding_id_fkey"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitati: {
         Row: {
           cellulare: string
@@ -50,6 +85,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           famiglia_id: string | null
+          gruppo_id: string | null
           id: string
           is_capo_famiglia: boolean | null
           nome: string
@@ -65,6 +101,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           famiglia_id?: string | null
+          gruppo_id?: string | null
           id?: string
           is_capo_famiglia?: boolean | null
           nome: string
@@ -80,6 +117,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           famiglia_id?: string | null
+          gruppo_id?: string | null
           id?: string
           is_capo_famiglia?: boolean | null
           nome?: string
@@ -95,6 +133,13 @@ export type Database = {
             columns: ["famiglia_id"]
             isOneToOne: false
             referencedRelation: "famiglie"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitati_gruppo_id_fkey"
+            columns: ["gruppo_id"]
+            isOneToOne: false
+            referencedRelation: "gruppi"
             referencedColumns: ["id"]
           },
           {

@@ -311,21 +311,7 @@ const Gruppi = () => {
       {/* Page Content */}
       <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
         {/* Total Count Banner */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-100 text-xs sm:text-sm font-medium">
-                Gruppi Totali
-              </p>
-              <p className="text-white text-3xl sm:text-4xl font-bold mt-1">
-                {gruppi.length}
-              </p>
-            </div>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-              <Layers className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-            </div>
-          </div>
-        </div>
+        
 
         {/* Groups Grid */}
         {isLoadingGruppi ? <div className="flex items-center justify-center py-12">

@@ -424,15 +424,16 @@ export function AddInvitatoDialog({
                           </FormLabel>
                           <FormControl>
                             <ComboboxSelect
-                              options={
-                                famiglie?.map((f) => ({
+                              options={[
+                                { value: "", label: "Nessuna" },
+                                ...(famiglie?.map((f) => ({
                                   value: f.id,
                                   label: f.nome,
-                                })) || []
-                              }
+                                })) || [])
+                              ]}
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Cerca famiglia..."
+                              placeholder="Seleziona famiglia..."
                               disabled={creaFamiglia}
                             />
                           </FormControl>

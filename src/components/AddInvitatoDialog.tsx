@@ -204,8 +204,8 @@ export function AddInvitatoDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0">
-        <div className="flex flex-col h-full">
+      <DialogContent className="max-w-3xl max-h-[90vh] p-0 flex flex-col">
+        <div className="flex flex-col max-h-[90vh]">
           {/* Header */}
           <div className="border-b border-gray-200 bg-white px-6 py-4">
             <DialogHeader>

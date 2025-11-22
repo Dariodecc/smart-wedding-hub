@@ -22,6 +22,8 @@ interface Wedding {
   service_cost: number;
   enable_multi_rsvp: boolean;
   webhook_url: string | null;
+  api_username: string | null;
+  api_password: string | null;
 }
 
 interface SpouseUser {
@@ -45,6 +47,8 @@ const Matrimoni = () => {
     enable_multi_rsvp: false,
     webhook_url: "",
     selected_spouses: [] as string[],
+    api_username: "",
+    api_password: "",
   });
 
   // Fetch all weddings
@@ -132,6 +136,8 @@ const Matrimoni = () => {
           service_cost: parseFloat(data.service_cost),
           enable_multi_rsvp: data.enable_multi_rsvp,
           webhook_url: data.enable_multi_rsvp ? data.webhook_url : null,
+          api_username: data.api_username || null,
+          api_password: data.api_password || null,
         })
         .select()
         .single();
@@ -191,6 +197,8 @@ const Matrimoni = () => {
           service_cost: parseFloat(data.service_cost),
           enable_multi_rsvp: data.enable_multi_rsvp,
           webhook_url: data.enable_multi_rsvp ? data.webhook_url : null,
+          api_username: data.api_username || null,
+          api_password: data.api_password || null,
         })
         .eq("id", id);
 
@@ -265,6 +273,8 @@ const Matrimoni = () => {
       enable_multi_rsvp: false,
       webhook_url: "",
       selected_spouses: [],
+      api_username: "",
+      api_password: "",
     });
   };
 
@@ -279,6 +289,8 @@ const Matrimoni = () => {
       enable_multi_rsvp: wedding.enable_multi_rsvp,
       webhook_url: wedding.webhook_url || "",
       selected_spouses: spouses,
+      api_username: wedding.api_username || "",
+      api_password: wedding.api_password || "",
     });
     setEditingWedding(wedding);
   };

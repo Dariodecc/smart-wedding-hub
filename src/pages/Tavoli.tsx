@@ -622,8 +622,40 @@ const Tavoli = () => {
             </div>
           </div>
 
-          {/* Guests List */}
-          <div className="flex-1 overflow-y-auto p-3">
+          {/* Guests List - Drop zone to unassign */}
+          <div 
+            className="flex-1 overflow-y-auto p-3"
+            onDragOver={(e) => {
+              e.preventDefault()
+              e.dataTransfer.dropEffect = 'move'
+            }}
+            onDrop={async (e) => {
+              e.preventDefault()
+              const guestId = e.dataTransfer.getData('guestId')
+              const fromSeat = e.dataTransfer.getData('fromSeat')
+              
+              if (fromSeat && guestId) {
+                console.log('🗑️ UNASSIGN GUEST from seat:', guestId)
+                
+                try {
+                  const { error } = await supabase
+                    .from('invitati')
+                    .update({ tavolo_id: null, posto_numero: null })
+                    .eq('id', guestId)
+                  
+                  if (error) throw error
+                  
+                  await queryClient.invalidateQueries({ queryKey: ['tavoli', wedding?.id] })
+                  await queryClient.invalidateQueries({ queryKey: ['invitati', wedding?.id] })
+                  
+                  toast.success('Ospite rimosso dal tavolo')
+                } catch (error) {
+                  console.error('Error:', error)
+                  toast.error('Errore nella rimozione')
+                }
+              }
+            }}
+          >
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -680,9 +712,9 @@ const Tavoli = () => {
         </div>
 
         {/* Right Canvas Area */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-gray-100">
-          {/* Toolbar */}
-          <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Single Page Header */}
+          <div className="bg-white border-b border-gray-200 px-6 py-3 shrink-0">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Disposizione Tavoli</h1>
@@ -690,84 +722,57 @@ const Tavoli = () => {
                   {tavoli.length} tavoli • {totalAssigned} ospiti assegnati
                 </p>
               </div>
-
+              
               <div className="flex items-center gap-2">
                 {/* Zoom Controls */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
-                  className="border-gray-200"
-                >
+                <Button variant="outline" size="sm" onClick={() => setZoom(Math.max(0.2, zoom - 0.1))}>
                   <ZoomOut className="h-4 w-4" />
                 </Button>
                 <span className="text-sm font-medium text-gray-700 min-w-[60px] text-center">
                   {Math.round(zoom * 100)}%
                 </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setZoom(Math.min(2, zoom + 0.1))}
-                  className="border-gray-200"
-                >
+                <Button variant="outline" size="sm" onClick={() => setZoom(Math.min(3, zoom + 0.1))}>
                   <ZoomIn className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <Button 
+                  variant="outline" 
+                  size="sm" 
                   onClick={() => {
-                    setZoom(1);
-                    setPanOffset({ x: 0, y: 0 });
+                    setZoom(1)
+                    setPanOffset({ x: -2500, y: -2000 })
                   }}
-                  className="border-gray-200 ml-2"
                 >
                   <Maximize2 className="h-4 w-4 mr-2" />
                   Reset
                 </Button>
-
-                <Separator orientation="vertical" className="h-8 mx-2" />
-
-                {/* Rotation & Delete Controls - Only shown when table selected */}
+                
+                {/* Table Actions - Only show when table selected */}
                 {selectedTableId && (
                   <>
+                    <Separator orientation="vertical" className="h-8 mx-2" />
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-700">Ruota:</span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => rotateTable(-15)}
-                        className="border-gray-200"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => rotateTable(-15)}>
                         <RotateCcw className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => rotateTable(15)}
-                        className="border-gray-200"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => rotateTable(15)}>
                         <RotateCw className="h-4 w-4" />
                       </Button>
                     </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
                       onClick={handleDeleteTable}
                       className="border-red-200 text-red-600 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-
-                    <Separator orientation="vertical" className="h-8 mx-2" />
                   </>
                 )}
-
-                {/* Add Table Button */}
-                <Button
-                  onClick={() => setShowAddTableDialog(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
+                
+                <Separator orientation="vertical" className="h-8 mx-2" />
+                
+                <Button onClick={() => setShowAddTableDialog(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
                   <Plus className="h-4 w-4 mr-2" />
                   Aggiungi Tavolo
                 </Button>

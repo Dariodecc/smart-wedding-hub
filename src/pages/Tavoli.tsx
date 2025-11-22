@@ -82,17 +82,30 @@ const Tavoli = () => {
     enabled: !!wedding?.id,
   });
 
-  // Fetch invitati
+  // Fetch invitati with famiglia, gruppo and preferenze
   const { data: invitati = [], isLoading: isLoadingInvitati } = useQuery({
     queryKey: ["invitati", wedding?.id],
     queryFn: async () => {
       if (!wedding?.id) return [];
       const { data, error } = await supabase
         .from("invitati")
-        .select("id, nome, cognome, tipo_ospite, rsvp_status, is_capo_famiglia, famiglia_id, tavolo_id, posto_numero")
+        .select(`
+          id, 
+          nome, 
+          cognome, 
+          tipo_ospite, 
+          rsvp_status, 
+          is_capo_famiglia, 
+          famiglia_id,
+          tavolo_id, 
+          posto_numero,
+          preferenze_alimentari,
+          famiglie:famiglia_id(id, nome),
+          gruppi:gruppo_id(id, nome, colore)
+        `)
         .eq("wedding_id", wedding.id);
       if (error) throw error;
-      return data as Guest[];
+      return data as any[];
     },
     enabled: !!wedding?.id,
   });

@@ -55,6 +55,17 @@ export const GuestTooltip: React.FC<GuestTooltipProps> = ({
             </div>
           )}
           
+          {/* Famiglia */}
+          {guest.famiglie && (
+            <div className="flex items-start gap-2 text-sm">
+              <Users className="h-4 w-4 text-purple-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-gray-500 text-xs">Famiglia</span>
+                <p className="font-medium text-gray-900">{guest.famiglie.nome}</p>
+              </div>
+            </div>
+          )}
+          
           {/* Tipo Ospite */}
           <div className="flex items-start gap-2 text-sm">
             <UserCircle2 className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
@@ -63,6 +74,33 @@ export const GuestTooltip: React.FC<GuestTooltipProps> = ({
               <p className="font-medium text-gray-900">{guest.tipo_ospite}</p>
             </div>
           </div>
+          
+          {/* Preferenze Alimentari */}
+          {guest.preferenze_alimentari && guest.preferenze_alimentari.length > 0 && (
+            <div className="flex items-start gap-2 text-sm">
+              <Utensils className="h-4 w-4 text-orange-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-gray-500 text-xs">Preferenze Alimentari</span>
+                <p className="font-medium text-gray-900">
+                  {guest.preferenze_alimentari.join(', ')}
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {/* Gruppo */}
+          {guest.gruppi && (
+            <div className="flex items-start gap-2 text-sm">
+              <div 
+                className="h-4 w-4 rounded-full shrink-0 mt-0.5" 
+                style={{ backgroundColor: guest.gruppi.colore }}
+              />
+              <div>
+                <span className="text-gray-500 text-xs">Gruppo</span>
+                <p className="font-medium text-gray-900">{guest.gruppi.nome}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

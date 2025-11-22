@@ -21,6 +21,13 @@ interface TavoloSVGProps {
   onSeatMouseLeave?: () => void;
 }
 
+// Helper to calculate table length based on seats
+const getTableLength = (capienza: number): number => {
+  const baseLength = 200
+  const lengthPerSeat = 80
+  return baseLength + (capienza * lengthPerSeat / 2)
+}
+
 // Calculate seats in circle (for round table)
 const calculateCircleSeats = (count: number, radius: number) => {
   const seats = [];
@@ -31,56 +38,64 @@ const calculateCircleSeats = (count: number, radius: number) => {
     seats.push({
       x: Math.cos(angle) * radius,
       y: Math.sin(angle) * radius,
-      rotation: (angle * 180) / Math.PI + 90, // Face center
+      rotation: 0, // Always upright
     });
   }
 
   return seats;
 };
 
-// Calculate seats on one side (for single-side rectangular)
-const calculateSingleSideSeats = (count: number, width: number) => {
-  const seats = [];
-  const spacing = width / (count + 1);
+// Calculate seat positions for single-side rectangular table
+const calculateSingleSideSeats = (
+  count: number,
+  tableLength: number
+): Array<{ x: number; y: number; rotation: number }> => {
+  const positions = []
+  const spacing = tableLength / (count + 1)
+  const startX = -tableLength / 2
 
   for (let i = 0; i < count; i++) {
-    seats.push({
-      x: -width / 2 + spacing * (i + 1),
-      y: 80, // Distance from table
-      rotation: 0, // All facing up
-    });
+    positions.push({
+      x: startX + spacing * (i + 1),
+      y: -70,
+      rotation: 0 // Always upright
+    })
   }
 
-  return seats;
-};
+  return positions
+}
 
-// Calculate seats on both sides (for double-side rectangular)
-const calculateDoubleSideSeats = (count: number, width: number, height: number) => {
-  const seats = [];
-  const seatsPerSide = Math.ceil(count / 2);
-  const spacingTop = width / (Math.ceil(count / 2) + 1);
-  const spacingBottom = width / (Math.floor(count / 2) + 1);
+// Calculate seat positions on both sides (for double-side rectangular)
+const calculateDoubleSideSeats = (
+  count: number,
+  tableLength: number,
+  tableWidth: number
+): Array<{ x: number; y: number; rotation: number }> => {
+  const positions = []
+  const seatsPerSide = Math.ceil(count / 2)
+  const spacing = tableLength / (seatsPerSide + 1)
+  const startX = -tableLength / 2
 
   // Top side
-  for (let i = 0; i < Math.ceil(count / 2); i++) {
-    seats.push({
-      x: -width / 2 + spacingTop * (i + 1),
-      y: -height / 2 - 40,
-      rotation: 180, // Face down
-    });
+  for (let i = 0; i < Math.floor(count / 2); i++) {
+    positions.push({
+      x: startX + spacing * (i + 1),
+      y: -80,
+      rotation: 0 // Always upright
+    })
   }
 
   // Bottom side
-  for (let i = 0; i < Math.floor(count / 2); i++) {
-    seats.push({
-      x: -width / 2 + spacingBottom * (i + 1),
-      y: height / 2 + 40,
-      rotation: 0, // Face up
-    });
+  for (let i = 0; i < Math.ceil(count / 2); i++) {
+    positions.push({
+      x: startX + spacing * (i + 1),
+      y: 80,
+      rotation: 0 // Always upright
+    })
   }
 
-  return seats;
-};
+  return positions
+}
 
 const TavoloSVG = ({
   tavolo,
@@ -97,28 +112,29 @@ const TavoloSVG = ({
 
   // Calculate seat positions based on table type
   const seatPositions = useMemo(() => {
-    switch (tipo) {
-      case "rotondo":
-        return calculateCircleSeats(capienza, 120); // radius
-      case "rettangolare_singolo":
-        return calculateSingleSideSeats(capienza, 400); // width
-      case "rettangolare_doppio":
-        return calculateDoubleSideSeats(capienza, 400, 100); // width, height
-      default:
-        return [];
+    const tableLength = getTableLength(capienza)
+    if (tipo === 'rotondo') {
+      return calculateCircleSeats(capienza, 120)
+    } else if (tipo === 'rettangolare_singolo') {
+      return calculateSingleSideSeats(capienza, tableLength)
+    } else if (tipo === 'rettangolare_doppio') {
+      return calculateDoubleSideSeats(capienza, tableLength, 100)
     }
+    return []
   }, [tipo, capienza]);
 
+  const tableLength = getTableLength(capienza)
+  
   return (
-    <g transform={`translate(${posizione_x}, ${posizione_y}) rotate(${rotazione || 0})`}>
-      {/* Selection Highlight */}
+    <g transform={`translate(${posizione_x}, ${posizione_y})`}>
+      {/* Selection Highlight - Rotates with table */}
       {isSelected && (
-        <>
-          {tipo === "rotondo" && (
+        <g transform={`rotate(${rotazione || 0})`}>
+          {tipo === 'rotondo' && (
             <circle
               cx="0"
               cy="0"
-              r="110"
+              r="130"
               fill="none"
               stroke="#3B82F6"
               strokeWidth="4"
@@ -126,12 +142,12 @@ const TavoloSVG = ({
               opacity="0.8"
             />
           )}
-          {(tipo === "rettangolare_singolo" || tipo === "rettangolare_doppio") && (
+          {tipo === 'rettangolare_singolo' && (
             <rect
-              x={tipo === "rettangolare_singolo" ? -210 : -210}
-              y={tipo === "rettangolare_singolo" ? -50 : -60}
-              width={tipo === "rettangolare_singolo" ? 420 : 420}
-              height={tipo === "rettangolare_singolo" ? 90 : 110}
+              x={-tableLength/2 - 20}
+              y="-60"
+              width={tableLength + 40}
+              height="120"
               rx="15"
               fill="none"
               stroke="#3B82F6"
@@ -140,102 +156,119 @@ const TavoloSVG = ({
               opacity="0.8"
             />
           )}
-        </>
+          {tipo === 'rettangolare_doppio' && (
+            <rect
+              x={-tableLength/2 - 20}
+              y="-70"
+              width={tableLength + 40}
+              height="140"
+              rx="15"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="4"
+              strokeDasharray="10 5"
+              opacity="0.8"
+            />
+          )}
+        </g>
       )}
 
-      {/* Table Shape */}
-      {tipo === "rotondo" && (
-        <circle
-          cx="0"
-          cy="0"
-          r="100"
-          fill="#f9fafb"
-          stroke={isSelected ? "#3B82F6" : "#d1d5db"}
-          strokeWidth={isSelected ? "4" : "3"}
-          className="cursor-move"
-          onClick={(e) => {
-            e.stopPropagation();
-            onTableClick();
-          }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            onTableDragStart(e);
-          }}
-          style={{ pointerEvents: "all" } as any}
-        />
-      )}
+      {/* Table Shape - Rotates */}
+      <g transform={`rotate(${rotazione || 0})`}>
+        {tipo === 'rotondo' && (
+          <circle
+            cx="0"
+            cy="0"
+            r="100"
+            fill="#f9fafb"
+            stroke={isSelected ? "#3B82F6" : "#d1d5db"}
+            strokeWidth={isSelected ? "4" : "3"}
+            className="cursor-move"
+            onClick={(e) => {
+              e.stopPropagation()
+              onTableClick()
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              onTableDragStart(e)
+            }}
+            style={{ pointerEvents: 'all' } as any}
+          />
+        )}
 
-      {tipo === "rettangolare_singolo" && (
-        <rect
-          x="-200"
-          y="-40"
-          width="400"
-          height="80"
-          rx="10"
-          fill="#f9fafb"
-          stroke={isSelected ? "#3B82F6" : "#d1d5db"}
-          strokeWidth={isSelected ? "4" : "3"}
-          className="cursor-move"
-          onClick={(e) => {
-            e.stopPropagation();
-            onTableClick();
-          }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            onTableDragStart(e);
-          }}
-          style={{ pointerEvents: "all" } as any}
-        />
-      )}
+        {tipo === 'rettangolare_singolo' && (
+          <rect
+            x={-tableLength/2}
+            y="-40"
+            width={tableLength}
+            height="80"
+            rx="10"
+            fill="#f9fafb"
+            stroke={isSelected ? "#3B82F6" : "#d1d5db"}
+            strokeWidth={isSelected ? "4" : "3"}
+            className="cursor-move"
+            onClick={(e) => {
+              e.stopPropagation()
+              onTableClick()
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              onTableDragStart(e)
+            }}
+            style={{ pointerEvents: 'all' } as any}
+          />
+        )}
 
-      {tipo === "rettangolare_doppio" && (
-        <rect
-          x="-200"
-          y="-50"
-          width="400"
-          height="100"
-          rx="10"
-          fill="#f9fafb"
-          stroke={isSelected ? "#3B82F6" : "#d1d5db"}
-          strokeWidth={isSelected ? "4" : "3"}
-          className="cursor-move"
-          onClick={(e) => {
-            e.stopPropagation();
-            onTableClick();
-          }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            onTableDragStart(e);
-          }}
-          style={{ pointerEvents: "all" } as any}
-        />
-      )}
+        {tipo === 'rettangolare_doppio' && (
+          <rect
+            x={-tableLength/2}
+            y="-50"
+            width={tableLength}
+            height="100"
+            rx="10"
+            fill="#f9fafb"
+            stroke={isSelected ? "#3B82F6" : "#d1d5db"}
+            strokeWidth={isSelected ? "4" : "3"}
+            className="cursor-move"
+            onClick={(e) => {
+              e.stopPropagation()
+              onTableClick()
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              onTableDragStart(e)
+            }}
+            style={{ pointerEvents: 'all' } as any}
+          />
+        )}
 
-      {/* Table Number */}
-      <text
-        x="0"
-        y="5"
-        textAnchor="middle"
-        fontSize="24"
-        fontWeight="bold"
-        fill="#374151"
-        style={{ pointerEvents: "none", userSelect: "none" } as any}
-      >
-        {nome}
-      </text>
+        {/* Table Name - Counter-rotate to stay upright */}
+        <text
+          x="0"
+          y="5"
+          textAnchor="middle"
+          fontSize="24"
+          fontWeight="bold"
+          fill="#374151"
+          transform={`rotate(${-(rotazione || 0)})`}
+          style={{ pointerEvents: 'none', userSelect: 'none' } as any}
+        >
+          {nome}
+        </text>
+      </g>
 
-      {/* Seats */}
+      {/* Seats - Don't rotate */}
       {seatPositions.map((pos, index) => {
-        const assignment = assignments[index];
-        const guest = assignment?.guest;
+        const assignment = assignments[index]
+        const guest = assignment?.guest
 
         const borderColor = guest
-          ? guest.rsvp_status === "Ci sarò"
-            ? "#10B981"
-            : guest.rsvp_status === "In attesa"
-            ? "#F59E0B"
-            : "#EF4444"
-          : "#9CA3AF";
+          ? guest.rsvp_status === 'Ci sarò'
+            ? '#10B981'
+            : guest.rsvp_status === 'In attesa'
+              ? '#F59E0B'
+              : '#EF4444'
+          : '#9CA3AF'
 
         return (
           <DroppableSeat
@@ -247,11 +280,10 @@ const TavoloSVG = ({
             borderColor={borderColor}
             onSeatClick={() => onSeatClick(index)}
             onDrop={(guestId) => onAssignGuest(guestId, id, index)}
-            tableRotation={rotazione || 0}
             onMouseEnter={(e) => onSeatMouseEnter?.(guest, e)}
             onMouseLeave={onSeatMouseLeave}
           />
-        );
+        )
       })}
     </g>
   );

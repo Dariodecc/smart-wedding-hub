@@ -9,7 +9,6 @@ interface DroppableSeatProps {
   borderColor: string;
   onSeatClick: () => void;
   onDrop: (guestId: string) => void;
-  tableRotation?: number;
   onMouseEnter?: (e: React.MouseEvent) => void;
   onMouseLeave?: () => void;
 }
@@ -22,26 +21,32 @@ const DroppableSeat = ({
   borderColor,
   onSeatClick,
   onDrop,
-  tableRotation = 0,
   onMouseEnter,
   onMouseLeave,
 }: DroppableSeatProps) => {
   const [isOver, setIsOver] = React.useState(false);
-  const droppableId = `seat-${tavoloId}-${seatIndex}`;
 
   return (
     <g
-      transform={`translate(${position.x}, ${position.y}) rotate(${position.rotation})`}
+      transform={`translate(${position.x}, ${position.y})`}
       style={{ pointerEvents: "all" } as any}
     >
       {/* Foreign object for React droppable */}
       <foreignObject x="-35" y="-25" width="70" height="50">
         <div
+          draggable={!!guest}
+          onDragStart={(e) => {
+            if (guest) {
+              e.dataTransfer.setData("guestId", guest.id);
+              e.dataTransfer.setData("fromSeat", `${tavoloId}-${seatIndex}`);
+              e.dataTransfer.effectAllowed = "move";
+              console.log("🚀 DRAG FROM SEAT:", guest.id);
+            }
+          }}
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = "move";
             setIsOver(true);
-            console.log("🎯 DRAG OVER:", droppableId);
           }}
           onDragLeave={() => {
             setIsOver(false);
@@ -49,27 +54,33 @@ const DroppableSeat = ({
           onDrop={(e) => {
             e.preventDefault();
             const guestId = e.dataTransfer.getData("guestId");
+            const fromSeat = e.dataTransfer.getData("fromSeat");
             setIsOver(false);
-            console.log("📍 DROP on:", droppableId, "guest:", guestId);
+            
+            if (fromSeat) {
+              console.log("📍 MOVE GUEST from seat to seat");
+            } else {
+              console.log("📍 ASSIGN GUEST to seat");
+            }
+            
             if (guestId) {
               onDrop(guestId);
             }
           }}
           onClick={(e) => {
             e.stopPropagation();
-            console.log("🪑 Seat clicked:", droppableId);
             onSeatClick();
           }}
           onMouseEnter={guest ? onMouseEnter : undefined}
           onMouseLeave={guest ? onMouseLeave : undefined}
           className={cn(
-            "w-full h-full rounded-lg border-[3px] flex flex-col items-center justify-center cursor-pointer transition-all",
+            "w-full h-full rounded-lg border-[3px] flex flex-col items-center justify-center transition-all",
+            guest ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
             isOver ? "bg-blue-200 border-blue-600 scale-110" : guest ? "bg-white hover:shadow-lg" : "bg-gray-100",
             !guest && !isOver && "border-gray-400"
           )}
           style={{
-            borderColor: guest ? borderColor : isOver ? "#2563EB" : "#9CA3AF",
-            transform: `rotate(${-tableRotation}deg)`
+            borderColor: guest ? borderColor : isOver ? "#2563EB" : "#9CA3AF"
           }}
         >
           {guest ? (
@@ -92,17 +103,6 @@ const DroppableSeat = ({
           )}
         </div>
       </foreignObject>
-
-      {/* Chair back visual indicator */}
-      <rect
-        x="-30"
-        y="-28"
-        width="60"
-        height="6"
-        rx="3"
-        fill={borderColor}
-        style={{ pointerEvents: "none" } as any}
-      />
     </g>
   );
 };

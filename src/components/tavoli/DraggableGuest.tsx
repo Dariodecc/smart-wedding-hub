@@ -32,33 +32,33 @@ const DraggableGuest = ({ guest }: DraggableGuestProps) => {
         console.log("🏁 DRAG END");
       }}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg border-2 cursor-grab active:cursor-grabbing transition-all hover:shadow-md",
+        "flex items-center gap-2.5 p-2.5 rounded-lg border-2 cursor-grab active:cursor-grabbing transition-all hover:shadow-md",
         rsvpColor
       )}
     >
       {/* Avatar */}
-      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0">
+      <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs shrink-0">
         {guest.nome[0]}
         {guest.cognome[0]}
       </div>
 
       {/* Guest Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-900 truncate">
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs font-medium text-gray-900 truncate">
             {guest.nome} {guest.cognome}
           </p>
           {guest.is_capo_famiglia && (
             <Crown className="h-3 w-3 text-yellow-600 shrink-0" />
           )}
         </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          <Badge variant="outline" className="text-xs text-gray-600 border-gray-300">
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <Badge variant="outline" className="text-[10px] text-gray-600 border-gray-300 px-1.5 py-0">
             {guest.tipo_ospite}
           </Badge>
           <div
             className={cn(
-              "w-2 h-2 rounded-full",
+              "w-1.5 h-1.5 rounded-full",
               guest.rsvp_status === "Ci sarò" && "bg-green-500",
               guest.rsvp_status === "In attesa" && "bg-yellow-500",
               guest.rsvp_status === "Non ci sarò" && "bg-red-500"

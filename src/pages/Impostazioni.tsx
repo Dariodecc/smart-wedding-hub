@@ -47,6 +47,8 @@ const Impostazioni = () => {
 
   // State
   const [showPassword, setShowPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [passwordCopied, setPasswordCopied] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [isSavingDate, setIsSavingDate] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
@@ -97,6 +99,28 @@ const Impostazioni = () => {
     const wedding = new Date(date);
     const diff = Math.ceil((wedding.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return diff;
+  };
+
+  // Copy current password
+  const copyCurrentPassword = async () => {
+    const password = matrimonio?.password;
+    if (!password) return;
+    
+    try {
+      await navigator.clipboard.writeText(password);
+      setPasswordCopied(true);
+      toast({
+        title: "Password copiata",
+        description: "La password è stata copiata negli appunti",
+      });
+      setTimeout(() => setPasswordCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "Errore",
+        description: "Errore nella copia della password",
+        variant: "destructive",
+      });
+    }
   };
 
   // Password generator
@@ -470,11 +494,53 @@ const Impostazioni = () => {
                         {errors.password.message as string}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500">
+                     <p className="text-xs text-gray-500">
                       Minimo 6 caratteri. Questa password sarà richiesta per accedere a pagine
                       protette.
                     </p>
                   </div>
+
+                  {/* Current Password Display */}
+                  {matrimonio?.password && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-blue-900 mb-2">Password Attuale:</p>
+                          <div className="flex items-center gap-2">
+                            <code className="text-sm font-mono bg-white px-3 py-1.5 rounded border border-blue-300 text-blue-900 flex-1 min-w-0 truncate">
+                              {showCurrentPassword ? matrimonio.password : '••••••••'}
+                            </code>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              className="h-8 w-8 shrink-0 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                            >
+                              {showCurrentPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={copyCurrentPassword}
+                              className="h-8 w-8 shrink-0 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                            >
+                              {passwordCopied ? (
+                                <Check className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Password Generator */}
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">

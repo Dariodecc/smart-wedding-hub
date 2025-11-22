@@ -40,16 +40,29 @@ export default function ConfigurazioneTavoli() {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Fetch wedding settings
-  const { data: wedding } = useQuery({
+  const { data: wedding, isLoading: weddingLoading } = useQuery({
     queryKey: ['wedding-public', weddingId],
     queryFn: async () => {
+      console.log('🔍 Fetching wedding:', weddingId);
+      
       const { data, error } = await supabase
         .from('weddings')
         .select('*')
         .eq('id', weddingId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching wedding:', error);
+        throw error;
+      }
+      
+      console.log('✅ Wedding data loaded:', {
+        id: data.id,
+        couple_name: data.couple_name,
+        password_set: !!data.password,
+        password_value: data.password ? `"${data.password}"` : 'null'
+      });
+      
       return data;
     },
     enabled: !!weddingId,
@@ -60,12 +73,33 @@ export default function ConfigurazioneTavoli() {
     e.preventDefault();
 
     const correctPassword = wedding?.password;
+    
+    console.log('🔐 Password check:', {
+      entered: `"${password}"`,
+      correct: correctPassword ? `"${correctPassword}"` : 'null',
+      enteredLength: password.length,
+      correctLength: correctPassword?.length || 0,
+      passwordSet: !!correctPassword
+    });
 
-    if (password === correctPassword) {
+    if (!correctPassword) {
+      toast.error('Nessuna password configurata per questo matrimonio');
+      console.warn('⚠️ No password set for this wedding');
+      return;
+    }
+
+    // Trim both passwords to avoid whitespace issues
+    if (password.trim() === correctPassword.trim()) {
       setIsAuthenticated(true);
       toast.success('Accesso consentito');
+      console.log('✅ Password correct - authenticated');
     } else {
       toast.error('Password errata');
+      console.error('❌ Password mismatch:', { 
+        entered: `"${password.trim()}"`, 
+        correct: `"${correctPassword.trim()}"`,
+        match: password.trim() === correctPassword.trim()
+      });
     }
   };
 
@@ -284,11 +318,34 @@ export default function ConfigurazioneTavoli() {
     return <Navigate to="/" replace />;
   }
 
+  // Loading state
+  if (weddingLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Caricamento...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Password protection screen
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-8">
+          {/* Debug info - visible only in development */}
+          {import.meta.env.DEV && wedding && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs font-mono">
+              <p className="font-bold mb-1">🔍 Debug Info:</p>
+              <p>Wedding ID: {weddingId}</p>
+              <p>Password set: {wedding.password ? 'Yes' : 'No'}</p>
+              <p>Password value: {wedding.password ? `"${wedding.password}"` : 'null'}</p>
+              <p>Password length: {wedding.password?.length || 0}</p>
+            </div>
+          )}
+          
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Configurazione Tavoli

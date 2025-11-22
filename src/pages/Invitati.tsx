@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { AddInvitatoDialog } from "@/components/AddInvitatoDialog";
 import { EditInvitatoSheet } from "@/components/EditInvitatoSheet";
 import { WhatsAppInvitationDialog } from "@/components/invitati/WhatsAppInvitationDialog";
+import { WhatsAppStatusBadge } from "@/components/WhatsAppStatusBadge";
 import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,6 +72,7 @@ const Invitati = () => {
         error
       } = await supabase.from("invitati").select(`
           *,
+          whatsapp_message_status,
           famiglia:famiglie(id, nome)
         `).eq("wedding_id", wedding.id).order("created_at", {
         ascending: false
@@ -570,11 +572,14 @@ const Invitati = () => {
                                 {/* Family Members Rows */}
                                 {item.membri.map((membro: any, membroIndex: number) => <tr key={membro.id} className={cn("hover:bg-gray-50 cursor-pointer transition-colors", membroIndex === item.membri.length - 1 && "border-b-2 border-gray-300")} onClick={() => handleInvitatoClick(membro)}>
                                     <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-                                      <div className="flex items-center gap-1.5">
-                                        {membro.is_capo_famiglia && <Crown className="h-3 w-3 text-yellow-600 shrink-0" />}
-                                        <span className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                                          {membro.nome}
-                                        </span>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <div className="flex items-center gap-1.5">
+                                          {membro.is_capo_famiglia && <Crown className="h-3 w-3 text-yellow-600 shrink-0" />}
+                                          <span className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                            {membro.nome}
+                                          </span>
+                                        </div>
+                                        <WhatsAppStatusBadge status={membro.whatsapp_message_status} />
                                       </div>
                                     </td>
                                     <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
@@ -620,8 +625,11 @@ const Invitati = () => {
                     const invitato = item.invitato;
                     return <tr key={invitato.id} className="hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-200" onClick={() => handleInvitatoClick(invitato)}>
                                 <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-                                  <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                                    {invitato.nome}
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                      {invitato.nome}
+                                    </div>
+                                    <WhatsAppStatusBadge status={invitato.whatsapp_message_status} />
                                   </div>
                                 </td>
                                 <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
@@ -704,25 +712,28 @@ const Invitati = () => {
                                     </div>
                                   </div>}
                                 
-                                {/* Header with avatar and RSVP badge */}
-                                <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
-                                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm shrink-0">
-                                      {membro.nome[0]}{membro.cognome[0]}
-                                    </div>
-                                    <div className="min-w-0">
-                                      <p className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-1 truncate">
-                                        {membro.nome} {membro.cognome}
-                                      </p>
-                                      <p className="text-xs text-gray-500 truncate">
-                                        {membro.tipo_ospite}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <Badge className={cn("rounded-full px-1.5 sm:px-2 py-0.5 text-xs font-medium shrink-0", membro.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800", membro.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800", membro.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800")}>
-                                    <div className={cn("w-1.5 h-1.5 rounded-full mr-1", membro.rsvp_status === "Ci sarò" && "bg-green-500", membro.rsvp_status === "In attesa" && "bg-yellow-500", membro.rsvp_status === "Non ci sarò" && "bg-red-500")} />
-                                  </Badge>
-                                </div>
+                                 {/* Header with avatar and RSVP badge */}
+                                 <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+                                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm shrink-0">
+                                       {membro.nome[0]}{membro.cognome[0]}
+                                     </div>
+                                     <div className="min-w-0 flex-1">
+                                       <div className="flex items-center gap-1.5 flex-wrap">
+                                         <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
+                                           {membro.nome} {membro.cognome}
+                                         </p>
+                                         <WhatsAppStatusBadge status={membro.whatsapp_message_status} />
+                                       </div>
+                                       <p className="text-xs text-gray-500 truncate">
+                                         {membro.tipo_ospite}
+                                       </p>
+                                     </div>
+                                   </div>
+                                   <Badge className={cn("rounded-full px-1.5 sm:px-2 py-0.5 text-xs font-medium shrink-0", membro.rsvp_status === "Ci sarò" && "bg-green-100 text-green-800", membro.rsvp_status === "In attesa" && "bg-yellow-100 text-yellow-800", membro.rsvp_status === "Non ci sarò" && "bg-red-100 text-red-800")}>
+                                     <div className={cn("w-1.5 h-1.5 rounded-full mr-1", membro.rsvp_status === "Ci sarò" && "bg-green-500", membro.rsvp_status === "In attesa" && "bg-yellow-500", membro.rsvp_status === "Non ci sarò" && "bg-red-500")} />
+                                   </Badge>
+                                 </div>
                                 
                                 {/* Details */}
                                 <div className="space-y-1.5 sm:space-y-2">
@@ -757,14 +768,17 @@ const Invitati = () => {
               return <div key={invitato.id} className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition-all" onClick={() => handleInvitatoClick(invitato)}>
                           {/* Header with avatar and RSVP badge */}
                           <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
-                            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm shrink-0">
                                 {invitato.nome[0]}{invitato.cognome[0]}
                               </div>
-                              <div className="min-w-0">
-                                <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
-                                  {invitato.nome} {invitato.cognome}
-                                </p>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
+                                    {invitato.nome} {invitato.cognome}
+                                  </p>
+                                  <WhatsAppStatusBadge status={invitato.whatsapp_message_status} />
+                                </div>
                                 <p className="text-xs text-gray-500 truncate">
                                   {invitato.tipo_ospite}
                                 </p>

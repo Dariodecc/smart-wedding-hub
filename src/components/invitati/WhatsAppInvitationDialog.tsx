@@ -39,7 +39,8 @@ export function WhatsAppInvitationDialog({
   const [sentCount, setSentCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
 
-  // Fetch guests who haven't received WhatsApp invitation
+  // Fetch guests who can receive WhatsApp invitation
+  // Only show guests that have rsvp_uuid AND don't have delivered/sent status
   const { data: guests = [], isLoading } = useQuery({
     queryKey: ['invitati-whatsapp-pending', weddingId],
     queryFn: async () => {
@@ -52,12 +53,13 @@ export function WhatsAppInvitationDialog({
           is_capo_famiglia,
           cellulare,
           whatsapp_rsvp_inviato,
+          whatsapp_message_status,
           rsvp_uuid,
           famiglie:famiglia_id(nome)
         `)
         .eq('wedding_id', weddingId)
-        .eq('whatsapp_rsvp_inviato', false)
         .not('rsvp_uuid', 'is', null)
+        .or('whatsapp_message_status.is.null,whatsapp_message_status.eq.failed,whatsapp_message_status.eq.read')
         .order('cognome');
 
       if (error) throw error;

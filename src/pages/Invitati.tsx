@@ -533,7 +533,7 @@ const Invitati = () => {
                             <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-28" /></td>
                             <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4"><Skeleton className="h-4 w-20" /></td>
                           </tr>) : processedInvitati && processedInvitati.length > 0 ? processedInvitati.map(item => {
-                  if (item.type === 'family') {
+                  if (item.type === 'family' && item.famiglia) {
                     return <>
                                 {/* Family Header Row */}
                                 <tr key={`family-${item.famiglia.id}`} className="bg-purple-50 border-y border-purple-200">
@@ -583,7 +583,7 @@ const Invitati = () => {
                                     <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
                                       <div className="flex items-center gap-1.5">
                                         <span className="text-xs sm:text-sm text-gray-700 truncate">
-                                          {item.famiglia.nome}
+                                          {item.famiglia?.nome || '-'}
                                         </span>
                                         {membro.is_capo_famiglia && <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-1.5 py-0.5 text-xs shrink-0">
                                             Capo
@@ -662,7 +662,7 @@ const Invitati = () => {
                         </div>
                       </div>)}
                   </div> : processedInvitati && processedInvitati.length > 0 ? processedInvitati.map(item => {
-            if (item.type === 'family') {
+            if (item.type === 'family' && item.famiglia) {
               return <div key={`family-${item.famiglia.id}`} className="col-span-full space-y-3">
                           {/* Family Header - Full width */}
                           <div className="bg-purple-50 border border-purple-200 rounded-lg px-3 sm:px-4 py-2 sm:py-3">
@@ -728,7 +728,7 @@ const Invitati = () => {
                                   
                                   <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-purple-600">
                                     <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-                                    <span className="font-medium truncate">{item.famiglia.nome}</span>
+                                    <span className="font-medium truncate">{item.famiglia?.nome || '-'}</span>
                                   </div>
                                 </div>
                               </div>)}

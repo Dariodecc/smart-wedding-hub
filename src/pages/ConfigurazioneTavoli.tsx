@@ -39,31 +39,30 @@ export default function ConfigurazioneTavoli() {
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Fetch wedding settings
+  // Fetch wedding password using security definer function
   const { data: wedding, isLoading: weddingLoading } = useQuery({
     queryKey: ['wedding-public', weddingId],
     queryFn: async () => {
-      console.log('🔍 Fetching wedding:', weddingId);
+      console.log('🔍 Fetching wedding password:', weddingId);
       
       const { data, error } = await supabase
-        .from('weddings')
-        .select('*')
-        .eq('id', weddingId)
-        .single();
+        .rpc('get_wedding_password_public', { _wedding_id: weddingId });
 
       if (error) {
         console.error('❌ Error fetching wedding:', error);
         throw error;
       }
       
+      // Function returns array, get first element
+      const weddingData = data?.[0];
+      
       console.log('✅ Wedding data loaded:', {
-        id: data.id,
-        couple_name: data.couple_name,
-        password_set: !!data.password,
-        password_value: data.password ? `"${data.password}"` : 'null'
+        couple_name: weddingData?.couple_name,
+        password_set: !!weddingData?.password,
+        password_value: weddingData?.password ? `"${weddingData.password}"` : 'null'
       });
       
-      return data;
+      return weddingData;
     },
     enabled: !!weddingId,
   });

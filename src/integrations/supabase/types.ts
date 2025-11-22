@@ -361,6 +361,13 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_wedding_password_public: {
+        Args: { _wedding_id: string }
+        Returns: {
+          couple_name: string
+          password: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -23,9 +23,9 @@ interface TavoloSVGProps {
 
 // Helper to calculate table length based on seats
 const getTableLength = (capienza: number): number => {
-  const baseLength = 200
-  const lengthPerSeat = 80
-  return baseLength + (capienza * lengthPerSeat / 2)
+  const seatWidth = 90
+  const minLength = 300
+  return Math.max(minLength, capienza * seatWidth / 2)
 }
 
 // Calculate seats in circle (for round table)
@@ -34,11 +34,11 @@ const calculateCircleSeats = (count: number, radius: number) => {
   const angleStep = (2 * Math.PI) / count;
 
   for (let i = 0; i < count; i++) {
-    const angle = i * angleStep - Math.PI / 2; // Start from top
+    const angle = i * angleStep - Math.PI / 2;
     seats.push({
       x: Math.cos(angle) * radius,
       y: Math.sin(angle) * radius,
-      rotation: 0, // Always upright
+      rotation: (angle + Math.PI / 2) * (180 / Math.PI), // Seats face inward
     });
   }
 
@@ -51,14 +51,16 @@ const calculateSingleSideSeats = (
   tableLength: number
 ): Array<{ x: number; y: number; rotation: number }> => {
   const positions = []
-  const spacing = tableLength / (count + 1)
-  const startX = -tableLength / 2
+  const seatWidth = 70
+  const totalSeatsWidth = count * seatWidth
+  const spacing = (tableLength - totalSeatsWidth) / (count + 1)
+  const startX = -tableLength / 2 + spacing
 
   for (let i = 0; i < count; i++) {
     positions.push({
-      x: startX + spacing * (i + 1),
-      y: -70,
-      rotation: 0 // Always upright
+      x: startX + (seatWidth + spacing) * i + seatWidth / 2,
+      y: -80,
+      rotation: 0
     })
   }
 
@@ -72,25 +74,34 @@ const calculateDoubleSideSeats = (
   tableWidth: number
 ): Array<{ x: number; y: number; rotation: number }> => {
   const positions = []
-  const seatsPerSide = Math.ceil(count / 2)
-  const spacing = tableLength / (seatsPerSide + 1)
-  const startX = -tableLength / 2
-
+  const topSeats = Math.floor(count / 2)
+  const bottomSeats = Math.ceil(count / 2)
+  
+  const seatWidth = 70
+  
   // Top side
-  for (let i = 0; i < Math.floor(count / 2); i++) {
+  const topSeatsWidth = topSeats * seatWidth
+  const topSpacing = (tableLength - topSeatsWidth) / (topSeats + 1)
+  const topStartX = -tableLength / 2 + topSpacing
+  
+  for (let i = 0; i < topSeats; i++) {
     positions.push({
-      x: startX + spacing * (i + 1),
-      y: -80,
-      rotation: 0 // Always upright
+      x: topStartX + (seatWidth + topSpacing) * i + seatWidth / 2,
+      y: -90,
+      rotation: 0
     })
   }
-
+  
   // Bottom side
-  for (let i = 0; i < Math.ceil(count / 2); i++) {
+  const bottomSeatsWidth = bottomSeats * seatWidth
+  const bottomSpacing = (tableLength - bottomSeatsWidth) / (bottomSeats + 1)
+  const bottomStartX = -tableLength / 2 + bottomSpacing
+  
+  for (let i = 0; i < bottomSeats; i++) {
     positions.push({
-      x: startX + spacing * (i + 1),
-      y: 80,
-      rotation: 0 // Always upright
+      x: bottomStartX + (seatWidth + bottomSpacing) * i + seatWidth / 2,
+      y: 90,
+      rotation: 180
     })
   }
 
@@ -114,7 +125,7 @@ const TavoloSVG = ({
   const seatPositions = useMemo(() => {
     const tableLength = getTableLength(capienza)
     if (tipo === 'rotondo') {
-      return calculateCircleSeats(capienza, 120)
+      return calculateCircleSeats(capienza, 140)
     } else if (tipo === 'rettangolare_singolo') {
       return calculateSingleSideSeats(capienza, tableLength)
     } else if (tipo === 'rettangolare_doppio') {
@@ -127,54 +138,55 @@ const TavoloSVG = ({
   
   return (
     <g transform={`translate(${posizione_x}, ${posizione_y})`}>
-      {/* Selection Highlight - Rotates with table */}
-      {isSelected && (
-        <g transform={`rotate(${rotazione || 0})`}>
-          {tipo === 'rotondo' && (
-            <circle
-              cx="0"
-              cy="0"
-              r="130"
-              fill="none"
-              stroke="#3B82F6"
-              strokeWidth="4"
-              strokeDasharray="10 5"
-              opacity="0.8"
-            />
-          )}
-          {tipo === 'rettangolare_singolo' && (
-            <rect
-              x={-tableLength/2 - 20}
-              y="-60"
-              width={tableLength + 40}
-              height="120"
-              rx="15"
-              fill="none"
-              stroke="#3B82F6"
-              strokeWidth="4"
-              strokeDasharray="10 5"
-              opacity="0.8"
-            />
-          )}
-          {tipo === 'rettangolare_doppio' && (
-            <rect
-              x={-tableLength/2 - 20}
-              y="-70"
-              width={tableLength + 40}
-              height="140"
-              rx="15"
-              fill="none"
-              stroke="#3B82F6"
-              strokeWidth="4"
-              strokeDasharray="10 5"
-              opacity="0.8"
-            />
-          )}
-        </g>
-      )}
-
-      {/* Table Shape - Rotates */}
+      {/* Everything inside this group rotates together */}
       <g transform={`rotate(${rotazione || 0})`}>
+        {/* Selection Highlight */}
+        {isSelected && (
+          <>
+            {tipo === 'rotondo' && (
+              <circle
+                cx="0"
+                cy="0"
+                r="155"
+                fill="none"
+                stroke="#3B82F6"
+                strokeWidth="4"
+                strokeDasharray="10 5"
+                opacity="0.8"
+              />
+            )}
+            {tipo === 'rettangolare_singolo' && (
+              <rect
+                x={-tableLength/2 - 20}
+                y="-90"
+                width={tableLength + 40}
+                height="170"
+                rx="15"
+                fill="none"
+                stroke="#3B82F6"
+                strokeWidth="4"
+                strokeDasharray="10 5"
+                opacity="0.8"
+              />
+            )}
+            {tipo === 'rettangolare_doppio' && (
+              <rect
+                x={-tableLength/2 - 20}
+                y="-100"
+                width={tableLength + 40}
+                height="200"
+                rx="15"
+                fill="none"
+                stroke="#3B82F6"
+                strokeWidth="4"
+                strokeDasharray="10 5"
+                opacity="0.8"
+              />
+            )}
+          </>
+        )}
+
+        {/* Table Shape */}
         {tipo === 'rotondo' && (
           <circle
             cx="0"
@@ -255,36 +267,37 @@ const TavoloSVG = ({
         >
           {nome}
         </text>
+
+        {/* Seats - Rotate WITH table */}
+        {seatPositions.map((pos, index) => {
+          const assignment = assignments[index]
+          const guest = assignment?.guest
+
+          const borderColor = guest
+            ? guest.rsvp_status === 'Ci sarò'
+              ? '#10B981'
+              : guest.rsvp_status === 'In attesa'
+                ? '#F59E0B'
+                : '#EF4444'
+            : '#9CA3AF'
+
+          return (
+            <DroppableSeat
+              key={index}
+              tavoloId={id}
+              seatIndex={index}
+              position={pos}
+              guest={guest}
+              borderColor={borderColor}
+              onSeatClick={() => onSeatClick(index)}
+              onDrop={(guestId) => onAssignGuest(guestId, id, index)}
+              tableRotation={rotazione || 0}
+              onMouseEnter={(e) => onSeatMouseEnter?.(guest, e)}
+              onMouseLeave={onSeatMouseLeave}
+            />
+          )
+        })}
       </g>
-
-      {/* Seats - Don't rotate */}
-      {seatPositions.map((pos, index) => {
-        const assignment = assignments[index]
-        const guest = assignment?.guest
-
-        const borderColor = guest
-          ? guest.rsvp_status === 'Ci sarò'
-            ? '#10B981'
-            : guest.rsvp_status === 'In attesa'
-              ? '#F59E0B'
-              : '#EF4444'
-          : '#9CA3AF'
-
-        return (
-          <DroppableSeat
-            key={index}
-            tavoloId={id}
-            seatIndex={index}
-            position={pos}
-            guest={guest}
-            borderColor={borderColor}
-            onSeatClick={() => onSeatClick(index)}
-            onDrop={(guestId) => onAssignGuest(guestId, id, index)}
-            onMouseEnter={(e) => onSeatMouseEnter?.(guest, e)}
-            onMouseLeave={onSeatMouseLeave}
-          />
-        )
-      })}
     </g>
   );
 };

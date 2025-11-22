@@ -46,7 +46,7 @@ const Tavoli = () => {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [zoom, setZoom] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: -2500, y: -2000 });
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [showAddTableDialog, setShowAddTableDialog] = useState(false);
@@ -55,6 +55,7 @@ const Tavoli = () => {
   const [tableDragStart, setTableDragStart] = useState({ x: 0, y: 0, tableX: 0, tableY: 0 });
   const [hoveredGuest, setHoveredGuest] = useState<any>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [isInitialViewSet, setIsInitialViewSet] = useState(false);
 
   const { register, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
@@ -268,6 +269,50 @@ const Tavoli = () => {
     canvas.addEventListener("wheel", handleWheel, { passive: false });
     return () => canvas.removeEventListener("wheel", handleWheel);
   }, []);
+
+  // Auto-center view when tables first load
+  useEffect(() => {
+    if (tavoli.length > 0 && !isInitialViewSet && canvasRef.current) {
+      // Calculate bounding box of all tables
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      
+      tavoli.forEach(tavolo => {
+        const padding = 300;
+        minX = Math.min(minX, tavolo.posizione_x - padding);
+        maxX = Math.max(maxX, tavolo.posizione_x + padding);
+        minY = Math.min(minY, tavolo.posizione_y - padding);
+        maxY = Math.max(maxY, tavolo.posizione_y + padding);
+      });
+      
+      const width = maxX - minX;
+      const height = maxY - minY;
+      
+      const canvasWidth = canvasRef.current.clientWidth;
+      const canvasHeight = canvasRef.current.clientHeight;
+      
+      // Calculate zoom to fit all tables
+      const zoomX = canvasWidth / width;
+      const zoomY = canvasHeight / height;
+      const newZoom = Math.min(zoomX, zoomY, 1.2);
+      
+      // Calculate center position
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      
+      setPanOffset({
+        x: centerX - canvasWidth / (2 * newZoom),
+        y: centerY - canvasHeight / (2 * newZoom)
+      });
+      
+      setZoom(newZoom);
+      setIsInitialViewSet(true);
+      
+      console.log('📍 Initial view set - centered on tables');
+    }
+  }, [tavoli, isInitialViewSet]);
 
   // Add table mutation
   const addTableMutation = useMutation({
@@ -740,7 +785,8 @@ const Tavoli = () => {
                   onClick={() => {
                     if (tavoli.length === 0) {
                       setZoom(1)
-                      setPanOffset({ x: -2500, y: -2000 })
+                      setPanOffset({ x: 0, y: 0 })
+                      toast.info('Nessun tavolo da visualizzare')
                       return
                     }
                     
@@ -767,7 +813,7 @@ const Tavoli = () => {
                     // Calculate zoom to fit all tables
                     const zoomX = canvasWidth / width
                     const zoomY = canvasHeight / height
-                    const newZoom = Math.min(zoomX, zoomY, 1.5)
+                    const newZoom = Math.min(zoomX, zoomY, 1.2)
                     
                     // Calculate center position
                     const centerX = (minX + maxX) / 2
@@ -779,7 +825,7 @@ const Tavoli = () => {
                     })
                     
                     setZoom(newZoom)
-                    toast.success('Vista resettata', { duration: 1500 })
+                    toast.success('Vista centrata su tutti i tavoli')
                   }}
                 >
                   <Maximize2 className="h-4 w-4 mr-2" />
@@ -883,12 +929,12 @@ const Tavoli = () => {
                     </pattern>
                   </defs>
                   
-                  {/* Grid covers infinite space */}
+                  {/* Grid covers visible area */}
                   <rect 
-                    x={panOffset.x - 5000} 
-                    y={panOffset.y - 5000} 
-                    width="20000" 
-                    height="20000" 
+                    x={panOffset.x - 1000} 
+                    y={panOffset.y - 1000} 
+                    width={(canvasRef.current?.clientWidth || 800) / zoom + 2000} 
+                    height={(canvasRef.current?.clientHeight || 600) / zoom + 2000} 
                     fill="url(#grid)" 
                   />
 
@@ -940,7 +986,8 @@ const Tavoli = () => {
                     onClick={() => {
                       if (tavoli.length === 0) {
                         setZoom(1)
-                        setPanOffset({ x: -2500, y: -2000 })
+                        setPanOffset({ x: 0, y: 0 })
+                        toast.info('Nessun tavolo da visualizzare')
                         return
                       }
                       
@@ -967,7 +1014,7 @@ const Tavoli = () => {
                       // Calculate zoom to fit all tables
                       const zoomX = canvasWidth / width
                       const zoomY = canvasHeight / height
-                      const newZoom = Math.min(zoomX, zoomY, 1.5)
+                      const newZoom = Math.min(zoomX, zoomY, 1.2)
                       
                       // Calculate center position
                       const centerX = (minX + maxX) / 2
@@ -979,7 +1026,7 @@ const Tavoli = () => {
                       })
                       
                       setZoom(newZoom)
-                      toast.success('Vista resettata', { duration: 1500 })
+                      toast.success('Vista centrata su tutti i tavoli')
                     }}
                     className="h-8 px-3"
                   >

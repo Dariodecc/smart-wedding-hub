@@ -23,9 +23,15 @@ interface TavoloSVGProps {
 
 // Helper to calculate table length based on seats
 const getTableLength = (capienza: number): number => {
-  const seatWidth = 90
-  const minLength = 300
-  return Math.max(minLength, capienza * seatWidth / 2)
+  const seatWidth = 80
+  const minSpacing = 20
+  const edgePadding = 40
+  
+  const totalSeatsWidth = capienza * seatWidth
+  const totalSpacing = (capienza - 1) * minSpacing
+  const totalLength = totalSeatsWidth + totalSpacing + (edgePadding * 2)
+  
+  return Math.max(300, totalLength)
 }
 
 // Calculate seats in circle (for round table)
@@ -51,14 +57,15 @@ const calculateSingleSideSeats = (
   tableLength: number
 ): Array<{ x: number; y: number; rotation: number }> => {
   const positions = []
-  const seatWidth = 70
-  const totalSeatsWidth = count * seatWidth
-  const spacing = (tableLength - totalSeatsWidth) / (count + 1)
-  const startX = -tableLength / 2 + spacing
+  const seatWidth = 80
+  const spacing = 20
+  
+  const totalWidth = (count * seatWidth) + ((count - 1) * spacing)
+  const startX = -totalWidth / 2
 
   for (let i = 0; i < count; i++) {
     positions.push({
-      x: startX + (seatWidth + spacing) * i + seatWidth / 2,
+      x: startX + (i * (seatWidth + spacing)) + (seatWidth / 2),
       y: -80,
       rotation: 0
     })
@@ -74,32 +81,31 @@ const calculateDoubleSideSeats = (
   tableWidth: number
 ): Array<{ x: number; y: number; rotation: number }> => {
   const positions = []
+  const seatWidth = 80
+  const spacing = 20
+  
   const topSeats = Math.floor(count / 2)
   const bottomSeats = Math.ceil(count / 2)
   
-  const seatWidth = 70
-  
-  // Top side
-  const topSeatsWidth = topSeats * seatWidth
-  const topSpacing = (tableLength - topSeatsWidth) / (topSeats + 1)
-  const topStartX = -tableLength / 2 + topSpacing
+  // TOP SIDE
+  const topTotalWidth = (topSeats * seatWidth) + ((topSeats - 1) * spacing)
+  const topStartX = -topTotalWidth / 2
   
   for (let i = 0; i < topSeats; i++) {
     positions.push({
-      x: topStartX + (seatWidth + topSpacing) * i + seatWidth / 2,
+      x: topStartX + (i * (seatWidth + spacing)) + (seatWidth / 2),
       y: -90,
       rotation: 0
     })
   }
   
-  // Bottom side
-  const bottomSeatsWidth = bottomSeats * seatWidth
-  const bottomSpacing = (tableLength - bottomSeatsWidth) / (bottomSeats + 1)
-  const bottomStartX = -tableLength / 2 + bottomSpacing
+  // BOTTOM SIDE
+  const bottomTotalWidth = (bottomSeats * seatWidth) + ((bottomSeats - 1) * spacing)
+  const bottomStartX = -bottomTotalWidth / 2
   
   for (let i = 0; i < bottomSeats; i++) {
     positions.push({
-      x: bottomStartX + (seatWidth + bottomSpacing) * i + seatWidth / 2,
+      x: bottomStartX + (i * (seatWidth + spacing)) + (seatWidth / 2),
       y: 90,
       rotation: 180
     })

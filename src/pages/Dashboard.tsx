@@ -5,7 +5,7 @@ import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Home, Table2, Layers, CheckCircle, Loader2, Plus } from "lucide-react";
+import { Users, Home, Table2, Layers, CheckCircle, Loader2, Plus, BarChart3, CheckCircle2, AlertCircle } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +22,7 @@ const Dashboard = () => {
       // Fetch invitati with relationships
       const { data: invitati, error: invitatiError } = await supabase
         .from('invitati')
-        .select('id, tipo_ospite, rsvp_status, famiglia_id, gruppo_id')
+        .select('id, tipo_ospite, rsvp_status, famiglia_id, gruppo_id, tavolo_id, posto_numero')
         .eq('wedding_id', wedding.id);
       
       if (invitatiError) throw invitatiError;
@@ -42,12 +42,21 @@ const Dashboard = () => {
         .eq('wedding_id', wedding.id);
       
       if (gruppiError) throw gruppiError;
+
+      // Fetch tavoli data
+      const { data: tavoli, error: tavoliError } = await supabase
+        .from('tavoli')
+        .select('id, nome, capienza')
+        .eq('wedding_id', wedding.id)
+        .order('nome');
+      
+      if (tavoliError) throw tavoliError;
       
       return {
         invitati: invitati || [],
         famiglieCount: famiglieCount || 0,
         gruppiCount: gruppiCount || 0,
-        tavoli: [] // Placeholder for future tavoli implementation
+        tavoli: tavoli || []
       };
     },
     enabled: !!wedding?.id,
@@ -78,6 +87,26 @@ const Dashboard = () => {
       ragazzi: invitati.filter(i => i.tipo_ospite === 'Ragazzo').length,
       adulti: invitati.filter(i => i.tipo_ospite === 'Adulto').length
     };
+
+    // Guest seating statistics
+    const guestsSeated = invitati.filter(i => i.tavolo_id !== null).length;
+    const guestsToSeat = totaleOspiti - guestsSeated;
+    
+    // Table statistics
+    const totalCapacity = tavoli.reduce((sum, table) => sum + (table.capienza || 0), 0);
+    const totalSeated = guestsSeated;
+    const overallOccupancy = totalCapacity > 0 ? Math.round((totalSeated / totalCapacity) * 100) : 0;
+    
+    // Calculate occupancy by table
+    const tableOccupancy = tavoli.map(table => {
+      const guestsAtTable = invitati.filter(g => g.tavolo_id === table.id).length;
+      return {
+        ...table,
+        occupati: guestsAtTable,
+        disponibili: table.capienza - guestsAtTable,
+        percentuale: Math.round((guestsAtTable / table.capienza) * 100)
+      };
+    });
     
     return {
       totaleOspiti,
@@ -86,7 +115,12 @@ const Dashboard = () => {
       totaleTavoli,
       rsvpData,
       etaData,
-      tavoliData: tavoli
+      tavoliData: tableOccupancy,
+      totalCapacity,
+      totalSeated,
+      overallOccupancy,
+      guestsSeated,
+      guestsToSeat
     };
   }, [dashboardData]);
 
@@ -178,7 +212,7 @@ const Dashboard = () => {
                 {stats?.totaleTavoli || 0}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                tavoli disponibili
+                Capacità: {stats?.totalCapacity || 0} posti
               </p>
             </div>
             
@@ -201,6 +235,72 @@ const Dashboard = () => {
                 gruppi organizzati
               </p>
             </div>
+          </div>
+
+          {/* Additional Stats - Seating Metrics */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {/* Occupazione Tavoli */}
+            <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                    Occupazione Tavoli
+                  </p>
+                </div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                  <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                </div>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                {stats?.overallOccupancy || 0}%
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats?.totalSeated || 0} / {stats?.totalCapacity || 0} posti occupati
+              </p>
+            </div>
+
+            {/* Invitati Posizionati */}
+            <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                    Invitati Posizionati
+                  </p>
+                </div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                </div>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-green-600">
+                {stats?.guestsSeated || 0}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats?.totaleOspiti > 0 ? Math.round((stats.guestsSeated / stats.totaleOspiti) * 100) : 0}% del totale
+              </p>
+            </div>
+
+            {/* Invitati da Posizionare */}
+            <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                    Invitati da Posizionare
+                  </p>
+                </div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-xl flex items-center justify-center shrink-0">
+                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+                </div>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-orange-600">
+                {stats?.guestsToSeat || 0}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats?.totaleOspiti > 0 ? Math.round((stats.guestsToSeat / stats.totaleOspiti) * 100) : 0}% rimanenti
+              </p>
+            </div>
+
+            {/* Empty slot for grid alignment */}
+            <div className="hidden lg:block" />
           </div>
 
           {/* Charts Section */}

@@ -59,6 +59,9 @@ export default function ConfigurazioneTavoli() {
   const [hoveredGuest, setHoveredGuest] = useState<any>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [isInitialViewSet, setIsInitialViewSet] = useState(false);
+  const [isDraggingTable, setIsDraggingTable] = useState(false);
+  const [tableDragStart, setTableDragStart] = useState({ x: 0, y: 0, tableX: 0, tableY: 0 });
+  const [localTavoli, setLocalTavoli] = useState<Tavolo[]>([]);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -213,6 +216,11 @@ export default function ConfigurazioneTavoli() {
     return assignments;
   };
 
+  // Sync local tavoli with query data
+  useEffect(() => {
+    setLocalTavoli(tavoli);
+  }, [tavoli]);
+
   // Debug state
   useEffect(() => {
     console.log('📊 Component state:', {
@@ -257,13 +265,13 @@ export default function ConfigurazioneTavoli() {
 
   // Auto-center view on load
   useEffect(() => {
-    if (tavoli.length > 0 && !isInitialViewSet && canvasRef.current) {
+    if (localTavoli.length > 0 && !isInitialViewSet && canvasRef.current) {
       let minX = Infinity,
         maxX = -Infinity;
       let minY = Infinity,
         maxY = -Infinity;
 
-      tavoli.forEach((tavolo) => {
+      localTavoli.forEach((tavolo) => {
         const padding = 300;
         minX = Math.min(minX, tavolo.posizione_x - padding);
         maxX = Math.max(maxX, tavolo.posizione_x + padding);
@@ -291,25 +299,28 @@ export default function ConfigurazioneTavoli() {
       setZoom(newZoom);
       setIsInitialViewSet(true);
     }
-  }, [tavoli, isInitialViewSet]);
+  }, [localTavoli, isInitialViewSet]);
 
-  // Rotation handler
+  // Rotation handler with save
   const rotateTable = async (degrees: number) => {
     if (!selectedTableId) return;
 
-    const tavolo = tavoli.find((t) => t.id === selectedTableId);
+    const tavolo = localTavoli.find((t) => t.id === selectedTableId);
     if (!tavolo) return;
 
-    const newRotation = (tavolo.rotazione || 0) + degrees;
+    const currentRotation = tavolo.rotazione || 0;
+    const newRotation = currentRotation + degrees;
 
-    // Update locally
-    queryClient.setQueryData(['tavoli-public', weddingId], (old: Tavolo[] | undefined) => {
-      if (!old) return old;
-      return old.map((t) =>
-        t.id === selectedTableId ? { ...t, rotazione: newRotation } : t
-      );
-    });
+    console.log('🔄 Rotating table:', { current: currentRotation, new: newRotation });
 
+    // Update locally first for immediate feedback
+    setLocalTavoli(prev => prev.map(t =>
+      t.id === selectedTableId
+        ? { ...t, rotazione: newRotation }
+        : t
+    ));
+
+    // Save to database
     try {
       const { error } = await supabase
         .from('tavoli')
@@ -317,24 +328,137 @@ export default function ConfigurazioneTavoli() {
         .eq('id', selectedTableId);
 
       if (error) throw error;
+
+      // Invalidate query to refresh from server
+      await queryClient.invalidateQueries({ queryKey: ['tavoli-public', weddingId] });
+
       toast.success(`Tavolo ruotato di ${degrees}°`);
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Errore nella rotazione');
+      console.error('Error rotating table:', error);
+      toast.error('Errore nella rotazione del tavolo');
+
+      // Revert on error
+      setLocalTavoli(tavoli);
+    }
+  };
+
+  // Table drag handlers
+  const handleTableDragStart = (tavoloId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const tavolo = localTavoli.find(t => t.id === tavoloId);
+    if (!tavolo) return;
+
+    setSelectedTableId(tavoloId);
+    setIsDraggingTable(true);
+
+    const svg = (e.target as SVGElement).ownerSVGElement;
+    if (!svg) return;
+
+    // Get SVG coordinates accounting for pan and zoom
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+
+    setTableDragStart({
+      x: svgP.x,
+      y: svgP.y,
+      tableX: tavolo.posizione_x,
+      tableY: tavolo.posizione_y
+    });
+
+    console.log('🎯 Started dragging table:', tavoloId);
+  };
+
+  const handleTableDragMove = (e: React.MouseEvent) => {
+    if (!isDraggingTable || !selectedTableId) return;
+
+    const svg = canvasRef.current?.querySelector('svg');
+    if (!svg) return;
+
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+
+    const deltaX = svgP.x - tableDragStart.x;
+    const deltaY = svgP.y - tableDragStart.y;
+
+    // Update table position locally
+    setLocalTavoli(prev => prev.map(t =>
+      t.id === selectedTableId
+        ? {
+            ...t,
+            posizione_x: tableDragStart.tableX + deltaX,
+            posizione_y: tableDragStart.tableY + deltaY
+          }
+        : t
+    ));
+  };
+
+  const handleTableDragEnd = async () => {
+    if (!isDraggingTable || !selectedTableId) return;
+
+    setIsDraggingTable(false);
+
+    const tavolo = localTavoli.find(t => t.id === selectedTableId);
+    if (!tavolo) return;
+
+    // Check if position actually changed
+    const originalTable = tavoli.find(t => t.id === selectedTableId);
+    if (!originalTable) return;
+
+    const positionChanged =
+      Math.abs(tavolo.posizione_x - originalTable.posizione_x) > 1 ||
+      Math.abs(tavolo.posizione_y - originalTable.posizione_y) > 1;
+
+    if (!positionChanged) {
+      console.log('⏭️ Position unchanged, not saving');
+      return;
+    }
+
+    console.log('💾 Saving new position:', {
+      tableId: selectedTableId,
+      x: tavolo.posizione_x,
+      y: tavolo.posizione_y
+    });
+
+    // Save to database
+    try {
+      const { error } = await supabase
+        .from('tavoli')
+        .update({
+          posizione_x: tavolo.posizione_x,
+          posizione_y: tavolo.posizione_y
+        })
+        .eq('id', selectedTableId);
+
+      if (error) throw error;
+
+      // Invalidate query to refresh from server
       await queryClient.invalidateQueries({ queryKey: ['tavoli-public', weddingId] });
+
+      toast.success('Posizione tavolo salvata');
+    } catch (error) {
+      console.error('Error saving table position:', error);
+      toast.error('Errore nel salvare la posizione');
+
+      // Revert on error
+      setLocalTavoli(tavoli);
     }
   };
 
   // Reset view
   const handleResetView = () => {
-    if (tavoli.length === 0) return;
+    if (localTavoli.length === 0) return;
 
     let minX = Infinity,
       maxX = -Infinity;
     let minY = Infinity,
       maxY = -Infinity;
 
-    tavoli.forEach((tavolo) => {
+    localTavoli.forEach((tavolo) => {
       const padding = 300;
       minX = Math.min(minX, tavolo.posizione_x - padding);
       maxX = Math.max(maxX, tavolo.posizione_x + padding);
@@ -365,6 +489,7 @@ export default function ConfigurazioneTavoli() {
 
   // Pan handlers
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    // Check if clicking on empty space (not on a table)
     if (
       e.target === e.currentTarget ||
       (e.target as Element).tagName === 'svg' ||
@@ -376,7 +501,9 @@ export default function ConfigurazioneTavoli() {
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    if (isPanning) {
+    if (isDraggingTable) {
+      handleTableDragMove(e);
+    } else if (isPanning) {
       setPanOffset({
         x: panStart.x - e.clientX,
         y: panStart.y - e.clientY,
@@ -385,7 +512,11 @@ export default function ConfigurazioneTavoli() {
   };
 
   const handleCanvasMouseUp = () => {
+    if (isDraggingTable) {
+      handleTableDragEnd();
+    }
     setIsPanning(false);
+    setIsDraggingTable(false);
   };
 
   // Wheel zoom
@@ -493,7 +624,7 @@ export default function ConfigurazioneTavoli() {
           <div>
             <h1 className="text-xl font-bold text-gray-900">Disposizione Tavoli</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              {wedding?.couple_name || 'Matrimonio'} • {tavoli.length} tavoli
+              {wedding?.couple_name || 'Matrimonio'} • {localTavoli.length} tavoli
             </p>
           </div>
 
@@ -556,13 +687,17 @@ export default function ConfigurazioneTavoli() {
       {/* Canvas */}
       <div
         ref={canvasRef}
-        className="flex-1 overflow-hidden relative bg-gray-50 cursor-grab active:cursor-grabbing"
+        className={`flex-1 overflow-hidden relative bg-gray-50 ${
+          isDraggingTable ? 'cursor-grabbing' :
+          isPanning ? 'cursor-grabbing' :
+          'cursor-grab'
+        }`}
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}
         onMouseLeave={handleCanvasMouseUp}
       >
-        {tavoli.length === 0 ? (
+        {localTavoli.length === 0 ? (
           // Empty state
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
@@ -601,8 +736,8 @@ export default function ConfigurazioneTavoli() {
               fill="url(#grid)"
             />
 
-            {/* Tables */}
-            {tavoli.map((tavolo) => {
+            {/* Tables - Use localTavoli for real-time updates */}
+            {localTavoli.map((tavolo) => {
               console.log('🎨 Rendering table:', tavolo.id, tavolo.nome, tavolo.posizione_x, tavolo.posizione_y);
               
               return (
@@ -617,7 +752,7 @@ export default function ConfigurazioneTavoli() {
                     console.log('🎯 Table clicked:', tavolo.id);
                     setSelectedTableId(tavolo.id);
                   }}
-                  onTableDragStart={() => {}}
+                  onTableDragStart={(e) => handleTableDragStart(tavolo.id, e)}
                   onSeatMouseEnter={(guest, e) => {
                     setHoveredGuest(guest);
                     setTooltipPosition({ x: e.clientX, y: e.clientY });

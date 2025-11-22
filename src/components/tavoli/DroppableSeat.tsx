@@ -9,7 +9,6 @@ interface DroppableSeatProps {
   borderColor: string;
   onSeatClick: () => void;
   onDrop: (guestId: string) => void;
-  tableRotation: number;
   onMouseEnter?: (e: React.MouseEvent) => void;
   onMouseLeave?: () => void;
 }
@@ -22,15 +21,10 @@ const DroppableSeat = ({
   borderColor,
   onSeatClick,
   onDrop,
-  tableRotation,
   onMouseEnter,
   onMouseLeave,
 }: DroppableSeatProps) => {
   const [isOver, setIsOver] = React.useState(false);
-
-  // Seat rotates with table, but content stays upright
-  const totalRotation = position.rotation + tableRotation;
-  const contentRotation = -totalRotation;
 
   return (
     <g
@@ -60,18 +54,9 @@ const DroppableSeat = ({
           onDrop={(e) => {
             e.preventDefault();
             const guestId = e.dataTransfer.getData("guestId");
-            const fromSeat = e.dataTransfer.getData("fromSeat");
             setIsOver(false);
-            
-            if (fromSeat) {
-              console.log("📍 MOVE GUEST from seat to seat");
-            } else {
-              console.log("📍 ASSIGN GUEST to seat");
-            }
-            
-            if (guestId) {
-              onDrop(guestId);
-            }
+            console.log("📍 DROP on seat:", guestId);
+            onDrop(guestId);
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -86,8 +71,7 @@ const DroppableSeat = ({
             !guest && !isOver && "border-gray-400"
           )}
           style={{
-            borderColor: guest ? borderColor : isOver ? "#2563EB" : "#9CA3AF",
-            transform: `rotate(${contentRotation}deg)`
+            borderColor: guest ? borderColor : isOver ? "#2563EB" : "#9CA3AF"
           }}
         >
           {guest ? (
@@ -96,10 +80,10 @@ const DroppableSeat = ({
                 {guest.nome[0]}
                 {guest.cognome[0]}
               </span>
-              <span className="text-[8px] text-gray-600 leading-tight text-center truncate max-w-full px-1">
+              <span className="text-[8px] text-gray-600 leading-tight text-center">
                 {guest.nome}
               </span>
-              <span className="text-[8px] text-gray-600 leading-tight text-center truncate max-w-full px-1">
+              <span className="text-[8px] text-gray-600 leading-tight text-center">
                 {guest.cognome}
               </span>
             </>

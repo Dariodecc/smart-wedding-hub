@@ -291,7 +291,6 @@ const TavoloSVG = ({
               borderColor={borderColor}
               onSeatClick={() => onSeatClick(index)}
               onDrop={(guestId) => onAssignGuest(guestId, id, index)}
-              tableRotation={rotazione || 0}
               onMouseEnter={(e) => onSeatMouseEnter?.(guest, e)}
               onMouseLeave={onSeatMouseLeave}
             />

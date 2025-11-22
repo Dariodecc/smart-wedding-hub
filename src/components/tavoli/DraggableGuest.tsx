@@ -47,11 +47,15 @@ const DraggableGuest = ({ guest }: DraggableGuestProps) => {
   return (
     <div
       ref={setNodeRef}
-      style={style as any}
-      {...listeners}
       {...attributes}
+      {...listeners}
+      style={{
+        ...style,
+        touchAction: 'none',
+        cursor: isDragging ? 'grabbing' : 'grab'
+      } as any}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg border-2 cursor-grab active:cursor-grabbing transition-all",
+        "flex items-center gap-3 p-3 rounded-lg border-2 transition-all",
         rsvpColor,
         isDragging && "shadow-lg ring-2 ring-blue-500"
       )}

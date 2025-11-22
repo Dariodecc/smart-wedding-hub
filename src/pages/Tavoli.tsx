@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
-import { DndContext, DragOverlay, DragEndEvent, DragStartEvent, DragOverEvent, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragOverlay, DragEndEvent, DragStartEvent, DragOverEvent, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { Search, Users, User, Crown, Plus, ZoomIn, ZoomOut, Maximize2, CheckCircle, Loader2, Circle, RectangleHorizontal, RotateCcw, RotateCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,9 +56,15 @@ const Tavoli = () => {
   const [tableDragStart, setTableDragStart] = useState({ x: 0, y: 0, tableX: 0, tableY: 0 });
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: {
-        distance: 5, // Reduced from 8 for easier dragging
+        distance: 3,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     })
   );
@@ -666,239 +672,239 @@ const Tavoli = () => {
   const isLoading = isLoadingTavoli || isLoadingInvitati;
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Left Sidebar - Guests List */}
-      <div className="w-[400px] bg-white border-r border-gray-200 flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h2 className="text-lg font-bold text-gray-900">Ospiti Disponibili</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {availableGuests.length} ospiti senza tavolo
-          </p>
-        </div>
-
-        {/* Search */}
-        <div className="px-6 py-3 border-b border-gray-200">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Cerca ospite..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-10 border-gray-200 rounded-lg"
-            />
+    <DndContext
+      sensors={sensors}
+      onDragStart={(e) => {
+        console.log('🎮 DndContext onDragStart triggered');
+        handleDragStart(e);
+      }}
+      onDragOver={(e) => {
+        console.log('🎮 DndContext onDragOver triggered');
+        handleDragOver(e);
+      }}
+      onDragEnd={(e) => {
+        console.log('🎮 DndContext onDragEnd triggered');
+        handleDragEnd(e);
+      }}
+      onDragCancel={() => {
+        console.log('🎮 DndContext onDragCancel triggered');
+        handleDragCancel();
+      }}
+      collisionDetection={closestCenter}
+    >
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        {/* Left Sidebar - Guests List */}
+        <div className="w-[400px] bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-lg font-bold text-gray-900">Ospiti Disponibili</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {availableGuests.length} ospiti senza tavolo
+            </p>
           </div>
-        </div>
 
-        {/* Guests List */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          {/* Search */}
+          <div className="px-6 py-3 border-b border-gray-200">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Cerca ospite..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-10 border-gray-200 rounded-lg"
+              />
             </div>
-          ) : groupedGuests.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center py-12">
-              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
-                <CheckCircle className="h-8 w-8 text-green-600" />
+          </div>
+
+          {/* Guests List */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 mb-2">
-                Tutti gli ospiti sono assegnati!
-              </h3>
-              <p className="text-sm text-gray-500">
-                Ottimo lavoro! Ogni ospite ha il suo posto.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {groupedGuests.map((group, idx) => (
-                <div key={group.type === "family" ? group.famiglia!.id : `singles-${idx}`}>
-                  {/* Group Header */}
-                  {group.type === "family" && (
-                    <div className="flex items-center gap-2 mb-2 px-2">
-                      <Users className="h-4 w-4 text-purple-600" />
-                      <span className="text-sm font-semibold text-purple-900">
-                        {group.famiglia!.nome}
-                      </span>
-                      <span className="text-xs text-purple-600">
-                        ({group.membri!.length})
-                      </span>
-                    </div>
-                  )}
-
-                  {group.type === "singles" && (
-                    <div className="flex items-center gap-2 mb-2 px-2">
-                      <User className="h-4 w-4 text-gray-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        Invitati Singoli
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Guest Cards */}
-                  <div className="space-y-2">
-                    {(group.type === "family" ? group.membri! : group.singles!).map((guest) => (
-                      <DraggableGuest key={guest.id} guest={guest} />
-                    ))}
-                  </div>
+            ) : groupedGuests.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">
+                  Tutti gli ospiti sono assegnati!
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Ottimo lavoro! Ogni ospite ha il suo posto.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {groupedGuests.map((group, idx) => (
+                  <div key={group.type === "family" ? group.famiglia!.id : `singles-${idx}`}>
+                    {/* Group Header */}
+                    {group.type === "family" && (
+                      <div className="flex items-center gap-2 mb-2 px-2">
+                        <Users className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-semibold text-purple-900">
+                          {group.famiglia!.nome}
+                        </span>
+                        <span className="text-xs text-purple-600">
+                          ({group.membri!.length})
+                        </span>
+                      </div>
+                    )}
 
-      {/* Right Canvas Area */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-gray-100">
-        {/* Toolbar */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Disposizione Tavoli</h1>
-              <p className="text-sm text-gray-500 mt-0.5">
-                {tavoli.length} tavoli • {totalAssigned} ospiti assegnati
-              </p>
-            </div>
+                    {group.type === "singles" && (
+                      <div className="flex items-center gap-2 mb-2 px-2">
+                        <User className="h-4 w-4 text-gray-600" />
+                        <span className="text-sm font-semibold text-gray-900">
+                          Invitati Singoli
+                        </span>
+                      </div>
+                    )}
 
-            <div className="flex items-center gap-2">
-              {/* Zoom Controls */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
-                className="border-gray-200"
-              >
-                <ZoomOut className="h-4 w-4" />
-              </Button>
-              <span className="text-sm font-medium text-gray-700 min-w-[60px] text-center">
-                {Math.round(zoom * 100)}%
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setZoom(Math.min(2, zoom + 0.1))}
-                className="border-gray-200"
-              >
-                <ZoomIn className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setZoom(1);
-                  setPanOffset({ x: 0, y: 0 });
-                }}
-                className="border-gray-200 ml-2"
-              >
-                <Maximize2 className="h-4 w-4 mr-2" />
-                Reset
-              </Button>
-
-              <Separator orientation="vertical" className="h-8 mx-2" />
-
-              {/* Rotation & Delete Controls - Only shown when table selected */}
-              {selectedTableId && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-700">Ruota:</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => rotateTable(-15)}
-                      className="border-gray-200"
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => rotateTable(15)}
-                      className="border-gray-200"
-                    >
-                      <RotateCw className="h-4 w-4" />
-                    </Button>
+                    {/* Guest Cards */}
+                    <div className="space-y-2">
+                      {(group.type === "family" ? group.membri! : group.singles!).map((guest) => (
+                        <DraggableGuest key={guest.id} guest={guest} />
+                      ))}
+                    </div>
                   </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDeleteTable}
-                    className="border-red-200 text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-
-                  <Separator orientation="vertical" className="h-8 mx-2" />
-                </>
-              )}
-
-              {/* Add Table Button */}
-              <Button
-                onClick={() => setShowAddTableDialog(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Aggiungi Tavolo
-              </Button>
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Canvas */}
-        <div
-          ref={canvasRef}
-          className={cn(
-            "flex-1 overflow-hidden relative",
-            isDraggingTable ? "cursor-grabbing" : isPanning ? "cursor-grabbing" : "cursor-move"
-          )}
-          onMouseDown={handleCanvasMouseDown}
-          onMouseMove={handleCanvasMouseMove}
-          onMouseUp={handleCanvasMouseUp}
-          onMouseLeave={handleCanvasMouseUp}
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-            </div>
-          ) : tavoli.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
-                <Circle className="h-10 w-10 text-gray-400" />
+        {/* Right Canvas Area */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-gray-100">
+          {/* Toolbar */}
+          <div className="bg-white border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Disposizione Tavoli</h1>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {tavoli.length} tavoli • {totalAssigned} ospiti assegnati
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Nessun tavolo ancora
-              </h3>
-              <p className="text-sm text-gray-500 mb-6">
-                Inizia creando il tuo primo tavolo
-              </p>
-              <Button
-                onClick={() => setShowAddTableDialog(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Crea Primo Tavolo
-              </Button>
+
+              <div className="flex items-center gap-2">
+                {/* Zoom Controls */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
+                  className="border-gray-200"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium text-gray-700 min-w-[60px] text-center">
+                  {Math.round(zoom * 100)}%
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setZoom(Math.min(2, zoom + 0.1))}
+                  className="border-gray-200"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setZoom(1);
+                    setPanOffset({ x: 0, y: 0 });
+                  }}
+                  className="border-gray-200 ml-2"
+                >
+                  <Maximize2 className="h-4 w-4 mr-2" />
+                  Reset
+                </Button>
+
+                <Separator orientation="vertical" className="h-8 mx-2" />
+
+                {/* Rotation & Delete Controls - Only shown when table selected */}
+                {selectedTableId && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-700">Ruota:</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => rotateTable(-15)}
+                        className="border-gray-200"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => rotateTable(15)}
+                        className="border-gray-200"
+                      >
+                        <RotateCw className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDeleteTable}
+                      className="border-red-200 text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+
+                    <Separator orientation="vertical" className="h-8 mx-2" />
+                  </>
+                )}
+
+                {/* Add Table Button */}
+                <Button
+                  onClick={() => setShowAddTableDialog(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Aggiungi Tavolo
+                </Button>
+              </div>
             </div>
-          ) : (
-            <DndContext
-              onDragStart={(e) => {
-                console.log('🎮 DndContext onDragStart triggered');
-                handleDragStart(e);
-              }}
-              onDragOver={(e) => {
-                console.log('🎮 DndContext onDragOver triggered');
-                handleDragOver(e);
-              }}
-              onDragEnd={(e) => {
-                console.log('🎮 DndContext onDragEnd triggered');
-                handleDragEnd(e);
-              }}
-              onDragCancel={() => {
-                console.log('🎮 DndContext onDragCancel triggered');
-                handleDragCancel();
-              }}
-              sensors={sensors}
-              collisionDetection={closestCenter}
-            >
+          </div>
+
+          {/* Canvas */}
+          <div
+            ref={canvasRef}
+            className={cn(
+              "flex-1 overflow-hidden relative",
+              isDraggingTable ? "cursor-grabbing" : isPanning ? "cursor-grabbing" : "cursor-move"
+            )}
+            onMouseDown={handleCanvasMouseDown}
+            onMouseMove={handleCanvasMouseMove}
+            onMouseUp={handleCanvasMouseUp}
+            onMouseLeave={handleCanvasMouseUp}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+              </div>
+            ) : tavoli.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+                  <Circle className="h-10 w-10 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Nessun tavolo ancora
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Inizia creando il tuo primo tavolo
+                </p>
+                <Button
+                  onClick={() => setShowAddTableDialog(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crea Primo Tavolo
+                </Button>
+              </div>
+            ) : (
               <svg
                 width="100%"
                 height="100%"
@@ -938,20 +944,21 @@ const Tavoli = () => {
                   />
                 ))}
               </svg>
-
-              <DragOverlay>
-                {activeGuest && (
-                  <div className="p-2 bg-white rounded-lg border-2 border-blue-500 shadow-lg">
-                    <p className="text-sm font-medium">
-                      {activeGuest.nome} {activeGuest.cognome}
-                    </p>
-                  </div>
-                )}
-              </DragOverlay>
-            </DndContext>
-          )}
+            )}
+          </div>
         </div>
       </div>
+
+      {/* DragOverlay - MUST be inside DndContext */}
+      <DragOverlay>
+        {activeGuest && (
+          <div className="p-3 bg-white rounded-lg border-2 border-blue-500 shadow-xl">
+            <p className="text-sm font-medium">
+              {activeGuest.nome} {activeGuest.cognome}
+            </p>
+          </div>
+        )}
+      </DragOverlay>
 
       {/* Add Table Dialog */}
       <Dialog open={showAddTableDialog} onOpenChange={setShowAddTableDialog}>
@@ -1098,7 +1105,7 @@ const Tavoli = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </DndContext>
   );
 };
 

@@ -158,6 +158,7 @@ export type Database = {
           posto_numero: number | null
           preferenze_alimentari: string[] | null
           rsvp_status: string | null
+          rsvp_updated_at: string | null
           rsvp_uuid: string | null
           tavolo_id: string | null
           tipo_ospite: string
@@ -187,6 +188,7 @@ export type Database = {
           posto_numero?: number | null
           preferenze_alimentari?: string[] | null
           rsvp_status?: string | null
+          rsvp_updated_at?: string | null
           rsvp_uuid?: string | null
           tavolo_id?: string | null
           tipo_ospite: string
@@ -216,6 +218,7 @@ export type Database = {
           posto_numero?: number | null
           preferenze_alimentari?: string[] | null
           rsvp_status?: string | null
+          rsvp_updated_at?: string | null
           rsvp_uuid?: string | null
           tavolo_id?: string | null
           tipo_ospite?: string

@@ -2,7 +2,6 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
-import { DndContext, DragOverlay, DragEndEvent, DragStartEvent, DragOverEvent, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { Search, Users, User, Crown, Plus, ZoomIn, ZoomOut, Maximize2, CheckCircle, Loader2, Circle, RectangleHorizontal, RotateCcw, RotateCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,26 +49,9 @@ const Tavoli = () => {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [showAddTableDialog, setShowAddTableDialog] = useState(false);
-  const [activeGuest, setActiveGuest] = useState<Guest | null>(null);
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [isDraggingTable, setIsDraggingTable] = useState(false);
   const [tableDragStart, setTableDragStart] = useState({ x: 0, y: 0, tableX: 0, tableY: 0 });
-
-  const sensors = useSensors(
-    useSensor(MouseSensor, {
-      activationConstraint: {
-        distance: 3,
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 250,
-        tolerance: 5,
-      },
-    })
-  );
-
-  console.log('🎮 DndContext sensors initialized:', sensors);
 
   const { register, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
@@ -80,19 +62,6 @@ const Tavoli = () => {
   });
 
   const watchTipo = watch("tipo");
-
-  // Check if DnD Kit is properly installed
-  useEffect(() => {
-    console.log('🔍 Checking DnD Kit installation...');
-    console.log('DndContext:', DndContext);
-    console.log('Sensors:', sensors);
-    
-    if (!DndContext) {
-      console.error('❌ DnD Kit not properly imported!');
-    } else {
-      console.log('✅ DnD Kit properly loaded');
-    }
-  }, []);
 
   // Fetch tavoli
   const { data: tavoli = [], isLoading: isLoadingTavoli } = useQuery({
@@ -297,118 +266,6 @@ const Tavoli = () => {
     },
   });
 
-  // Handle drag end
-  const handleDragEnd = async (event: DragEndEvent) => {
-    console.log('🏁 DRAG END:', {
-      activeId: event.active.id,
-      overId: event.over?.id,
-      overData: event.over?.data.current
-    });
-
-    const { active, over } = event;
-    setActiveGuest(null);
-
-    if (!over) {
-      console.warn('⚠️ No drop target');
-      return;
-    }
-
-    const guestId = active.id as string;
-    const dropData = over.data.current;
-
-    console.log('📍 Drop data:', dropData);
-
-    if (!dropData?.tavoloId || dropData?.seatIndex === undefined) {
-      console.error('❌ Invalid drop data:', dropData);
-      return;
-    }
-
-    const { tavoloId, seatIndex } = dropData;
-
-    console.log('✨ Assigning guest:', {
-      guestId,
-      guestName: activeGuest ? `${activeGuest.nome} ${activeGuest.cognome}` : 'unknown',
-      tavoloId,
-      seatIndex
-    });
-
-    try {
-      // Check if seat is already occupied
-      console.log('🔍 Checking if seat is occupied...');
-
-      const { data: existingAssignment, error: checkError } = await supabase
-        .from("invitati")
-        .select("id, nome, cognome")
-        .eq("tavolo_id", tavoloId)
-        .eq("posto_numero", seatIndex)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('❌ Error checking seat:', checkError);
-        throw checkError;
-      }
-
-      if (existingAssignment) {
-        console.warn('⚠️ Seat already occupied by:', existingAssignment);
-        toast.error(`Questo posto è già occupato da ${existingAssignment.nome} ${existingAssignment.cognome}`);
-        return;
-      }
-
-      console.log('✅ Seat is free, assigning...');
-
-      // Assign guest to table and seat
-      const { error: updateError } = await supabase
-        .from("invitati")
-        .update({
-          tavolo_id: tavoloId,
-          posto_numero: seatIndex,
-        })
-        .eq("id", guestId);
-
-      if (updateError) {
-        console.error('❌ Error updating guest:', updateError);
-        throw updateError;
-      }
-
-      console.log('✅ Guest assigned successfully!');
-
-      // Refresh data
-      await queryClient.invalidateQueries({ queryKey: ["invitati", wedding?.id] });
-      toast.success("Ospite assegnato al tavolo");
-    } catch (error) {
-      console.error('💥 Error in handleDragEnd:', error);
-      toast.error("Errore nell'assegnare l'ospite");
-    }
-  };
-
-  const handleDragStart = (event: DragStartEvent) => {
-    console.log('🚀 DRAG START:', {
-      activeId: event.active.id,
-      activeData: event.active.data.current,
-      guest: event.active.data.current?.guest
-    });
-
-    const { active } = event;
-    const guest = active.data.current?.guest;
-    setActiveGuest(guest);
-
-    if (!guest) {
-      console.error('❌ No guest data in drag start!');
-    }
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    console.log('🎯 DRAG OVER:', {
-      activeId: event.active.id,
-      overId: event.over?.id
-    });
-  };
-
-  const handleDragCancel = () => {
-    console.log('🚫 DRAG CANCELLED');
-    setActiveGuest(null);
-  };
-
   // Handle seat click (to remove assignment)
   const handleSeatClick = async (tavoloId: string, seatIndex: number) => {
     const assignment = getAssignmentsForTable(tavoloId)[seatIndex];
@@ -430,6 +287,44 @@ const Tavoli = () => {
     } catch (error) {
       console.error("Error removing guest:", error);
       toast.error("Errore nella rimozione dell'ospite");
+    }
+  };
+
+  // Handle assigning guest to a seat via native drag & drop
+  const handleAssignGuest = async (guestId: string, tavoloId: string, seatIndex: number) => {
+    console.log("✨ Assigning:", { guestId, tavoloId, seatIndex });
+
+    try {
+      // Check if seat is occupied
+      const { data: existingAssignment } = await supabase
+        .from("invitati")
+        .select("id, nome, cognome")
+        .eq("tavolo_id", tavoloId)
+        .eq("posto_numero", seatIndex)
+        .maybeSingle();
+
+      if (existingAssignment) {
+        toast.error(
+          `Posto occupato da ${existingAssignment.nome} ${existingAssignment.cognome}`
+        );
+        return;
+      }
+
+      // Assign guest
+      const { error } = await supabase
+        .from("invitati")
+        .update({ tavolo_id: tavoloId, posto_numero: seatIndex })
+        .eq("id", guestId);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
+      await queryClient.invalidateQueries({ queryKey: ["invitati", wedding?.id] });
+
+      toast.success("Ospite assegnato al tavolo");
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Errore nell'assegnare l'ospite");
     }
   };
 
@@ -925,7 +820,8 @@ const Tavoli = () => {
                     key={tavolo.id}
                     tavolo={tavolo}
                     assignments={getAssignmentsForTable(tavolo.id)}
-                    onSeatClick={handleSeatClick}
+                    onSeatClick={(seatIndex) => handleSeatClick(tavolo.id, seatIndex)}
+                    onAssignGuest={handleAssignGuest}
                     isSelected={selectedTableId === tavolo.id}
                     onTableClick={() => handleTableClick(tavolo.id)}
                     onTableDragStart={(e) => handleTableDragStart(tavolo.id, e)}
@@ -936,17 +832,6 @@ const Tavoli = () => {
           </div>
         </div>
       </div>
-
-      {/* DragOverlay - MUST be inside DndContext */}
-      <DragOverlay>
-        {activeGuest && (
-          <div className="p-3 bg-white rounded-lg border-2 border-blue-500 shadow-xl">
-            <p className="text-sm font-medium">
-              {activeGuest.nome} {activeGuest.cognome}
-            </p>
-          </div>
-        )}
-      </DragOverlay>
 
       {/* Add Table Dialog */}
       <Dialog open={showAddTableDialog} onOpenChange={setShowAddTableDialog}>

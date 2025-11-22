@@ -12,7 +12,8 @@ interface TavoloSVGProps {
     rotazione?: number;
   };
   assignments: Record<number, { guest: any }>;
-  onSeatClick: (tavoloId: string, seatIndex: number) => void;
+  onSeatClick: (seatIndex: number) => void;
+  onAssignGuest: (guestId: string, tavoloId: string, seatIndex: number) => void;
   isSelected: boolean;
   onTableClick: () => void;
   onTableDragStart: (e: React.MouseEvent) => void;
@@ -83,6 +84,7 @@ const TavoloSVG = ({
   tavolo,
   assignments,
   onSeatClick,
+  onAssignGuest,
   isSelected,
   onTableClick,
   onTableDragStart,
@@ -239,7 +241,8 @@ const TavoloSVG = ({
             position={pos}
             guest={guest}
             borderColor={borderColor}
-            onSeatClick={() => onSeatClick(id, index)}
+            onSeatClick={() => onSeatClick(index)}
+            onDrop={(guestId) => onAssignGuest(guestId, id, index)}
           />
         );
       })}

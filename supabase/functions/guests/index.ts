@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-api-key',
 }
 
 serve(async (req) => {
@@ -26,25 +26,15 @@ serve(async (req) => {
       )
     }
 
-    // Verify API Key (Bearer token)
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader) {
+    // Get API key from custom header
+    const apiKey = req.headers.get('x-api-key')
+    
+    if (!apiKey) {
       return new Response(
         JSON.stringify({ 
           code: 401,
           error: 'Unauthorized',
-          message: 'Missing authorization header' 
-        }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    if (!authHeader.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ 
-          code: 401,
-          error: 'Unauthorized',
-          message: 'Invalid authorization format. Use: Authorization: Bearer YOUR_API_KEY' 
+          message: 'Missing x-api-key header' 
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
@@ -55,9 +45,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
-
-    // Extract API key
-    const apiKey = authHeader.substring(7)
     
     // Verify API key exists and is active
     const { data: keyData, error: keyError } = await supabaseAdmin
@@ -68,7 +55,7 @@ serve(async (req) => {
       .single()
     
     if (keyError || !keyData) {
-      console.error('Invalid API key:', keyError)
+      console.error('Invalid API key:', apiKey.substring(0, 10) + '...')
       return new Response(
         JSON.stringify({ 
           code: 401,
@@ -88,7 +75,7 @@ serve(async (req) => {
       .single()
     
     if (accessError || !accessData) {
-      console.error('API key does not have access to wedding:', accessError)
+      console.error('API key does not have access to wedding:', weddingId)
       return new Response(
         JSON.stringify({ 
           code: 403,
@@ -104,6 +91,8 @@ serve(async (req) => {
       .from('api_keys')
       .update({ last_used_at: new Date().toISOString() })
       .eq('id', keyData.id)
+
+    console.log('✅ API key validated successfully for wedding:', weddingId)
 
     // Route to appropriate handler
     const guestId = pathParts[1]
@@ -154,7 +143,7 @@ serve(async (req) => {
       )
     }
 
-    if (req.method === 'GET' && guestId) {
+    if (req.method === 'GET' && guestId && !isWebhook) {
       // GET single guest
       const { data: guest, error } = await supabaseAdmin
         .from('invitati')
@@ -269,7 +258,7 @@ serve(async (req) => {
       )
     }
 
-    if (req.method === 'POST' && guestId) {
+    if (req.method === 'POST' && guestId && !isWebhook) {
       // Update guest
       const updateData = await req.json()
 

@@ -566,10 +566,14 @@ const Invitati = () => {
                                       </div>
                                     </td>
                                     <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-                                      <a href={`https://wa.me/${membro.cellulare.replace(/[^0-9+]/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                                        <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                                        {membro.cellulare}
-                                      </a>
+                                      {membro.cellulare ? (
+                                        <a href={`https://wa.me/${membro.cellulare.replace(/[^0-9+]/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                                          <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                          {membro.cellulare}
+                                        </a>
+                                      ) : (
+                                        <span className="text-xs sm:text-sm text-gray-400">-</span>
+                                      )}
                                     </td>
                                     <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
                                       <div className="text-xs sm:text-sm text-gray-700">
@@ -609,10 +613,14 @@ const Invitati = () => {
                                   </div>
                                 </td>
                                 <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-                                  <a href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                                    <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                                    {invitato.cellulare}
-                                  </a>
+                                  {invitato.cellulare ? (
+                                    <a href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                                      <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                      {invitato.cellulare}
+                                    </a>
+                                  ) : (
+                                    <span className="text-xs sm:text-sm text-gray-400">-</span>
+                                  )}
                                 </td>
                                 <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
                                   <div className="text-xs sm:text-sm text-gray-700">
@@ -701,10 +709,17 @@ const Invitati = () => {
                                 
                                 {/* Details */}
                                 <div className="space-y-1.5 sm:space-y-2">
-                                  <a href={`https://wa.me/${membro.cellulare.replace(/[^0-9+]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 sm:gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline" onClick={e => e.stopPropagation()}>
-                                    <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-                                    <span className="truncate">{membro.cellulare}</span>
-                                  </a>
+                                  {membro.cellulare ? (
+                                    <a href={`https://wa.me/${membro.cellulare.replace(/[^0-9+]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 sm:gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline" onClick={e => e.stopPropagation()}>
+                                      <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                                      <span className="truncate">{membro.cellulare}</span>
+                                    </a>
+                                  ) : (
+                                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-400">
+                                      <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                                      <span className="truncate">-</span>
+                                    </div>
+                                  )}
                                   
                                   {membro.email && <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-600">
                                       <Mail className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 shrink-0" />
@@ -745,10 +760,17 @@ const Invitati = () => {
                           
                           {/* Details */}
                           <div className="space-y-1.5 sm:space-y-2">
-                            <a href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 sm:gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline" onClick={e => e.stopPropagation()}>
-                              <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-                              <span className="truncate">{invitato.cellulare}</span>
-                            </a>
+                            {invitato.cellulare ? (
+                              <a href={`https://wa.me/${invitato.cellulare.replace(/[^0-9+]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 sm:gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline" onClick={e => e.stopPropagation()}>
+                                <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                                <span className="truncate">{invitato.cellulare}</span>
+                              </a>
+                            ) : (
+                              <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-400">
+                                <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                                <span className="truncate">-</span>
+                              </div>
+                            )}
                             
                             {invitato.email && <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-600">
                                 <Mail className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 shrink-0" />

@@ -1,4 +1,3 @@
-import { useDraggable } from "@dnd-kit/core";
 import { Crown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -15,53 +14,27 @@ interface DraggableGuestProps {
 }
 
 const DraggableGuest = ({ guest }: DraggableGuestProps) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: guest.id,
-    data: { guest },
-  });
-
-  // DEBUG LOGS
-  console.log('🎯 DraggableGuest rendered:', {
-    guestId: guest.id,
-    nome: guest.nome,
-    cognome: guest.cognome,
-    isDragging,
-    hasListeners: !!listeners,
-    hasAttributes: !!attributes
-  });
-
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: isDragging ? 1000 : "auto",
-        opacity: isDragging ? 0.5 : 1,
-      }
-    : undefined;
-
   const rsvpColor = {
     "Ci sarò": "border-green-500 bg-green-50",
     "In attesa": "border-yellow-500 bg-yellow-50",
     "Non ci sarò": "border-red-500 bg-red-50",
-  }[guest.rsvp_status] || "border-gray-300 bg-white";
+  }[guest.rsvp_status] || "border-gray-300";
 
   return (
     <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      style={{
-        ...style,
-        touchAction: 'none',
-        cursor: isDragging ? 'grabbing' : 'grab'
-      } as any}
-      className={cn(
-        "flex items-center gap-3 p-3 rounded-lg border-2 transition-all",
-        rsvpColor,
-        isDragging && "shadow-lg ring-2 ring-blue-500"
-      )}
-      onMouseDown={(e) => {
-        console.log('🖱️ Guest mousedown:', guest.nome, guest.cognome);
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("guestId", guest.id);
+        e.dataTransfer.effectAllowed = "move";
+        console.log("🚀 DRAG START:", guest.id, guest.nome, guest.cognome);
       }}
+      onDragEnd={() => {
+        console.log("🏁 DRAG END");
+      }}
+      className={cn(
+        "flex items-center gap-3 p-3 rounded-lg border-2 cursor-grab active:cursor-grabbing transition-all hover:shadow-md",
+        rsvpColor
+      )}
     >
       {/* Avatar */}
       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0">

@@ -1,5 +1,4 @@
-import { useDroppable } from "@dnd-kit/core";
-import { useEffect } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
 
 interface DroppableSeatProps {
@@ -9,6 +8,7 @@ interface DroppableSeatProps {
   guest: any;
   borderColor: string;
   onSeatClick: () => void;
+  onDrop: (guestId: string) => void;
 }
 
 const DroppableSeat = ({
@@ -18,29 +18,10 @@ const DroppableSeat = ({
   guest,
   borderColor,
   onSeatClick,
+  onDrop,
 }: DroppableSeatProps) => {
+  const [isOver, setIsOver] = React.useState(false);
   const droppableId = `seat-${tavoloId}-${seatIndex}`;
-  
-  const { isOver, setNodeRef } = useDroppable({
-    id: droppableId,
-    data: { tavoloId, seatIndex },
-  });
-
-  // DEBUG LOGS
-  console.log('💺 DroppableSeat rendered:', {
-    droppableId,
-    tavoloId,
-    seatIndex,
-    isOver,
-    hasGuest: !!guest,
-    guestName: guest ? `${guest.nome} ${guest.cognome}` : 'empty'
-  });
-
-  useEffect(() => {
-    if (isOver) {
-      console.log('✅ Seat is being hovered!', droppableId);
-    }
-  }, [isOver, droppableId]);
 
   return (
     <g
@@ -50,10 +31,27 @@ const DroppableSeat = ({
       {/* Foreign object for React droppable */}
       <foreignObject x="-35" y="-25" width="70" height="50">
         <div
-          ref={setNodeRef}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            setIsOver(true);
+            console.log("🎯 DRAG OVER:", droppableId);
+          }}
+          onDragLeave={() => {
+            setIsOver(false);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const guestId = e.dataTransfer.getData("guestId");
+            setIsOver(false);
+            console.log("📍 DROP on:", droppableId, "guest:", guestId);
+            if (guestId) {
+              onDrop(guestId);
+            }
+          }}
           onClick={(e) => {
             e.stopPropagation();
-            console.log('🪑 Seat clicked:', droppableId);
+            console.log("🪑 Seat clicked:", droppableId);
             onSeatClick();
           }}
           className={cn(
@@ -62,10 +60,8 @@ const DroppableSeat = ({
             !guest && !isOver && "border-gray-400"
           )}
           style={{
-            borderColor: guest ? borderColor : isOver ? '#2563EB' : '#9CA3AF',
+            borderColor: guest ? borderColor : isOver ? "#2563EB" : "#9CA3AF",
           }}
-          onMouseEnter={() => console.log('🎯 Mouse entered seat:', droppableId)}
-          onMouseLeave={() => console.log('👋 Mouse left seat:', droppableId)}
         >
           {guest ? (
             <>
@@ -82,7 +78,7 @@ const DroppableSeat = ({
             </>
           ) : (
             <span className="text-[10px] text-gray-400">
-              {isOver ? 'Rilascia' : 'Libero'}
+              {isOver ? "Rilascia" : "Libero"}
             </span>
           )}
         </div>

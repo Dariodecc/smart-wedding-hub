@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { WhatsAppStatusBadge } from "@/components/WhatsAppStatusBadge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -108,6 +109,7 @@ const Famiglie = () => {
           *,
           invitati(
             *,
+            whatsapp_message_status,
             famiglia:famiglie!invitati_famiglia_id_fkey(id, nome)
           )
         `
@@ -780,8 +782,11 @@ const Famiglie = () => {
                                   onClick={() => openEditInvitatoPanel(membro)}
                                 >
                                   <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-                                    <div className="text-xs sm:text-sm font-medium text-gray-900">
-                                      {membro.nome}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <div className="text-xs sm:text-sm font-medium text-gray-900">
+                                        {membro.nome}
+                                      </div>
+                                      <WhatsAppStatusBadge status={membro.whatsapp_message_status} />
                                     </div>
                                   </td>
                                   <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">

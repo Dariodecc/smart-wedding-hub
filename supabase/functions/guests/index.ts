@@ -16,8 +16,13 @@ serve(async (req) => {
     const url = new URL(req.url)
     const pathParts = url.pathname.split('/').filter(Boolean)
     
-    // Extract weddingId from path
-    const weddingId = pathParts[0]
+    // Remove 'guests' from path if present (it's part of the function name)
+    const startIndex = pathParts[0] === 'guests' ? 1 : 0
+    const weddingId = pathParts[startIndex]
+    
+    console.log('🔍 Full path:', url.pathname)
+    console.log('🔍 Path parts:', pathParts)
+    console.log('🔍 Wedding ID:', weddingId)
     
     if (!weddingId) {
       return new Response(
@@ -95,8 +100,8 @@ serve(async (req) => {
     console.log('✅ API key validated successfully for wedding:', weddingId)
 
     // Route to appropriate handler
-    const guestId = pathParts[1]
-    const isWebhook = pathParts[1] === 'webhook'
+    const guestId = pathParts[startIndex + 1]
+    const isWebhook = pathParts[startIndex + 1] === 'webhook'
 
     if (req.method === 'GET' && !guestId) {
       // GET all guests

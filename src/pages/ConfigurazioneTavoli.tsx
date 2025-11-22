@@ -5,11 +5,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { ZoomIn, ZoomOut, Maximize2, RotateCcw, RotateCw } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, RotateCcw, RotateCw, LogOut } from 'lucide-react';
 import TavoloSVG from '@/components/tavoli/TavoloSVG';
 import { GuestTooltip } from '@/components/tavoli/GuestTooltip';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
+
+const SESSION_KEY = 'wedding-config-auth';
+const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 interface Tavolo {
   id: string;
@@ -27,7 +30,27 @@ export default function ConfigurazioneTavoli() {
   const queryClient = useQueryClient();
 
   const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const stored = localStorage.getItem(SESSION_KEY);
+    if (!stored) return false;
+    
+    try {
+      const { weddingId: storedWeddingId, expiresAt } = JSON.parse(stored);
+      
+      // Check if session is still valid and for the same wedding
+      if (storedWeddingId === weddingId && Date.now() < expiresAt) {
+        console.log('✅ Valid session found, auto-authenticating');
+        return true;
+      } else {
+        console.log('❌ Session expired or different wedding');
+        localStorage.removeItem(SESSION_KEY);
+        return false;
+      }
+    } catch {
+      localStorage.removeItem(SESSION_KEY);
+      return false;
+    }
+  });
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -89,8 +112,18 @@ export default function ConfigurazioneTavoli() {
 
     // Trim both passwords to avoid whitespace issues
     if (password.trim() === correctPassword.trim()) {
+      // Save session to localStorage
+      const session = {
+        weddingId,
+        expiresAt: Date.now() + SESSION_DURATION,
+        authenticatedAt: Date.now()
+      };
+      
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      console.log('💾 Session saved, expires:', new Date(session.expiresAt));
+      
       setIsAuthenticated(true);
-      toast.success('Accesso consentito');
+      toast.success('Accesso consentito - sessione valida per 7 giorni');
       console.log('✅ Password correct - authenticated');
     } else {
       toast.error('Password errata');
@@ -102,26 +135,43 @@ export default function ConfigurazioneTavoli() {
     }
   };
 
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem(SESSION_KEY);
+    setIsAuthenticated(false);
+    toast.success('Disconnesso');
+  };
+
   // Fetch tables
-  const { data: tavoli = [] } = useQuery({
+  const { data: tavoli = [], isLoading: tavoliLoading } = useQuery({
     queryKey: ['tavoli-public', weddingId],
     queryFn: async () => {
+      console.log('🔍 Fetching tables for wedding:', weddingId);
+      
       const { data, error } = await supabase
         .from('tavoli')
         .select('*')
         .eq('wedding_id', weddingId)
         .order('created_at');
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching tables:', error);
+        throw error;
+      }
+      
+      console.log('✅ Tables loaded:', data?.length, 'tables');
+      console.log('📋 Tables data:', data);
       return data as Tavolo[];
     },
     enabled: isAuthenticated && !!weddingId,
   });
 
   // Fetch guests with assignments
-  const { data: invitati = [] } = useQuery({
+  const { data: invitati = [], isLoading: invitatiLoading } = useQuery({
     queryKey: ['invitati-public', weddingId],
     queryFn: async () => {
+      console.log('🔍 Fetching guests for wedding:', weddingId);
+      
       const { data, error } = await supabase
         .from('invitati')
         .select(`
@@ -135,12 +185,17 @@ export default function ConfigurazioneTavoli() {
           tavolo_id,
           posto_numero,
           preferenze_alimentari,
-          famiglie:famiglia_id(id, nome),
-          gruppi:gruppo_id(id, nome, colore)
+          famiglie!famiglia_id(id, nome),
+          gruppi!gruppo_id(id, nome, colore)
         `)
         .eq('wedding_id', weddingId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching guests:', error);
+        throw error;
+      }
+      
+      console.log('✅ Guests loaded:', data?.length, 'guests');
       return data || [];
     },
     enabled: isAuthenticated && !!weddingId,
@@ -157,6 +212,48 @@ export default function ConfigurazioneTavoli() {
 
     return assignments;
   };
+
+  // Debug state
+  useEffect(() => {
+    console.log('📊 Component state:', {
+      isAuthenticated,
+      weddingId,
+      tavoliCount: tavoli.length,
+      invitatiCount: invitati.length,
+      tavoliLoading,
+      invitatiLoading,
+      zoom,
+      panOffset
+    });
+  }, [isAuthenticated, weddingId, tavoli, invitati, tavoliLoading, invitatiLoading, zoom, panOffset]);
+
+  // Session expiry warning
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const stored = localStorage.getItem(SESSION_KEY);
+    if (!stored) return;
+    
+    try {
+      const { expiresAt } = JSON.parse(stored);
+      const timeLeft = expiresAt - Date.now();
+      
+      // Warn 1 hour before expiry
+      const warningTime = timeLeft - (60 * 60 * 1000);
+      
+      if (warningTime > 0) {
+        const warningTimeout = setTimeout(() => {
+          toast.warning('La tua sessione scadrà tra 1 ora', {
+            duration: 5000
+          });
+        }, warningTime);
+        
+        return () => clearTimeout(warningTimeout);
+      }
+    } catch {
+      // Ignore
+    }
+  }, [isAuthenticated]);
 
   // Auto-center view on load
   useEffect(() => {
@@ -329,6 +426,18 @@ export default function ConfigurazioneTavoli() {
     );
   }
 
+  // Loading tables
+  if (isAuthenticated && (tavoliLoading || invitatiLoading)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Caricamento tavoli...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Password protection screen
   if (!isAuthenticated) {
     return (
@@ -427,6 +536,19 @@ export default function ConfigurazioneTavoli() {
                 </div>
               </>
             )}
+
+            <Separator orientation="vertical" className="h-8 mx-2" />
+            
+            {/* Logout Button */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleLogout}
+              className="border-red-200 text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Esci
+            </Button>
           </div>
         </div>
       </div>
@@ -440,48 +562,72 @@ export default function ConfigurazioneTavoli() {
         onMouseUp={handleCanvasMouseUp}
         onMouseLeave={handleCanvasMouseUp}
       >
-        <svg
-          width="100%"
-          height="100%"
-          viewBox={`${panOffset.x} ${panOffset.y} ${
-            (canvasRef.current?.clientWidth || 800) / zoom
-          } ${(canvasRef.current?.clientHeight || 600) / zoom}`}
-          className="bg-white"
-        >
-          {/* Grid */}
-          <defs>
-            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#f0f0f0" strokeWidth="1" />
-            </pattern>
-          </defs>
+        {tavoli.length === 0 ? (
+          // Empty state
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Nessun tavolo configurato</h3>
+              <p className="text-sm text-gray-500">
+                I tavoli verranno visualizzati qui una volta configurati
+              </p>
+            </div>
+          </div>
+        ) : (
+          <svg
+            width="100%"
+            height="100%"
+            viewBox={`${panOffset.x} ${panOffset.y} ${
+              (canvasRef.current?.clientWidth || 800) / zoom
+            } ${(canvasRef.current?.clientHeight || 600) / zoom}`}
+            className="bg-white"
+          >
+            {/* Grid */}
+            <defs>
+              <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#f0f0f0" strokeWidth="1" />
+              </pattern>
+            </defs>
 
-          <rect
-            x={panOffset.x - 1000}
-            y={panOffset.y - 1000}
-            width={(canvasRef.current?.clientWidth || 800) / zoom + 2000}
-            height={(canvasRef.current?.clientHeight || 600) / zoom + 2000}
-            fill="url(#grid)"
-          />
-
-          {/* Tables */}
-          {tavoli.map((tavolo) => (
-            <TavoloSVG
-              key={tavolo.id}
-              tavolo={tavolo}
-              assignments={getAssignmentsForTable(tavolo.id)}
-              onSeatClick={() => {}}
-              onAssignGuest={() => {}}
-              isSelected={selectedTableId === tavolo.id}
-              onTableClick={() => setSelectedTableId(tavolo.id)}
-              onTableDragStart={() => {}}
-              onSeatMouseEnter={(guest, e) => {
-                setHoveredGuest(guest);
-                setTooltipPosition({ x: e.clientX, y: e.clientY });
-              }}
-              onSeatMouseLeave={() => setHoveredGuest(null)}
+            <rect
+              x={panOffset.x - 1000}
+              y={panOffset.y - 1000}
+              width={(canvasRef.current?.clientWidth || 800) / zoom + 2000}
+              height={(canvasRef.current?.clientHeight || 600) / zoom + 2000}
+              fill="url(#grid)"
             />
-          ))}
-        </svg>
+
+            {/* Tables */}
+            {tavoli.map((tavolo) => {
+              console.log('🎨 Rendering table:', tavolo.id, tavolo.nome, tavolo.posizione_x, tavolo.posizione_y);
+              
+              return (
+                <TavoloSVG
+                  key={tavolo.id}
+                  tavolo={tavolo}
+                  assignments={getAssignmentsForTable(tavolo.id)}
+                  onSeatClick={() => {}}
+                  onAssignGuest={() => {}}
+                  isSelected={selectedTableId === tavolo.id}
+                  onTableClick={() => {
+                    console.log('🎯 Table clicked:', tavolo.id);
+                    setSelectedTableId(tavolo.id);
+                  }}
+                  onTableDragStart={() => {}}
+                  onSeatMouseEnter={(guest, e) => {
+                    setHoveredGuest(guest);
+                    setTooltipPosition({ x: e.clientX, y: e.clientY });
+                  }}
+                  onSeatMouseLeave={() => setHoveredGuest(null)}
+                />
+              );
+            })}
+          </svg>
+        )}
       </div>
 
       {/* Tooltip */}

@@ -17,6 +17,8 @@ interface TavoloSVGProps {
   isSelected: boolean;
   onTableClick: () => void;
   onTableDragStart: (e: React.MouseEvent) => void;
+  onSeatMouseEnter?: (guest: any, e: React.MouseEvent) => void;
+  onSeatMouseLeave?: () => void;
 }
 
 // Calculate seats in circle (for round table)
@@ -88,6 +90,8 @@ const TavoloSVG = ({
   isSelected,
   onTableClick,
   onTableDragStart,
+  onSeatMouseEnter,
+  onSeatMouseLeave,
 }: TavoloSVGProps) => {
   const { tipo, capienza, posizione_x, posizione_y, nome, id, rotazione } = tavolo;
 
@@ -243,6 +247,9 @@ const TavoloSVG = ({
             borderColor={borderColor}
             onSeatClick={() => onSeatClick(index)}
             onDrop={(guestId) => onAssignGuest(guestId, id, index)}
+            tableRotation={rotazione || 0}
+            onMouseEnter={(e) => onSeatMouseEnter?.(guest, e)}
+            onMouseLeave={onSeatMouseLeave}
           />
         );
       })}

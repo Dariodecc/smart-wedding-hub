@@ -738,8 +738,48 @@ const Tavoli = () => {
                   variant="outline" 
                   size="sm" 
                   onClick={() => {
-                    setZoom(1)
-                    setPanOffset({ x: -2500, y: -2000 })
+                    if (tavoli.length === 0) {
+                      setZoom(1)
+                      setPanOffset({ x: -2500, y: -2000 })
+                      return
+                    }
+                    
+                    // Calculate bounding box of all tables
+                    let minX = Infinity
+                    let maxX = -Infinity
+                    let minY = Infinity
+                    let maxY = -Infinity
+                    
+                    tavoli.forEach(tavolo => {
+                      const padding = 300
+                      minX = Math.min(minX, tavolo.posizione_x - padding)
+                      maxX = Math.max(maxX, tavolo.posizione_x + padding)
+                      minY = Math.min(minY, tavolo.posizione_y - padding)
+                      maxY = Math.max(maxY, tavolo.posizione_y + padding)
+                    })
+                    
+                    const width = maxX - minX
+                    const height = maxY - minY
+                    
+                    const canvasWidth = canvasRef.current?.clientWidth || 800
+                    const canvasHeight = canvasRef.current?.clientHeight || 600
+                    
+                    // Calculate zoom to fit all tables
+                    const zoomX = canvasWidth / width
+                    const zoomY = canvasHeight / height
+                    const newZoom = Math.min(zoomX, zoomY, 1.5)
+                    
+                    // Calculate center position
+                    const centerX = (minX + maxX) / 2
+                    const centerY = (minY + maxY) / 2
+                    
+                    setPanOffset({
+                      x: centerX - canvasWidth / (2 * newZoom),
+                      y: centerY - canvasHeight / (2 * newZoom)
+                    })
+                    
+                    setZoom(newZoom)
+                    toast.success('Vista resettata', { duration: 1500 })
                   }}
                 >
                   <Maximize2 className="h-4 w-4 mr-2" />
@@ -898,8 +938,48 @@ const Tavoli = () => {
                     variant="outline" 
                     size="sm" 
                     onClick={() => {
-                      setZoom(1);
-                      setPanOffset({ x: -2500, y: -2000 });
+                      if (tavoli.length === 0) {
+                        setZoom(1)
+                        setPanOffset({ x: -2500, y: -2000 })
+                        return
+                      }
+                      
+                      // Calculate bounding box of all tables
+                      let minX = Infinity
+                      let maxX = -Infinity
+                      let minY = Infinity
+                      let maxY = -Infinity
+                      
+                      tavoli.forEach(tavolo => {
+                        const padding = 300
+                        minX = Math.min(minX, tavolo.posizione_x - padding)
+                        maxX = Math.max(maxX, tavolo.posizione_x + padding)
+                        minY = Math.min(minY, tavolo.posizione_y - padding)
+                        maxY = Math.max(maxY, tavolo.posizione_y + padding)
+                      })
+                      
+                      const width = maxX - minX
+                      const height = maxY - minY
+                      
+                      const canvasWidth = canvasRef.current?.clientWidth || 800
+                      const canvasHeight = canvasRef.current?.clientHeight || 600
+                      
+                      // Calculate zoom to fit all tables
+                      const zoomX = canvasWidth / width
+                      const zoomY = canvasHeight / height
+                      const newZoom = Math.min(zoomX, zoomY, 1.5)
+                      
+                      // Calculate center position
+                      const centerX = (minX + maxX) / 2
+                      const centerY = (minY + maxY) / 2
+                      
+                      setPanOffset({
+                        x: centerX - canvasWidth / (2 * newZoom),
+                        y: centerY - canvasHeight / (2 * newZoom)
+                      })
+                      
+                      setZoom(newZoom)
+                      toast.success('Vista resettata', { duration: 1500 })
                     }}
                     className="h-8 px-3"
                   >

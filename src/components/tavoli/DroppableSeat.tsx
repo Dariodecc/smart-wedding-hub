@@ -9,6 +9,7 @@ interface DroppableSeatProps {
   borderColor: string;
   onSeatClick: () => void;
   onDrop: (guestId: string) => void;
+  tableRotation: number;
   onMouseEnter?: (e: React.MouseEvent) => void;
   onMouseLeave?: () => void;
 }
@@ -21,18 +22,23 @@ const DroppableSeat = ({
   borderColor,
   onSeatClick,
   onDrop,
+  tableRotation,
   onMouseEnter,
   onMouseLeave,
 }: DroppableSeatProps) => {
   const [isOver, setIsOver] = React.useState(false);
 
+  // Seat rotates with table, but content stays upright
+  const totalRotation = position.rotation + tableRotation;
+  const contentRotation = -totalRotation;
+
   return (
     <g
-      transform={`translate(${position.x}, ${position.y})`}
+      transform={`translate(${position.x}, ${position.y}) rotate(${position.rotation})`}
       style={{ pointerEvents: "all" } as any}
     >
       {/* Foreign object for React droppable */}
-      <foreignObject x="-35" y="-25" width="70" height="50">
+      <foreignObject x="-40" y="-30" width="80" height="60">
         <div
           draggable={!!guest}
           onDragStart={(e) => {
@@ -74,13 +80,14 @@ const DroppableSeat = ({
           onMouseEnter={guest ? onMouseEnter : undefined}
           onMouseLeave={guest ? onMouseLeave : undefined}
           className={cn(
-            "w-full h-full rounded-lg border-[3px] flex flex-col items-center justify-center transition-all",
+            "w-full h-full rounded-lg border-[3px] flex flex-col items-center justify-center transition-all p-1",
             guest ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
             isOver ? "bg-blue-200 border-blue-600 scale-110" : guest ? "bg-white hover:shadow-lg" : "bg-gray-100",
             !guest && !isOver && "border-gray-400"
           )}
           style={{
-            borderColor: guest ? borderColor : isOver ? "#2563EB" : "#9CA3AF"
+            borderColor: guest ? borderColor : isOver ? "#2563EB" : "#9CA3AF",
+            transform: `rotate(${contentRotation}deg)`
           }}
         >
           {guest ? (

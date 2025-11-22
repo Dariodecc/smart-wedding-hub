@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils";
 import DraggableGuest from "@/components/tavoli/DraggableGuest";
 import TavoloSVG from "@/components/tavoli/TavoloSVG";
 import { GuestTooltip } from "@/components/tavoli/GuestTooltip";
-
 interface Tavolo {
   id: string;
   nome: string;
@@ -26,7 +25,6 @@ interface Tavolo {
   posizione_y: number;
   rotazione: number;
 }
-
 interface Guest {
   id: string;
   nome: string;
@@ -38,59 +36,85 @@ interface Guest {
   tavolo_id: string | null;
   posto_numero: number | null;
 }
-
 const Tavoli = () => {
-  const { wedding } = useCurrentMatrimonio();
+  const {
+    wedding
+  } = useCurrentMatrimonio();
   const queryClient = useQueryClient();
   const canvasRef = useRef<HTMLDivElement>(null);
-  
   const [searchQuery, setSearchQuery] = useState("");
   const [zoom, setZoom] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [panOffset, setPanOffset] = useState({
+    x: 0,
+    y: 0
+  });
   const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [panStart, setPanStart] = useState({
+    x: 0,
+    y: 0
+  });
   const [showAddTableDialog, setShowAddTableDialog] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [isDraggingTable, setIsDraggingTable] = useState(false);
-  const [tableDragStart, setTableDragStart] = useState({ x: 0, y: 0, tableX: 0, tableY: 0 });
+  const [tableDragStart, setTableDragStart] = useState({
+    x: 0,
+    y: 0,
+    tableX: 0,
+    tableY: 0
+  });
   const [hoveredGuest, setHoveredGuest] = useState<any>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [tooltipPosition, setTooltipPosition] = useState({
+    x: 0,
+    y: 0
+  });
   const [isInitialViewSet, setIsInitialViewSet] = useState(false);
-
-  const { register, handleSubmit, watch, setValue, reset } = useForm({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset
+  } = useForm({
     defaultValues: {
       nome: "",
       tipo: "rotondo" as "rotondo" | "rettangolare_singolo" | "rettangolare_doppio",
-      capienza: 6,
-    },
+      capienza: 6
+    }
   });
-
   const watchTipo = watch("tipo");
 
   // Fetch tavoli
-  const { data: tavoli = [], isLoading: isLoadingTavoli } = useQuery({
+  const {
+    data: tavoli = [],
+    isLoading: isLoadingTavoli
+  } = useQuery({
     queryKey: ["tavoli", wedding?.id],
     queryFn: async () => {
       if (!wedding?.id) return [];
-      const { data, error } = await supabase
-        .from("tavoli")
-        .select("*")
-        .eq("wedding_id", wedding.id)
-        .order("created_at", { ascending: true });
+      const {
+        data,
+        error
+      } = await supabase.from("tavoli").select("*").eq("wedding_id", wedding.id).order("created_at", {
+        ascending: true
+      });
       if (error) throw error;
       return data as Tavolo[];
     },
-    enabled: !!wedding?.id,
+    enabled: !!wedding?.id
   });
 
   // Fetch invitati with famiglia, gruppo and preferenze
-  const { data: invitati = [], isLoading: isLoadingInvitati } = useQuery({
+  const {
+    data: invitati = [],
+    isLoading: isLoadingInvitati
+  } = useQuery({
     queryKey: ["invitati", wedding?.id],
     queryFn: async () => {
       if (!wedding?.id) return [];
-      const { data, error } = await supabase
-        .from("invitati")
-        .select(`
+      const {
+        data,
+        error
+      } = await supabase.from("invitati").select(`
           id, 
           nome, 
           cognome, 
@@ -103,58 +127,56 @@ const Tavoli = () => {
           preferenze_alimentari,
           famiglie:famiglia_id(id, nome),
           gruppi:gruppo_id(id, nome, colore)
-        `)
-        .eq("wedding_id", wedding.id);
+        `).eq("wedding_id", wedding.id);
       if (error) throw error;
       return data as any[];
     },
-    enabled: !!wedding?.id,
+    enabled: !!wedding?.id
   });
 
   // Fetch famiglie
-  const { data: famiglie = [] } = useQuery({
+  const {
+    data: famiglie = []
+  } = useQuery({
     queryKey: ["famiglie", wedding?.id],
     queryFn: async () => {
       if (!wedding?.id) return [];
-      const { data, error } = await supabase
-        .from("famiglie")
-        .select("id, nome")
-        .eq("wedding_id", wedding.id);
+      const {
+        data,
+        error
+      } = await supabase.from("famiglie").select("id, nome").eq("wedding_id", wedding.id);
       if (error) throw error;
       return data;
     },
-    enabled: !!wedding?.id,
+    enabled: !!wedding?.id
   });
 
   // Available guests (not assigned to any table)
   const availableGuests = useMemo(() => {
-    return invitati.filter((g) => !g.tavolo_id);
+    return invitati.filter(g => !g.tavolo_id);
   }, [invitati]);
 
   // Filtered available guests
   const filteredAvailableGuests = useMemo(() => {
     if (!searchQuery) return availableGuests;
     const query = searchQuery.toLowerCase();
-    return availableGuests.filter(
-      (g) =>
-        g.nome.toLowerCase().includes(query) ||
-        g.cognome.toLowerCase().includes(query)
-    );
+    return availableGuests.filter(g => g.nome.toLowerCase().includes(query) || g.cognome.toLowerCase().includes(query));
   }, [availableGuests, searchQuery]);
 
   // Group guests by family
   const groupedGuests = useMemo(() => {
     const groups: Array<{
       type: "family" | "singles";
-      famiglia?: { id: string; nome: string };
+      famiglia?: {
+        id: string;
+        nome: string;
+      };
       membri?: Guest[];
       singles?: Guest[];
     }> = [];
-
     const familyMap = new Map<string, Guest[]>();
     const singles: Guest[] = [];
-
-    filteredAvailableGuests.forEach((guest) => {
+    filteredAvailableGuests.forEach(guest => {
       if (guest.famiglia_id) {
         if (!familyMap.has(guest.famiglia_id)) {
           familyMap.set(guest.famiglia_id, []);
@@ -167,7 +189,7 @@ const Tavoli = () => {
 
     // Add family groups
     familyMap.forEach((membri, famigliaId) => {
-      const famiglia = famiglie.find((f) => f.id === famigliaId);
+      const famiglia = famiglie.find(f => f.id === famigliaId);
       if (famiglia) {
         // Sort: capo famiglia first
         const sorted = [...membri].sort((a, b) => {
@@ -178,7 +200,7 @@ const Tavoli = () => {
         groups.push({
           type: "family",
           famiglia,
-          membri: sorted,
+          membri: sorted
         });
       }
     });
@@ -187,45 +209,41 @@ const Tavoli = () => {
     if (singles.length > 0) {
       groups.push({
         type: "singles",
-        singles,
+        singles
       });
     }
-
     return groups;
   }, [filteredAvailableGuests, famiglie]);
 
   // Total assigned guests
   const totalAssigned = useMemo(() => {
-    return invitati.filter((g) => g.tavolo_id).length;
+    return invitati.filter(g => g.tavolo_id).length;
   }, [invitati]);
 
   // Get assignments for a table
   const getAssignmentsForTable = (tavoloId: string) => {
-    const assignments: Record<number, { guest: Guest }> = {};
-    invitati
-      .filter((g) => g.tavolo_id === tavoloId && g.posto_numero !== null)
-      .forEach((guest) => {
-        assignments[guest.posto_numero!] = { guest };
-      });
+    const assignments: Record<number, {
+      guest: Guest;
+    }> = {};
+    invitati.filter(g => g.tavolo_id === tavoloId && g.posto_numero !== null).forEach(guest => {
+      assignments[guest.posto_numero!] = {
+        guest
+      };
+    });
     return assignments;
   };
 
   // Pan handlers for infinite canvas
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     // Only pan if clicking on canvas background (not on tables or seats)
-    if (
-      e.target === e.currentTarget || 
-      (e.target as Element).tagName === 'svg' || 
-      (e.target as Element).tagName === 'rect'
-    ) {
+    if (e.target === e.currentTarget || (e.target as Element).tagName === 'svg' || (e.target as Element).tagName === 'rect') {
       setIsPanning(true);
-      setPanStart({ 
-        x: e.clientX + panOffset.x, 
-        y: e.clientY + panOffset.y 
+      setPanStart({
+        x: e.clientX + panOffset.x,
+        y: e.clientY + panOffset.y
       });
     }
   };
-
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
     if (isDraggingTable) {
       handleTableDragMove(e);
@@ -237,7 +255,6 @@ const Tavoli = () => {
       });
     }
   };
-
   const handleCanvasMouseUp = () => {
     if (isDraggingTable) {
       handleTableDragEnd();
@@ -249,24 +266,23 @@ const Tavoli = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      
       if (e.ctrlKey || e.metaKey) {
         // Zoom with Ctrl/Cmd + Wheel
         const delta = -e.deltaY * 0.001;
-        setZoom((prev) => Math.max(0.2, Math.min(3, prev + delta)));
+        setZoom(prev => Math.max(0.2, Math.min(3, prev + delta)));
       } else {
         // Pan with wheel
-        setPanOffset((prev) => ({
+        setPanOffset(prev => ({
           x: prev.x + e.deltaX,
           y: prev.y + e.deltaY
         }));
       }
     };
-
-    canvas.addEventListener("wheel", handleWheel, { passive: false });
+    canvas.addEventListener("wheel", handleWheel, {
+      passive: false
+    });
     return () => canvas.removeEventListener("wheel", handleWheel);
   }, []);
 
@@ -278,7 +294,6 @@ const Tavoli = () => {
       let maxX = -Infinity;
       let minY = Infinity;
       let maxY = -Infinity;
-      
       tavoli.forEach(tavolo => {
         const padding = 300;
         minX = Math.min(minX, tavolo.posizione_x - padding);
@@ -286,30 +301,25 @@ const Tavoli = () => {
         minY = Math.min(minY, tavolo.posizione_y - padding);
         maxY = Math.max(maxY, tavolo.posizione_y + padding);
       });
-      
       const width = maxX - minX;
       const height = maxY - minY;
-      
       const canvasWidth = canvasRef.current.clientWidth;
       const canvasHeight = canvasRef.current.clientHeight;
-      
+
       // Calculate zoom to fit all tables
       const zoomX = canvasWidth / width;
       const zoomY = canvasHeight / height;
       const newZoom = Math.min(zoomX, zoomY, 1.2);
-      
+
       // Calculate center position
       const centerX = (minX + maxX) / 2;
       const centerY = (minY + maxY) / 2;
-      
       setPanOffset({
         x: centerX - canvasWidth / (2 * newZoom),
         y: centerY - canvasHeight / (2 * newZoom)
       });
-      
       setZoom(newZoom);
       setIsInitialViewSet(true);
-      
       console.log('📍 Initial view set - centered on tables');
     }
   }, [tavoli, isInitialViewSet]);
@@ -326,47 +336,47 @@ const Tavoli = () => {
       // Calculate position in current viewport center
       const viewportCenterX = panOffset.x + (canvasRef.current?.clientWidth || 800) / (2 * zoom);
       const viewportCenterY = panOffset.y + (canvasRef.current?.clientHeight || 600) / (2 * zoom);
-
-      const { error } = await supabase.from("tavoli").insert({
+      const {
+        error
+      } = await supabase.from("tavoli").insert({
         wedding_id: wedding.id,
         nome: data.nome,
         tipo: data.tipo,
         capienza: data.capienza,
         posizione_x: viewportCenterX + (Math.random() - 0.5) * 200,
-        posizione_y: viewportCenterY + (Math.random() - 0.5) * 200,
+        posizione_y: viewportCenterY + (Math.random() - 0.5) * 200
       });
-
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["tavoli", wedding?.id]
+      });
       setShowAddTableDialog(false);
       reset();
       toast.success("Tavolo creato con successo");
     },
-    onError: (error) => {
+    onError: error => {
       console.error("Error adding table:", error);
       toast.error("Errore nella creazione del tavolo");
-    },
+    }
   });
 
   // Handle seat click (to remove assignment)
   const handleSeatClick = async (tavoloId: string, seatIndex: number) => {
     const assignment = getAssignmentsForTable(tavoloId)[seatIndex];
     if (!assignment) return;
-
     try {
-      const { error } = await supabase
-        .from("invitati")
-        .update({
-          tavolo_id: null,
-          posto_numero: null,
-        })
-        .eq("id", assignment.guest.id);
-
+      const {
+        error
+      } = await supabase.from("invitati").update({
+        tavolo_id: null,
+        posto_numero: null
+      }).eq("id", assignment.guest.id);
       if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ["invitati", wedding?.id] });
+      await queryClient.invalidateQueries({
+        queryKey: ["invitati", wedding?.id]
+      });
       toast.success("Ospite rimosso dal tavolo");
     } catch (error) {
       console.error("Error removing guest:", error);
@@ -376,35 +386,35 @@ const Tavoli = () => {
 
   // Handle assigning guest to a seat via native drag & drop
   const handleAssignGuest = async (guestId: string, tavoloId: string, seatIndex: number) => {
-    console.log("✨ Assigning:", { guestId, tavoloId, seatIndex });
-
+    console.log("✨ Assigning:", {
+      guestId,
+      tavoloId,
+      seatIndex
+    });
     try {
       // Check if seat is occupied
-      const { data: existingAssignment } = await supabase
-        .from("invitati")
-        .select("id, nome, cognome")
-        .eq("tavolo_id", tavoloId)
-        .eq("posto_numero", seatIndex)
-        .maybeSingle();
-
+      const {
+        data: existingAssignment
+      } = await supabase.from("invitati").select("id, nome, cognome").eq("tavolo_id", tavoloId).eq("posto_numero", seatIndex).maybeSingle();
       if (existingAssignment) {
-        toast.error(
-          `Posto occupato da ${existingAssignment.nome} ${existingAssignment.cognome}`
-        );
+        toast.error(`Posto occupato da ${existingAssignment.nome} ${existingAssignment.cognome}`);
         return;
       }
 
       // Assign guest
-      const { error } = await supabase
-        .from("invitati")
-        .update({ tavolo_id: tavoloId, posto_numero: seatIndex })
-        .eq("id", guestId);
-
+      const {
+        error
+      } = await supabase.from("invitati").update({
+        tavolo_id: tavoloId,
+        posto_numero: seatIndex
+      }).eq("id", guestId);
       if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
-      await queryClient.invalidateQueries({ queryKey: ["invitati", wedding?.id] });
-
+      await queryClient.invalidateQueries({
+        queryKey: ["tavoli", wedding?.id]
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["invitati", wedding?.id]
+      });
       toast.success("Ospite assegnato al tavolo");
     } catch (error) {
       console.error("Error:", error);
@@ -418,22 +428,18 @@ const Tavoli = () => {
     setSelectedTableId(tavoloId);
     // NO database save - just selection
   };
-
   const handleTableDragStart = (tavoloId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     console.log('🚀 Table drag start:', tavoloId);
-
-    const tavolo = tavoli.find((t) => t.id === tavoloId);
+    const tavolo = tavoli.find(t => t.id === tavoloId);
     if (!tavolo) {
       console.error('❌ Table not found for drag:', tavoloId);
       return;
     }
-
     console.log('📍 Table initial position:', {
       x: tavolo.posizione_x,
       y: tavolo.posizione_y
     });
-
     setSelectedTableId(tavoloId);
     setIsDraggingTable(true);
 
@@ -443,75 +449,57 @@ const Tavoli = () => {
       console.error('❌ No SVG element found');
       return;
     }
-
     const pt = svg.createSVGPoint();
     pt.x = e.clientX;
     pt.y = e.clientY;
     const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
-
-    console.log('🖱️ Mouse SVG coordinates:', { x: svgP.x, y: svgP.y });
-
+    console.log('🖱️ Mouse SVG coordinates:', {
+      x: svgP.x,
+      y: svgP.y
+    });
     setTableDragStart({
       x: svgP.x,
       y: svgP.y,
       tableX: tavolo.posizione_x,
-      tableY: tavolo.posizione_y,
+      tableY: tavolo.posizione_y
     });
-
     console.log('✅ Table drag initialized');
   };
-
   const handleTableDragMove = (e: React.MouseEvent) => {
     if (!isDraggingTable || !selectedTableId) return;
-
     const svg = canvasRef.current?.querySelector("svg");
     if (!svg) return;
-
     const pt = svg.createSVGPoint();
     pt.x = e.clientX;
     pt.y = e.clientY;
     const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
-
     const deltaX = svgP.x - tableDragStart.x;
     const deltaY = svgP.y - tableDragStart.y;
 
     // Update position optimistically in query cache
     queryClient.setQueryData(["tavoli", wedding?.id], (old: Tavolo[] | undefined) => {
       if (!old) return old;
-      return old.map((t) =>
-        t.id === selectedTableId
-          ? {
-              ...t,
-              posizione_x: tableDragStart.tableX + deltaX,
-              posizione_y: tableDragStart.tableY + deltaY,
-            }
-          : t
-      );
+      return old.map(t => t.id === selectedTableId ? {
+        ...t,
+        posizione_x: tableDragStart.tableX + deltaX,
+        posizione_y: tableDragStart.tableY + deltaY
+      } : t);
     });
   };
-
   const handleTableDragEnd = async () => {
     if (!isDraggingTable || !selectedTableId) return;
-
     setIsDraggingTable(false);
-
-    const tavolo = tavoli.find((t) => t.id === selectedTableId);
+    const tavolo = tavoli.find(t => t.id === selectedTableId);
     if (!tavolo) return;
 
     // Get original table data to compare
-    const { data: originalTable } = await supabase
-      .from("tavoli")
-      .select("posizione_x, posizione_y")
-      .eq("id", selectedTableId)
-      .single();
-
+    const {
+      data: originalTable
+    } = await supabase.from("tavoli").select("posizione_x, posizione_y").eq("id", selectedTableId).single();
     if (!originalTable) return;
 
     // ONLY save if position actually changed (threshold of 1 pixel)
-    const positionChanged = 
-      Math.abs(tavolo.posizione_x - originalTable.posizione_x) > 1 ||
-      Math.abs(tavolo.posizione_y - originalTable.posizione_y) > 1;
-
+    const positionChanged = Math.abs(tavolo.posizione_x - originalTable.posizione_x) > 1 || Math.abs(tavolo.posizione_y - originalTable.posizione_y) > 1;
     if (!positionChanged) {
       console.log("⏭️ Position unchanged, not saving");
       return;
@@ -519,46 +507,40 @@ const Tavoli = () => {
 
     // Save to database only if position changed
     try {
-      const { error } = await supabase
-        .from("tavoli")
-        .update({
-          posizione_x: tavolo.posizione_x,
-          posizione_y: tavolo.posizione_y,
-        })
-        .eq("id", selectedTableId);
-
+      const {
+        error
+      } = await supabase.from("tavoli").update({
+        posizione_x: tavolo.posizione_x,
+        posizione_y: tavolo.posizione_y
+      }).eq("id", selectedTableId);
       if (error) throw error;
-
       toast.success("Posizione tavolo salvata");
     } catch (error) {
       console.error("Error saving table position:", error);
       toast.error("Errore nel salvare la posizione");
       // Revert on error
-      await queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
+      await queryClient.invalidateQueries({
+        queryKey: ["tavoli", wedding?.id]
+      });
     }
   };
-
   const rotateTable = async (degrees: number) => {
     console.log('🔄 Rotating table:', {
       selectedTableId,
       degrees,
       currentRotation: tavoli.find(t => t.id === selectedTableId)?.rotazione || 0
     });
-
     if (!selectedTableId) {
       console.error('❌ No table selected for rotation');
       return;
     }
-
-    const tavolo = tavoli.find((t) => t.id === selectedTableId);
+    const tavolo = tavoli.find(t => t.id === selectedTableId);
     if (!tavolo) {
       console.error('❌ Table not found:', selectedTableId);
       return;
     }
-
     const currentRotation = tavolo.rotazione || 0;
     const newRotation = currentRotation + degrees;
-
     console.log('🔄 Rotation update:', {
       current: currentRotation,
       delta: degrees,
@@ -569,7 +551,10 @@ const Tavoli = () => {
     console.log('✅ Updating local state...');
     queryClient.setQueryData(["tavoli", wedding?.id], (old: Tavolo[] | undefined) => {
       if (!old) return old;
-      const updated = old.map((t) => (t.id === selectedTableId ? { ...t, rotazione: newRotation } : t));
+      const updated = old.map(t => t.id === selectedTableId ? {
+        ...t,
+        rotazione: newRotation
+      } : t);
       console.log('✅ Local tavoli state updated:', updated.find(t => t.id === selectedTableId));
       return updated;
     });
@@ -577,72 +562,64 @@ const Tavoli = () => {
     // Save to database
     try {
       console.log('💾 Saving rotation to database...');
-
-      const { error } = await supabase
-        .from("tavoli")
-        .update({ rotazione: newRotation })
-        .eq("id", selectedTableId);
-
+      const {
+        error
+      } = await supabase.from("tavoli").update({
+        rotazione: newRotation
+      }).eq("id", selectedTableId);
       if (error) {
         console.error('❌ Database error:', error);
         throw error;
       }
-
       console.log('✅ Rotation saved to database');
       toast.success(`Tavolo ruotato di ${degrees}°`);
     } catch (error) {
       console.error('💥 Error rotating table:', error);
       toast.error("Errore nella rotazione");
-      await queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
+      await queryClient.invalidateQueries({
+        queryKey: ["tavoli", wedding?.id]
+      });
     }
   };
-
   const handleDeleteTable = async () => {
     if (!selectedTableId) return;
-
-    const tavolo = tavoli.find((t) => t.id === selectedTableId);
+    const tavolo = tavoli.find(t => t.id === selectedTableId);
     if (!tavolo) return;
-
     if (!confirm(`Eliminare il tavolo "${tavolo.nome}"? Gli ospiti assegnati torneranno disponibili.`)) {
       return;
     }
-
     try {
       // Unassign all guests from this table
-      await supabase
-        .from("invitati")
-        .update({ tavolo_id: null, posto_numero: null })
-        .eq("tavolo_id", selectedTableId);
+      await supabase.from("invitati").update({
+        tavolo_id: null,
+        posto_numero: null
+      }).eq("tavolo_id", selectedTableId);
 
       // Delete table
-      const { error } = await supabase.from("tavoli").delete().eq("id", selectedTableId);
-
+      const {
+        error
+      } = await supabase.from("tavoli").delete().eq("id", selectedTableId);
       if (error) throw error;
-
       setSelectedTableId(null);
-
-      await queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
-      await queryClient.invalidateQueries({ queryKey: ["invitati", wedding?.id] });
-
+      await queryClient.invalidateQueries({
+        queryKey: ["tavoli", wedding?.id]
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["invitati", wedding?.id]
+      });
       toast.success("Tavolo eliminato");
     } catch (error) {
       console.error("Error deleting table:", error);
       toast.error("Errore nell'eliminare il tavolo");
     }
   };
-
   if (!wedding) {
-    return (
-      <div className="flex items-center justify-center h-screen">
+    return <div className="flex items-center justify-center h-screen">
         <p className="text-gray-500">Caricamento...</p>
-      </div>
-    );
+      </div>;
   }
-
   const isLoading = isLoadingTavoli || isLoadingInvitati;
-
-  return (
-    <>
+  return <>
       <div className="flex h-screen bg-gray-50 overflow-hidden">
         {/* Left Sidebar - Guests List (reduced to 320px) */}
         <div className="w-[320px] bg-white border-r border-gray-200 flex flex-col shrink-0">
@@ -658,55 +635,44 @@ const Tavoli = () => {
           <div className="px-4 py-2 border-b border-gray-200 shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Cerca ospite..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 border-gray-200 rounded-lg text-sm"
-              />
+              <Input placeholder="Cerca ospite..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 h-9 border-gray-200 rounded-lg text-sm" />
             </div>
           </div>
 
           {/* Guests List - Drop zone to unassign */}
-          <div 
-            className="flex-1 overflow-y-auto p-3"
-            onDragOver={(e) => {
-              e.preventDefault()
-              e.dataTransfer.dropEffect = 'move'
-            }}
-            onDrop={async (e) => {
-              e.preventDefault()
-              const guestId = e.dataTransfer.getData('guestId')
-              const fromSeat = e.dataTransfer.getData('fromSeat')
-              
-              if (fromSeat && guestId) {
-                console.log('🗑️ UNASSIGN GUEST from seat:', guestId)
-                
-                try {
-                  const { error } = await supabase
-                    .from('invitati')
-                    .update({ tavolo_id: null, posto_numero: null })
-                    .eq('id', guestId)
-                  
-                  if (error) throw error
-                  
-                  await queryClient.invalidateQueries({ queryKey: ['tavoli', wedding?.id] })
-                  await queryClient.invalidateQueries({ queryKey: ['invitati', wedding?.id] })
-                  
-                  toast.success('Ospite rimosso dal tavolo')
-                } catch (error) {
-                  console.error('Error:', error)
-                  toast.error('Errore nella rimozione')
-                }
-              }
-            }}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
+          <div className="flex-1 overflow-y-auto p-3" onDragOver={e => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        }} onDrop={async e => {
+          e.preventDefault();
+          const guestId = e.dataTransfer.getData('guestId');
+          const fromSeat = e.dataTransfer.getData('fromSeat');
+          if (fromSeat && guestId) {
+            console.log('🗑️ UNASSIGN GUEST from seat:', guestId);
+            try {
+              const {
+                error
+              } = await supabase.from('invitati').update({
+                tavolo_id: null,
+                posto_numero: null
+              }).eq('id', guestId);
+              if (error) throw error;
+              await queryClient.invalidateQueries({
+                queryKey: ['tavoli', wedding?.id]
+              });
+              await queryClient.invalidateQueries({
+                queryKey: ['invitati', wedding?.id]
+              });
+              toast.success('Ospite rimosso dal tavolo');
+            } catch (error) {
+              console.error('Error:', error);
+              toast.error('Errore nella rimozione');
+            }
+          }
+        }}>
+            {isLoading ? <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              </div>
-            ) : groupedGuests.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center py-12">
+              </div> : groupedGuests.length === 0 ? <div className="flex flex-col items-center justify-center h-full text-center py-12">
                 <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
                   <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
@@ -716,14 +682,10 @@ const Tavoli = () => {
                 <p className="text-sm text-gray-500">
                   Ottimo lavoro! Ogni ospite ha il suo posto.
                 </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {groupedGuests.map((group, idx) => (
-                  <div key={group.type === "family" ? group.famiglia!.id : `singles-${idx}`} className="mb-3">
+              </div> : <div className="space-y-3">
+                {groupedGuests.map((group, idx) => <div key={group.type === "family" ? group.famiglia!.id : `singles-${idx}`} className="mb-3">
                     {/* Group Header */}
-                    {group.type === "family" && (
-                      <div className="flex items-center gap-2 mb-2 px-2">
+                    {group.type === "family" && <div className="flex items-center gap-2 mb-2 px-2">
                         <Users className="h-3.5 w-3.5 text-purple-600" />
                         <span className="text-xs font-semibold text-purple-900">
                           {group.famiglia!.nome}
@@ -731,28 +693,21 @@ const Tavoli = () => {
                         <span className="text-[10px] text-purple-600">
                           ({group.membri!.length})
                         </span>
-                      </div>
-                    )}
+                      </div>}
 
-                    {group.type === "singles" && (
-                      <div className="flex items-center gap-2 mb-2 px-2">
+                    {group.type === "singles" && <div className="flex items-center gap-2 mb-2 px-2">
                         <User className="h-3.5 w-3.5 text-gray-600" />
                         <span className="text-xs font-semibold text-gray-900">
                           Invitati Singoli
                         </span>
-                      </div>
-                    )}
+                      </div>}
 
                     {/* Guest Cards */}
                     <div className="space-y-2">
-                      {(group.type === "family" ? group.membri! : group.singles!).map((guest) => (
-                        <DraggableGuest key={guest.id} guest={guest} />
-                      ))}
+                      {(group.type === "family" ? group.membri! : group.singles!).map(guest => <DraggableGuest key={guest.id} guest={guest} />)}
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  </div>)}
+              </div>}
           </div>
         </div>
 
@@ -770,71 +725,13 @@ const Tavoli = () => {
               
               <div className="flex items-center gap-2">
                 {/* Zoom Controls */}
-                <Button variant="outline" size="sm" onClick={() => setZoom(Math.max(0.2, zoom - 0.1))}>
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-medium text-gray-700 min-w-[60px] text-center">
-                  {Math.round(zoom * 100)}%
-                </span>
-                <Button variant="outline" size="sm" onClick={() => setZoom(Math.min(3, zoom + 0.1))}>
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => {
-                    if (tavoli.length === 0) {
-                      setZoom(1)
-                      setPanOffset({ x: 0, y: 0 })
-                      toast.info('Nessun tavolo da visualizzare')
-                      return
-                    }
-                    
-                    // Calculate bounding box of all tables
-                    let minX = Infinity
-                    let maxX = -Infinity
-                    let minY = Infinity
-                    let maxY = -Infinity
-                    
-                    tavoli.forEach(tavolo => {
-                      const padding = 300
-                      minX = Math.min(minX, tavolo.posizione_x - padding)
-                      maxX = Math.max(maxX, tavolo.posizione_x + padding)
-                      minY = Math.min(minY, tavolo.posizione_y - padding)
-                      maxY = Math.max(maxY, tavolo.posizione_y + padding)
-                    })
-                    
-                    const width = maxX - minX
-                    const height = maxY - minY
-                    
-                    const canvasWidth = canvasRef.current?.clientWidth || 800
-                    const canvasHeight = canvasRef.current?.clientHeight || 600
-                    
-                    // Calculate zoom to fit all tables
-                    const zoomX = canvasWidth / width
-                    const zoomY = canvasHeight / height
-                    const newZoom = Math.min(zoomX, zoomY, 1.2)
-                    
-                    // Calculate center position
-                    const centerX = (minX + maxX) / 2
-                    const centerY = (minY + maxY) / 2
-                    
-                    setPanOffset({
-                      x: centerX - canvasWidth / (2 * newZoom),
-                      y: centerY - canvasHeight / (2 * newZoom)
-                    })
-                    
-                    setZoom(newZoom)
-                    toast.success('Vista centrata su tutti i tavoli')
-                  }}
-                >
-                  <Maximize2 className="h-4 w-4 mr-2" />
-                  Reset
-                </Button>
+                
+                
+                
+                
                 
                 {/* Table Actions - Only show when table selected */}
-                {selectedTableId && (
-                  <>
+                {selectedTableId && <>
                     <Separator orientation="vertical" className="h-8 mx-2" />
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-700">Ruota:</span>
@@ -845,16 +742,10 @@ const Tavoli = () => {
                         <RotateCw className="h-4 w-4" />
                       </Button>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleDeleteTable}
-                      className="border-red-200 text-red-600 hover:bg-red-50"
-                    >
+                    <Button variant="outline" size="sm" onClick={handleDeleteTable} className="border-red-200 text-red-600 hover:bg-red-50">
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </>
-                )}
+                  </>}
                 
                 <Separator orientation="vertical" className="h-8 mx-2" />
                 
@@ -867,23 +758,10 @@ const Tavoli = () => {
           </div>
 
           {/* Canvas */}
-          <div
-            ref={canvasRef}
-            className={cn(
-              "flex-1 overflow-hidden relative bg-gray-50",
-              isDraggingTable ? "cursor-grabbing" : isPanning ? "cursor-grabbing" : "cursor-grab"
-            )}
-            onMouseDown={handleCanvasMouseDown}
-            onMouseMove={handleCanvasMouseMove}
-            onMouseUp={handleCanvasMouseUp}
-            onMouseLeave={handleCanvasMouseUp}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center h-full">
+          <div ref={canvasRef} className={cn("flex-1 overflow-hidden relative bg-gray-50", isDraggingTable ? "cursor-grabbing" : isPanning ? "cursor-grabbing" : "cursor-grab")} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUp} onMouseLeave={handleCanvasMouseUp}>
+            {isLoading ? <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-              </div>
-            ) : tavoli.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
+              </div> : tavoli.length === 0 ? <div className="flex flex-col items-center justify-center h-full text-center">
                 <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
                   <Circle className="h-10 w-10 text-gray-400" />
                 </div>
@@ -893,143 +771,90 @@ const Tavoli = () => {
                 <p className="text-sm text-gray-500 mb-6">
                   Inizia creando il tuo primo tavolo
                 </p>
-                <Button
-                  onClick={() => setShowAddTableDialog(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
+                <Button onClick={() => setShowAddTableDialog(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
                   <Plus className="h-4 w-4 mr-2" />
                   Crea Primo Tavolo
                 </Button>
-              </div>
-            ) : (
-              <>
-                <svg
-                  width="100%"
-                  height="100%"
-                  viewBox={`${panOffset.x} ${panOffset.y} ${
-                    (canvasRef.current?.clientWidth || 800) / zoom
-                  } ${(canvasRef.current?.clientHeight || 600) / zoom}`}
-                  className="bg-white"
-                  style={{ width: '100%', height: '100%' }}
-                >
+              </div> : <>
+                <svg width="100%" height="100%" viewBox={`${panOffset.x} ${panOffset.y} ${(canvasRef.current?.clientWidth || 800) / zoom} ${(canvasRef.current?.clientHeight || 600) / zoom}`} className="bg-white" style={{
+              width: '100%',
+              height: '100%'
+            }}>
                   {/* Infinite Grid Pattern */}
                   <defs>
-                    <pattern
-                      id="grid"
-                      width="50"
-                      height="50"
-                      patternUnits="userSpaceOnUse"
-                    >
-                      <path
-                        d="M 50 0 L 0 0 0 50"
-                        fill="none"
-                        stroke="#f0f0f0"
-                        strokeWidth="1"
-                      />
+                    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#f0f0f0" strokeWidth="1" />
                     </pattern>
                   </defs>
                   
                   {/* Grid covers visible area */}
-                  <rect 
-                    x={panOffset.x - 1000} 
-                    y={panOffset.y - 1000} 
-                    width={(canvasRef.current?.clientWidth || 800) / zoom + 2000} 
-                    height={(canvasRef.current?.clientHeight || 600) / zoom + 2000} 
-                    fill="url(#grid)" 
-                  />
+                  <rect x={panOffset.x - 1000} y={panOffset.y - 1000} width={(canvasRef.current?.clientWidth || 800) / zoom + 2000} height={(canvasRef.current?.clientHeight || 600) / zoom + 2000} fill="url(#grid)" />
 
                   {/* Tables */}
-                  {tavoli.map((tavolo) => (
-                    <TavoloSVG
-                      key={tavolo.id}
-                      tavolo={tavolo}
-                      assignments={getAssignmentsForTable(tavolo.id)}
-                      onSeatClick={(seatIndex) => handleSeatClick(tavolo.id, seatIndex)}
-                      onAssignGuest={handleAssignGuest}
-                      isSelected={selectedTableId === tavolo.id}
-                      onTableClick={() => handleTableClick(tavolo.id)}
-                      onTableDragStart={(e) => handleTableDragStart(tavolo.id, e)}
-                      onSeatMouseEnter={(guest, e) => {
-                        setHoveredGuest(guest);
-                        setTooltipPosition({ x: e.clientX, y: e.clientY });
-                      }}
-                      onSeatMouseLeave={() => setHoveredGuest(null)}
-                    />
-                  ))}
+                  {tavoli.map(tavolo => <TavoloSVG key={tavolo.id} tavolo={tavolo} assignments={getAssignmentsForTable(tavolo.id)} onSeatClick={seatIndex => handleSeatClick(tavolo.id, seatIndex)} onAssignGuest={handleAssignGuest} isSelected={selectedTableId === tavolo.id} onTableClick={() => handleTableClick(tavolo.id)} onTableDragStart={e => handleTableDragStart(tavolo.id, e)} onSeatMouseEnter={(guest, e) => {
+                setHoveredGuest(guest);
+                setTooltipPosition({
+                  x: e.clientX,
+                  y: e.clientY
+                });
+              }} onSeatMouseLeave={() => setHoveredGuest(null)} />)}
                 </svg>
                 
                 {/* Zoom Controls - Fixed Position */}
                 <div className="absolute bottom-4 right-4 flex items-center gap-2 bg-white rounded-lg shadow-lg border border-gray-200 p-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setZoom(Math.max(0.2, zoom - 0.1))}
-                    className="h-8 w-8 p-0"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setZoom(Math.max(0.2, zoom - 0.1))} className="h-8 w-8 p-0">
                     <ZoomOut className="h-4 w-4" />
                   </Button>
                   <span className="text-sm font-medium text-gray-700 min-w-[60px] text-center">
                     {Math.round(zoom * 100)}%
                   </span>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setZoom(Math.min(3, zoom + 0.1))}
-                    className="h-8 w-8 p-0"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setZoom(Math.min(3, zoom + 0.1))} className="h-8 w-8 p-0">
                     <ZoomIn className="h-4 w-4" />
                   </Button>
                   <Separator orientation="vertical" className="h-6 mx-1" />
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => {
-                      if (tavoli.length === 0) {
-                        setZoom(1)
-                        setPanOffset({ x: 0, y: 0 })
-                        toast.info('Nessun tavolo da visualizzare')
-                        return
-                      }
-                      
-                      // Calculate bounding box of all tables
-                      let minX = Infinity
-                      let maxX = -Infinity
-                      let minY = Infinity
-                      let maxY = -Infinity
-                      
-                      tavoli.forEach(tavolo => {
-                        const padding = 300
-                        minX = Math.min(minX, tavolo.posizione_x - padding)
-                        maxX = Math.max(maxX, tavolo.posizione_x + padding)
-                        minY = Math.min(minY, tavolo.posizione_y - padding)
-                        maxY = Math.max(maxY, tavolo.posizione_y + padding)
-                      })
-                      
-                      const width = maxX - minX
-                      const height = maxY - minY
-                      
-                      const canvasWidth = canvasRef.current?.clientWidth || 800
-                      const canvasHeight = canvasRef.current?.clientHeight || 600
-                      
-                      // Calculate zoom to fit all tables
-                      const zoomX = canvasWidth / width
-                      const zoomY = canvasHeight / height
-                      const newZoom = Math.min(zoomX, zoomY, 1.2)
-                      
-                      // Calculate center position
-                      const centerX = (minX + maxX) / 2
-                      const centerY = (minY + maxY) / 2
-                      
-                      setPanOffset({
-                        x: centerX - canvasWidth / (2 * newZoom),
-                        y: centerY - canvasHeight / (2 * newZoom)
-                      })
-                      
-                      setZoom(newZoom)
-                      toast.success('Vista centrata su tutti i tavoli')
-                    }}
-                    className="h-8 px-3"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => {
+                if (tavoli.length === 0) {
+                  setZoom(1);
+                  setPanOffset({
+                    x: 0,
+                    y: 0
+                  });
+                  toast.info('Nessun tavolo da visualizzare');
+                  return;
+                }
+
+                // Calculate bounding box of all tables
+                let minX = Infinity;
+                let maxX = -Infinity;
+                let minY = Infinity;
+                let maxY = -Infinity;
+                tavoli.forEach(tavolo => {
+                  const padding = 300;
+                  minX = Math.min(minX, tavolo.posizione_x - padding);
+                  maxX = Math.max(maxX, tavolo.posizione_x + padding);
+                  minY = Math.min(minY, tavolo.posizione_y - padding);
+                  maxY = Math.max(maxY, tavolo.posizione_y + padding);
+                });
+                const width = maxX - minX;
+                const height = maxY - minY;
+                const canvasWidth = canvasRef.current?.clientWidth || 800;
+                const canvasHeight = canvasRef.current?.clientHeight || 600;
+
+                // Calculate zoom to fit all tables
+                const zoomX = canvasWidth / width;
+                const zoomY = canvasHeight / height;
+                const newZoom = Math.min(zoomX, zoomY, 1.2);
+
+                // Calculate center position
+                const centerX = (minX + maxX) / 2;
+                const centerY = (minY + maxY) / 2;
+                setPanOffset({
+                  x: centerX - canvasWidth / (2 * newZoom),
+                  y: centerY - canvasHeight / (2 * newZoom)
+                });
+                setZoom(newZoom);
+                toast.success('Vista centrata su tutti i tavoli');
+              }} className="h-8 px-3">
                     <Maximize2 className="h-4 w-4 mr-1" />
                     Reset
                   </Button>
@@ -1040,8 +865,7 @@ const Tavoli = () => {
                   <p>🖱️ Trascina per spostare</p>
                   <p>⌘ + Scroll per zoom</p>
                 </div>
-              </>
-            )}
+              </>}
           </div>
         </div>
       </div>
@@ -1056,33 +880,23 @@ const Tavoli = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit((data) => addTableMutation.mutate(data))}>
+          <form onSubmit={handleSubmit(data => addTableMutation.mutate(data))}>
             <div className="space-y-4">
               {/* Table Name */}
               <div className="space-y-2">
                 <Label htmlFor="nome">Nome Tavolo *</Label>
-                <Input
-                  id="nome"
-                  {...register("nome", { required: true })}
-                  placeholder="es. Tavolo 1, Sposi, Testimoni..."
-                />
+                <Input id="nome" {...register("nome", {
+                required: true
+              })} placeholder="es. Tavolo 1, Sposi, Testimoni..." />
               </div>
 
               {/* Table Type */}
               <div className="space-y-2">
                 <Label>Tipo Tavolo *</Label>
-                <RadioGroup
-                  value={watchTipo}
-                  onValueChange={(value) =>
-                    setValue("tipo", value as any)
-                  }
-                >
+                <RadioGroup value={watchTipo} onValueChange={value => setValue("tipo", value as any)}>
                   <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
                     <RadioGroupItem value="rotondo" id="rotondo" />
-                    <Label
-                      htmlFor="rotondo"
-                      className="flex-1 cursor-pointer"
-                    >
+                    <Label htmlFor="rotondo" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                           <Circle className="h-5 w-5 text-blue-600" />
@@ -1098,14 +912,8 @@ const Tavoli = () => {
                   </div>
 
                   <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem
-                      value="rettangolare_singolo"
-                      id="rett-singolo"
-                    />
-                    <Label
-                      htmlFor="rett-singolo"
-                      className="flex-1 cursor-pointer"
-                    >
+                    <RadioGroupItem value="rettangolare_singolo" id="rett-singolo" />
+                    <Label htmlFor="rett-singolo" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                           <RectangleHorizontal className="h-5 w-5 text-green-600" />
@@ -1121,14 +929,8 @@ const Tavoli = () => {
                   </div>
 
                   <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem
-                      value="rettangolare_doppio"
-                      id="rett-doppio"
-                    />
-                    <Label
-                      htmlFor="rett-doppio"
-                      className="flex-1 cursor-pointer"
-                    >
+                    <RadioGroupItem value="rettangolare_doppio" id="rett-doppio" />
+                    <Label htmlFor="rett-doppio" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                           <RectangleHorizontal className="h-5 w-5 text-purple-600" />
@@ -1148,43 +950,23 @@ const Tavoli = () => {
               {/* Capacity */}
               <div className="space-y-2">
                 <Label htmlFor="capienza">Capienza *</Label>
-                <Input
-                  id="capienza"
-                  type="number"
-                  min="1"
-                  max={watchTipo === "rotondo" ? 10 : 20}
-                  {...register("capienza", {
-                    required: true,
-                    min: 1,
-                    max: watchTipo === "rotondo" ? 10 : 20,
-                  })}
-                />
+                <Input id="capienza" type="number" min="1" max={watchTipo === "rotondo" ? 10 : 20} {...register("capienza", {
+                required: true,
+                min: 1,
+                max: watchTipo === "rotondo" ? 10 : 20
+              })} />
                 <p className="text-xs text-gray-500">
-                  {watchTipo === "rotondo"
-                    ? "Massimo 10 per tavolo rotondo"
-                    : "Massimo 20 persone"}
+                  {watchTipo === "rotondo" ? "Massimo 10 per tavolo rotondo" : "Massimo 20 persone"}
                 </p>
               </div>
             </div>
 
             <DialogFooter className="mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowAddTableDialog(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setShowAddTableDialog(false)}>
                 Annulla
               </Button>
-              <Button
-                type="submit"
-                disabled={addTableMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {addTableMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Plus className="h-4 w-4 mr-2" />
-                )}
+              <Button type="submit" disabled={addTableMutation.isPending} className="bg-blue-600 hover:bg-blue-700">
+                {addTableMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
                 Aggiungi Tavolo
               </Button>
             </DialogFooter>
@@ -1193,13 +975,7 @@ const Tavoli = () => {
       </Dialog>
 
       {/* Guest Tooltip */}
-      <GuestTooltip
-        guest={hoveredGuest}
-        position={tooltipPosition}
-        visible={!!hoveredGuest}
-      />
-    </>
-  );
+      <GuestTooltip guest={hoveredGuest} position={tooltipPosition} visible={!!hoveredGuest} />
+    </>;
 };
-
 export default Tavoli;

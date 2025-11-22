@@ -96,6 +96,8 @@ export type Database = {
           tavolo_id: string | null
           tipo_ospite: string
           wedding_id: string
+          whatsapp_rsvp_inviato: boolean | null
+          whatsapp_rsvp_inviato_at: string | null
         }
         Insert: {
           cellulare: string
@@ -114,6 +116,8 @@ export type Database = {
           tavolo_id?: string | null
           tipo_ospite: string
           wedding_id: string
+          whatsapp_rsvp_inviato?: boolean | null
+          whatsapp_rsvp_inviato_at?: string | null
         }
         Update: {
           cellulare?: string
@@ -132,6 +136,8 @@ export type Database = {
           tavolo_id?: string | null
           tipo_ospite?: string
           wedding_id?: string
+          whatsapp_rsvp_inviato?: boolean | null
+          whatsapp_rsvp_inviato_at?: string | null
         }
         Relationships: [
           {

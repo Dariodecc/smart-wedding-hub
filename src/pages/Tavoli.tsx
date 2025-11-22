@@ -46,7 +46,7 @@ const Tavoli = () => {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [zoom, setZoom] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [panOffset, setPanOffset] = useState({ x: -2500, y: -2000 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [showAddTableDialog, setShowAddTableDialog] = useState(false);
@@ -209,36 +209,60 @@ const Tavoli = () => {
     return assignments;
   };
 
-  // Pan handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 0) {
+  // Pan handlers for infinite canvas
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    // Only pan if clicking on canvas background (not on tables or seats)
+    if (
+      e.target === e.currentTarget || 
+      (e.target as Element).tagName === 'svg' || 
+      (e.target as Element).tagName === 'rect'
+    ) {
       setIsPanning(true);
-      setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isPanning) {
-      setPanOffset({
-        x: e.clientX - panStart.x,
-        y: e.clientY - panStart.y,
+      setPanStart({ 
+        x: e.clientX + panOffset.x, 
+        y: e.clientY + panOffset.y 
       });
     }
   };
 
-  const handleMouseUp = () => {
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    if (isDraggingTable) {
+      handleTableDragMove(e);
+    } else if (isPanning) {
+      // Update pan offset for infinite scrolling
+      setPanOffset({
+        x: panStart.x - e.clientX,
+        y: panStart.y - e.clientY
+      });
+    }
+  };
+
+  const handleCanvasMouseUp = () => {
+    if (isDraggingTable) {
+      handleTableDragEnd();
+    }
     setIsPanning(false);
   };
 
-  // Wheel zoom
+  // Wheel zoom and pan
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      setZoom((prev) => Math.max(0.5, Math.min(2, prev + delta)));
+      
+      if (e.ctrlKey || e.metaKey) {
+        // Zoom with Ctrl/Cmd + Wheel
+        const delta = -e.deltaY * 0.001;
+        setZoom((prev) => Math.max(0.2, Math.min(3, prev + delta)));
+      } else {
+        // Pan with wheel
+        setPanOffset((prev) => ({
+          x: prev.x + e.deltaX,
+          y: prev.y + e.deltaY
+        }));
+      }
     };
 
     canvas.addEventListener("wheel", handleWheel, { passive: false });
@@ -254,18 +278,17 @@ const Tavoli = () => {
     }) => {
       if (!wedding?.id) throw new Error("No wedding selected");
 
-      // Calculate position for new table (stagger them)
-      const offset = tavoli.length * 300;
-      const x = 200 + (offset % 1200);
-      const y = 200 + Math.floor(offset / 1200) * 300;
+      // Calculate position in current viewport center
+      const viewportCenterX = panOffset.x + (canvasRef.current?.clientWidth || 800) / (2 * zoom);
+      const viewportCenterY = panOffset.y + (canvasRef.current?.clientHeight || 600) / (2 * zoom);
 
       const { error } = await supabase.from("tavoli").insert({
         wedding_id: wedding.id,
         nome: data.nome,
         tipo: data.tipo,
         capienza: data.capienza,
-        posizione_x: x,
-        posizione_y: y,
+        posizione_x: viewportCenterX + (Math.random() - 0.5) * 200,
+        posizione_y: viewportCenterY + (Math.random() - 0.5) * 200,
       });
 
       if (error) throw error;
@@ -563,31 +586,6 @@ const Tavoli = () => {
     }
   };
 
-  // Canvas mouse handlers
-  const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    if (isDraggingTable) {
-      handleTableDragMove(e);
-    } else if (isPanning) {
-      handleMouseMove(e);
-    }
-  };
-
-  const handleCanvasMouseUp = () => {
-    if (isDraggingTable) {
-      handleTableDragEnd();
-    } else {
-      handleMouseUp();
-    }
-  };
-
-  const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    // Deselect table if clicking on canvas background
-    if ((e.target as HTMLElement).tagName === "svg" || (e.target as HTMLElement).tagName === "rect") {
-      setSelectedTableId(null);
-    }
-    handleMouseDown(e);
-  };
-
   if (!wedding) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -601,31 +599,31 @@ const Tavoli = () => {
   return (
     <>
       <div className="flex h-screen bg-gray-50 overflow-hidden">
-        {/* Left Sidebar - Guests List */}
-        <div className="w-[400px] bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+        {/* Left Sidebar - Guests List (reduced to 320px) */}
+        <div className="w-[320px] bg-white border-r border-gray-200 flex flex-col shrink-0">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-bold text-gray-900">Ospiti Disponibili</h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+          <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 shrink-0">
+            <h2 className="text-base font-bold text-gray-900">Ospiti Disponibili</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
               {availableGuests.length} ospiti senza tavolo
             </p>
           </div>
 
           {/* Search */}
-          <div className="px-6 py-3 border-b border-gray-200">
+          <div className="px-4 py-2 border-b border-gray-200 shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Cerca ospite..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-10 border-gray-200 rounded-lg"
+                className="pl-9 h-9 border-gray-200 rounded-lg text-sm"
               />
             </div>
           </div>
 
           {/* Guests List */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-3">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -643,17 +641,17 @@ const Tavoli = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {groupedGuests.map((group, idx) => (
-                  <div key={group.type === "family" ? group.famiglia!.id : `singles-${idx}`}>
+                  <div key={group.type === "family" ? group.famiglia!.id : `singles-${idx}`} className="mb-3">
                     {/* Group Header */}
                     {group.type === "family" && (
                       <div className="flex items-center gap-2 mb-2 px-2">
-                        <Users className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm font-semibold text-purple-900">
+                        <Users className="h-3.5 w-3.5 text-purple-600" />
+                        <span className="text-xs font-semibold text-purple-900">
                           {group.famiglia!.nome}
                         </span>
-                        <span className="text-xs text-purple-600">
+                        <span className="text-[10px] text-purple-600">
                           ({group.membri!.length})
                         </span>
                       </div>
@@ -661,8 +659,8 @@ const Tavoli = () => {
 
                     {group.type === "singles" && (
                       <div className="flex items-center gap-2 mb-2 px-2">
-                        <User className="h-4 w-4 text-gray-600" />
-                        <span className="text-sm font-semibold text-gray-900">
+                        <User className="h-3.5 w-3.5 text-gray-600" />
+                        <span className="text-xs font-semibold text-gray-900">
                           Invitati Singoli
                         </span>
                       </div>
@@ -781,8 +779,8 @@ const Tavoli = () => {
           <div
             ref={canvasRef}
             className={cn(
-              "flex-1 overflow-hidden relative",
-              isDraggingTable ? "cursor-grabbing" : isPanning ? "cursor-grabbing" : "cursor-move"
+              "flex-1 overflow-hidden relative bg-gray-50",
+              isDraggingTable ? "cursor-grabbing" : isPanning ? "cursor-grabbing" : "cursor-grab"
             )}
             onMouseDown={handleCanvasMouseDown}
             onMouseMove={handleCanvasMouseMove}
@@ -813,51 +811,104 @@ const Tavoli = () => {
                 </Button>
               </div>
             ) : (
-              <svg
-                width="100%"
-                height="100%"
-                viewBox={`${-panOffset.x} ${-panOffset.y} ${
-                  (canvasRef.current?.clientWidth || 1000) / zoom
-                } ${(canvasRef.current?.clientHeight || 800) / zoom}`}
-                className="bg-white"
-              >
-                {/* Grid Pattern */}
-                <defs>
-                  <pattern
-                    id="grid"
-                    width="50"
-                    height="50"
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <path
-                      d="M 50 0 L 0 0 0 50"
-                      fill="none"
-                      stroke="#f0f0f0"
-                      strokeWidth="1"
-                    />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#grid)" />
-
-                {/* Tables */}
-                {tavoli.map((tavolo) => (
-                  <TavoloSVG
-                    key={tavolo.id}
-                    tavolo={tavolo}
-                    assignments={getAssignmentsForTable(tavolo.id)}
-                    onSeatClick={(seatIndex) => handleSeatClick(tavolo.id, seatIndex)}
-                    onAssignGuest={handleAssignGuest}
-                    isSelected={selectedTableId === tavolo.id}
-                    onTableClick={() => handleTableClick(tavolo.id)}
-                    onTableDragStart={(e) => handleTableDragStart(tavolo.id, e)}
-                    onSeatMouseEnter={(guest, e) => {
-                      setHoveredGuest(guest);
-                      setTooltipPosition({ x: e.clientX, y: e.clientY });
-                    }}
-                    onSeatMouseLeave={() => setHoveredGuest(null)}
+              <>
+                <svg
+                  width="100%"
+                  height="100%"
+                  viewBox={`${panOffset.x} ${panOffset.y} ${
+                    (canvasRef.current?.clientWidth || 800) / zoom
+                  } ${(canvasRef.current?.clientHeight || 600) / zoom}`}
+                  className="bg-white"
+                  style={{ width: '100%', height: '100%' }}
+                >
+                  {/* Infinite Grid Pattern */}
+                  <defs>
+                    <pattern
+                      id="grid"
+                      width="50"
+                      height="50"
+                      patternUnits="userSpaceOnUse"
+                    >
+                      <path
+                        d="M 50 0 L 0 0 0 50"
+                        fill="none"
+                        stroke="#f0f0f0"
+                        strokeWidth="1"
+                      />
+                    </pattern>
+                  </defs>
+                  
+                  {/* Grid covers infinite space */}
+                  <rect 
+                    x={panOffset.x - 5000} 
+                    y={panOffset.y - 5000} 
+                    width="20000" 
+                    height="20000" 
+                    fill="url(#grid)" 
                   />
-                ))}
-              </svg>
+
+                  {/* Tables */}
+                  {tavoli.map((tavolo) => (
+                    <TavoloSVG
+                      key={tavolo.id}
+                      tavolo={tavolo}
+                      assignments={getAssignmentsForTable(tavolo.id)}
+                      onSeatClick={(seatIndex) => handleSeatClick(tavolo.id, seatIndex)}
+                      onAssignGuest={handleAssignGuest}
+                      isSelected={selectedTableId === tavolo.id}
+                      onTableClick={() => handleTableClick(tavolo.id)}
+                      onTableDragStart={(e) => handleTableDragStart(tavolo.id, e)}
+                      onSeatMouseEnter={(guest, e) => {
+                        setHoveredGuest(guest);
+                        setTooltipPosition({ x: e.clientX, y: e.clientY });
+                      }}
+                      onSeatMouseLeave={() => setHoveredGuest(null)}
+                    />
+                  ))}
+                </svg>
+                
+                {/* Zoom Controls - Fixed Position */}
+                <div className="absolute bottom-4 right-4 flex items-center gap-2 bg-white rounded-lg shadow-lg border border-gray-200 p-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setZoom(Math.max(0.2, zoom - 0.1))}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ZoomOut className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm font-medium text-gray-700 min-w-[60px] text-center">
+                    {Math.round(zoom * 100)}%
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setZoom(Math.min(3, zoom + 0.1))}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </Button>
+                  <Separator orientation="vertical" className="h-6 mx-1" />
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      setZoom(1);
+                      setPanOffset({ x: -2500, y: -2000 });
+                    }}
+                    className="h-8 px-3"
+                  >
+                    <Maximize2 className="h-4 w-4 mr-1" />
+                    Reset
+                  </Button>
+                </div>
+                
+                {/* Pan Instructions */}
+                <div className="absolute top-4 right-4 bg-black/75 text-white text-xs px-3 py-2 rounded-lg">
+                  <p>🖱️ Trascina per spostare</p>
+                  <p>⌘ + Scroll per zoom</p>
+                </div>
+              </>
             )}
           </div>
         </div>

@@ -96,6 +96,15 @@ export type Database = {
           tavolo_id: string | null
           tipo_ospite: string
           wedding_id: string
+          whatsapp_date_created: string | null
+          whatsapp_date_sent: string | null
+          whatsapp_date_updated: string | null
+          whatsapp_message_body: string | null
+          whatsapp_message_currency: string | null
+          whatsapp_message_from: string | null
+          whatsapp_message_price: number | null
+          whatsapp_message_sid: string | null
+          whatsapp_message_status: string | null
           whatsapp_rsvp_inviato: boolean | null
           whatsapp_rsvp_inviato_at: string | null
         }
@@ -116,6 +125,15 @@ export type Database = {
           tavolo_id?: string | null
           tipo_ospite: string
           wedding_id: string
+          whatsapp_date_created?: string | null
+          whatsapp_date_sent?: string | null
+          whatsapp_date_updated?: string | null
+          whatsapp_message_body?: string | null
+          whatsapp_message_currency?: string | null
+          whatsapp_message_from?: string | null
+          whatsapp_message_price?: number | null
+          whatsapp_message_sid?: string | null
+          whatsapp_message_status?: string | null
           whatsapp_rsvp_inviato?: boolean | null
           whatsapp_rsvp_inviato_at?: string | null
         }
@@ -136,6 +154,15 @@ export type Database = {
           tavolo_id?: string | null
           tipo_ospite?: string
           wedding_id?: string
+          whatsapp_date_created?: string | null
+          whatsapp_date_sent?: string | null
+          whatsapp_date_updated?: string | null
+          whatsapp_message_body?: string | null
+          whatsapp_message_currency?: string | null
+          whatsapp_message_from?: string | null
+          whatsapp_message_price?: number | null
+          whatsapp_message_sid?: string | null
+          whatsapp_message_status?: string | null
           whatsapp_rsvp_inviato?: boolean | null
           whatsapp_rsvp_inviato_at?: string | null
         }
@@ -316,6 +343,8 @@ export type Database = {
       }
       weddings: {
         Row: {
+          api_password: string | null
+          api_username: string | null
           ceremony_location: string
           couple_name: string
           created_at: string | null
@@ -329,6 +358,8 @@ export type Database = {
           wedding_date: string
         }
         Insert: {
+          api_password?: string | null
+          api_username?: string | null
           ceremony_location: string
           couple_name: string
           created_at?: string | null
@@ -342,6 +373,8 @@ export type Database = {
           wedding_date: string
         }
         Update: {
+          api_password?: string | null
+          api_username?: string | null
           ceremony_location?: string
           couple_name?: string
           created_at?: string | null

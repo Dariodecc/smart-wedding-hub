@@ -20,6 +20,16 @@ const DraggableGuest = ({ guest }: DraggableGuestProps) => {
     data: { guest },
   });
 
+  // DEBUG LOGS
+  console.log('🎯 DraggableGuest rendered:', {
+    guestId: guest.id,
+    nome: guest.nome,
+    cognome: guest.cognome,
+    isDragging,
+    hasListeners: !!listeners,
+    hasAttributes: !!attributes
+  });
+
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -43,8 +53,11 @@ const DraggableGuest = ({ guest }: DraggableGuestProps) => {
       className={cn(
         "flex items-center gap-3 p-3 rounded-lg border-2 cursor-grab active:cursor-grabbing transition-all",
         rsvpColor,
-        isDragging && "shadow-lg"
+        isDragging && "shadow-lg ring-2 ring-blue-500"
       )}
+      onMouseDown={(e) => {
+        console.log('🖱️ Guest mousedown:', guest.nome, guest.cognome);
+      }}
     >
       {/* Avatar */}
       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0">

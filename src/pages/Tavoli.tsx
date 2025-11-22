@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
-import { DndContext, DragOverlay, DragEndEvent, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragOverlay, DragEndEvent, DragStartEvent, DragOverEvent, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { Search, Users, User, Crown, Plus, ZoomIn, ZoomOut, Maximize2, CheckCircle, Loader2, Circle, RectangleHorizontal, RotateCcw, RotateCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,10 +58,12 @@ const Tavoli = () => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5, // Reduced from 8 for easier dragging
       },
     })
   );
+
+  console.log('🎮 DndContext sensors initialized:', sensors);
 
   const { register, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
@@ -72,6 +74,19 @@ const Tavoli = () => {
   });
 
   const watchTipo = watch("tipo");
+
+  // Check if DnD Kit is properly installed
+  useEffect(() => {
+    console.log('🔍 Checking DnD Kit installation...');
+    console.log('DndContext:', DndContext);
+    console.log('Sensors:', sensors);
+    
+    if (!DndContext) {
+      console.error('❌ DnD Kit not properly imported!');
+    } else {
+      console.log('✅ DnD Kit properly loaded');
+    }
+  }, []);
 
   // Fetch tavoli
   const { data: tavoli = [], isLoading: isLoadingTavoli } = useQuery({
@@ -278,42 +293,65 @@ const Tavoli = () => {
 
   // Handle drag end
   const handleDragEnd = async (event: DragEndEvent) => {
+    console.log('🏁 DRAG END:', {
+      activeId: event.active.id,
+      overId: event.over?.id,
+      overData: event.over?.data.current
+    });
+
     const { active, over } = event;
     setActiveGuest(null);
 
     if (!over) {
-      console.log("No drop target");
+      console.warn('⚠️ No drop target');
       return;
     }
 
     const guestId = active.id as string;
     const dropData = over.data.current;
 
+    console.log('📍 Drop data:', dropData);
+
     if (!dropData?.tavoloId || dropData?.seatIndex === undefined) {
-      console.log("Invalid drop data", dropData);
+      console.error('❌ Invalid drop data:', dropData);
       return;
     }
 
     const { tavoloId, seatIndex } = dropData;
 
-    console.log("Assigning guest", guestId, "to table", tavoloId, "seat", seatIndex);
+    console.log('✨ Assigning guest:', {
+      guestId,
+      guestName: activeGuest ? `${activeGuest.nome} ${activeGuest.cognome}` : 'unknown',
+      tavoloId,
+      seatIndex
+    });
 
     try {
       // Check if seat is already occupied
-      const { data: existingAssignment } = await supabase
+      console.log('🔍 Checking if seat is occupied...');
+
+      const { data: existingAssignment, error: checkError } = await supabase
         .from("invitati")
-        .select("id")
+        .select("id, nome, cognome")
         .eq("tavolo_id", tavoloId)
         .eq("posto_numero", seatIndex)
         .maybeSingle();
 
+      if (checkError) {
+        console.error('❌ Error checking seat:', checkError);
+        throw checkError;
+      }
+
       if (existingAssignment) {
-        toast.error("Questo posto è già occupato");
+        console.warn('⚠️ Seat already occupied by:', existingAssignment);
+        toast.error(`Questo posto è già occupato da ${existingAssignment.nome} ${existingAssignment.cognome}`);
         return;
       }
 
+      console.log('✅ Seat is free, assigning...');
+
       // Assign guest to table and seat
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from("invitati")
         .update({
           tavolo_id: tavoloId,
@@ -321,21 +359,48 @@ const Tavoli = () => {
         })
         .eq("id", guestId);
 
-      if (error) throw error;
+      if (updateError) {
+        console.error('❌ Error updating guest:', updateError);
+        throw updateError;
+      }
+
+      console.log('✅ Guest assigned successfully!');
 
       // Refresh data
       await queryClient.invalidateQueries({ queryKey: ["invitati", wedding?.id] });
       toast.success("Ospite assegnato al tavolo");
     } catch (error) {
-      console.error("Error assigning guest:", error);
+      console.error('💥 Error in handleDragEnd:', error);
       toast.error("Errore nell'assegnare l'ospite");
     }
   };
 
-  const handleDragStart = (event: any) => {
+  const handleDragStart = (event: DragStartEvent) => {
+    console.log('🚀 DRAG START:', {
+      activeId: event.active.id,
+      activeData: event.active.data.current,
+      guest: event.active.data.current?.guest
+    });
+
     const { active } = event;
     const guest = active.data.current?.guest;
     setActiveGuest(guest);
+
+    if (!guest) {
+      console.error('❌ No guest data in drag start!');
+    }
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    console.log('🎯 DRAG OVER:', {
+      activeId: event.active.id,
+      overId: event.over?.id
+    });
+  };
+
+  const handleDragCancel = () => {
+    console.log('🚫 DRAG CANCELLED');
+    setActiveGuest(null);
   };
 
   // Handle seat click (to remove assignment)
@@ -364,26 +429,45 @@ const Tavoli = () => {
 
   // Table interaction handlers
   const handleTableClick = (tavoloId: string) => {
+    console.log('🎯 Table clicked:', {
+      tavoloId,
+      previousSelected: selectedTableId,
+      tavolo: tavoli.find(t => t.id === tavoloId)
+    });
     setSelectedTableId(tavoloId);
   };
 
   const handleTableDragStart = (tavoloId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log('🚀 Table drag start:', tavoloId);
 
     const tavolo = tavoli.find((t) => t.id === tavoloId);
-    if (!tavolo) return;
+    if (!tavolo) {
+      console.error('❌ Table not found for drag:', tavoloId);
+      return;
+    }
+
+    console.log('📍 Table initial position:', {
+      x: tavolo.posizione_x,
+      y: tavolo.posizione_y
+    });
 
     setSelectedTableId(tavoloId);
     setIsDraggingTable(true);
 
     // Get SVG coordinates
     const svg = (e.target as SVGElement).ownerSVGElement;
-    if (!svg) return;
+    if (!svg) {
+      console.error('❌ No SVG element found');
+      return;
+    }
 
     const pt = svg.createSVGPoint();
     pt.x = e.clientX;
     pt.y = e.clientY;
     const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+
+    console.log('🖱️ Mouse SVG coordinates:', { x: svgP.x, y: svgP.y });
 
     setTableDragStart({
       x: svgP.x,
@@ -391,6 +475,8 @@ const Tavoli = () => {
       tableX: tavolo.posizione_x,
       tableY: tavolo.posizione_y,
     });
+
+    console.log('✅ Table drag initialized');
   };
 
   const handleTableDragMove = (e: React.MouseEvent) => {
@@ -452,29 +538,59 @@ const Tavoli = () => {
   };
 
   const rotateTable = async (degrees: number) => {
-    if (!selectedTableId) return;
+    console.log('🔄 Rotating table:', {
+      selectedTableId,
+      degrees,
+      currentRotation: tavoli.find(t => t.id === selectedTableId)?.rotazione || 0
+    });
+
+    if (!selectedTableId) {
+      console.error('❌ No table selected for rotation');
+      return;
+    }
 
     const tavolo = tavoli.find((t) => t.id === selectedTableId);
-    if (!tavolo) return;
+    if (!tavolo) {
+      console.error('❌ Table not found:', selectedTableId);
+      return;
+    }
 
-    const newRotation = (tavolo.rotazione || 0) + degrees;
+    const currentRotation = tavolo.rotazione || 0;
+    const newRotation = currentRotation + degrees;
+
+    console.log('🔄 Rotation update:', {
+      current: currentRotation,
+      delta: degrees,
+      new: newRotation
+    });
 
     // Update locally
+    console.log('✅ Updating local state...');
     queryClient.setQueryData(["tavoli", wedding?.id], (old: Tavolo[] | undefined) => {
       if (!old) return old;
-      return old.map((t) => (t.id === selectedTableId ? { ...t, rotazione: newRotation } : t));
+      const updated = old.map((t) => (t.id === selectedTableId ? { ...t, rotazione: newRotation } : t));
+      console.log('✅ Local tavoli state updated:', updated.find(t => t.id === selectedTableId));
+      return updated;
     });
 
     // Save to database
     try {
+      console.log('💾 Saving rotation to database...');
+
       const { error } = await supabase
         .from("tavoli")
         .update({ rotazione: newRotation })
         .eq("id", selectedTableId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error:', error);
+        throw error;
+      }
+
+      console.log('✅ Rotation saved to database');
+      toast.success(`Tavolo ruotato di ${degrees}°`);
     } catch (error) {
-      console.error("Error rotating table:", error);
+      console.error('💥 Error rotating table:', error);
       toast.error("Errore nella rotazione");
       await queryClient.invalidateQueries({ queryKey: ["tavoli", wedding?.id] });
     }
@@ -764,8 +880,22 @@ const Tavoli = () => {
             </div>
           ) : (
             <DndContext
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
+              onDragStart={(e) => {
+                console.log('🎮 DndContext onDragStart triggered');
+                handleDragStart(e);
+              }}
+              onDragOver={(e) => {
+                console.log('🎮 DndContext onDragOver triggered');
+                handleDragOver(e);
+              }}
+              onDragEnd={(e) => {
+                console.log('🎮 DndContext onDragEnd triggered');
+                handleDragEnd(e);
+              }}
+              onDragCancel={() => {
+                console.log('🎮 DndContext onDragCancel triggered');
+                handleDragCancel();
+              }}
               sensors={sensors}
               collisionDetection={closestCenter}
             >

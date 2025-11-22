@@ -1,4 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface DroppableSeatProps {
@@ -18,10 +19,28 @@ const DroppableSeat = ({
   borderColor,
   onSeatClick,
 }: DroppableSeatProps) => {
+  const droppableId = `seat-${tavoloId}-${seatIndex}`;
+  
   const { isOver, setNodeRef } = useDroppable({
-    id: `seat-${tavoloId}-${seatIndex}`,
+    id: droppableId,
     data: { tavoloId, seatIndex },
   });
+
+  // DEBUG LOGS
+  console.log('💺 DroppableSeat rendered:', {
+    droppableId,
+    tavoloId,
+    seatIndex,
+    isOver,
+    hasGuest: !!guest,
+    guestName: guest ? `${guest.nome} ${guest.cognome}` : 'empty'
+  });
+
+  useEffect(() => {
+    if (isOver) {
+      console.log('✅ Seat is being hovered!', droppableId);
+    }
+  }, [isOver, droppableId]);
 
   return (
     <g
@@ -34,16 +53,19 @@ const DroppableSeat = ({
           ref={setNodeRef}
           onClick={(e) => {
             e.stopPropagation();
+            console.log('🪑 Seat clicked:', droppableId);
             onSeatClick();
           }}
           className={cn(
             "w-full h-full rounded-lg border-[3px] flex flex-col items-center justify-center cursor-pointer transition-all",
-            isOver ? "bg-blue-100 border-blue-500" : guest ? "bg-white" : "bg-gray-100",
+            isOver ? "bg-blue-200 border-blue-600 scale-110" : guest ? "bg-white" : "bg-gray-100",
             !guest && !isOver && "border-gray-400"
           )}
           style={{
-            borderColor: guest && !isOver ? borderColor : undefined,
+            borderColor: guest ? borderColor : isOver ? '#2563EB' : '#9CA3AF',
           }}
+          onMouseEnter={() => console.log('🎯 Mouse entered seat:', droppableId)}
+          onMouseLeave={() => console.log('👋 Mouse left seat:', droppableId)}
         >
           {guest ? (
             <>
@@ -59,7 +81,9 @@ const DroppableSeat = ({
               </span>
             </>
           ) : (
-            <span className="text-[10px] text-gray-400">Libero</span>
+            <span className="text-[10px] text-gray-400">
+              {isOver ? 'Rilascia' : 'Libero'}
+            </span>
           )}
         </div>
       </foreignObject>

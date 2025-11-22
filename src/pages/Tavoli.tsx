@@ -674,22 +674,10 @@ const Tavoli = () => {
   return (
     <DndContext
       sensors={sensors}
-      onDragStart={(e) => {
-        console.log('🎮 DndContext onDragStart triggered');
-        handleDragStart(e);
-      }}
-      onDragOver={(e) => {
-        console.log('🎮 DndContext onDragOver triggered');
-        handleDragOver(e);
-      }}
-      onDragEnd={(e) => {
-        console.log('🎮 DndContext onDragEnd triggered');
-        handleDragEnd(e);
-      }}
-      onDragCancel={() => {
-        console.log('🎮 DndContext onDragCancel triggered');
-        handleDragCancel();
-      }}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
       collisionDetection={closestCenter}
     >
       <div className="flex h-screen bg-gray-50 overflow-hidden">

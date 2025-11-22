@@ -20,6 +20,7 @@ import Impostazioni from "./pages/Impostazioni";
 import ImpostazioniAdmin from "./pages/ImpostazioniAdmin";
 import Utenti from "./pages/Utenti";
 import Rsvp from "./pages/Rsvp";
+import ConfigurazioneTavoli from "./pages/ConfigurazioneTavoli";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -155,8 +156,9 @@ const App = () => (
             </ProtectedRoute>
           }
         />
-        {/* Public RSVP route - no authentication required */}
+        {/* Public routes - no authentication required */}
         <Route path="/rsvp/:uuid" element={<Rsvp />} />
+        <Route path="/configurazione-tavoli" element={<ConfigurazioneTavoli />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
           </Routes>

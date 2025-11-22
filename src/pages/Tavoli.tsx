@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentMatrimonio } from "@/hooks/useCurrentMatrimonio";
-import { Search, Users, User, Crown, Plus, ZoomIn, ZoomOut, Maximize2, CheckCircle, Loader2, Circle, RectangleHorizontal, RotateCcw, RotateCw, Trash2 } from "lucide-react";
+import { Search, Users, User, Crown, Plus, ZoomIn, ZoomOut, Maximize2, CheckCircle, Loader2, Circle, RectangleHorizontal, RotateCcw, RotateCw, Trash2, Edit, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
@@ -54,6 +55,7 @@ const Tavoli = () => {
     y: 0
   });
   const [showAddTableDialog, setShowAddTableDialog] = useState(false);
+  const [showEditTableDialog, setShowEditTableDialog] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [isDraggingTable, setIsDraggingTable] = useState(false);
   const [tableDragStart, setTableDragStart] = useState({
@@ -724,15 +726,8 @@ const Tavoli = () => {
               </div>
               
               <div className="flex items-center gap-2">
-                {/* Zoom Controls */}
-                
-                
-                
-                
-                
                 {/* Table Actions - Only show when table selected */}
                 {selectedTableId && <>
-                    <Separator orientation="vertical" className="h-8 mx-2" />
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-700">Ruota:</span>
                       <Button variant="outline" size="sm" onClick={() => rotateTable(-15)}>
@@ -745,7 +740,35 @@ const Tavoli = () => {
                     <Button variant="outline" size="sm" onClick={handleDeleteTable} className="border-red-200 text-red-600 hover:bg-red-50">
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                    <Separator orientation="vertical" className="h-8 mx-2" />
                   </>}
+                
+                {/* Edit Table Button */}
+                {selectedTableId && (
+                  <Button 
+                    onClick={() => setShowEditTableDialog(true)} 
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Modifica
+                  </Button>
+                )}
+                
+                {/* Public View Link */}
+                <Button 
+                  onClick={() => {
+                    const url = `${window.location.origin}/configurazione-tavoli?w=${wedding?.id}`;
+                    window.open(url, '_blank');
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                >
+                  <Link className="h-4 w-4 mr-2" />
+                  Vista Pubblica
+                </Button>
                 
                 <Separator orientation="vertical" className="h-8 mx-2" />
                 
@@ -971,6 +994,98 @@ const Tavoli = () => {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Table Dialog */}
+      <Dialog open={showEditTableDialog} onOpenChange={setShowEditTableDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Modifica Tavolo</DialogTitle>
+            <DialogDescription>
+              Modifica le proprietà del tavolo selezionato
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedTableId && (() => {
+            const editingTable = tavoli.find(t => t.id === selectedTableId);
+            if (!editingTable) return null;
+
+            return (
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const updates = {
+                  nome: formData.get('nome') as string,
+                  tipo: formData.get('tipo') as string,
+                  capienza: parseInt(formData.get('capienza') as string)
+                };
+
+                try {
+                  const { error } = await supabase
+                    .from('tavoli')
+                    .update(updates)
+                    .eq('id', selectedTableId);
+
+                  if (error) throw error;
+
+                  await queryClient.invalidateQueries({ queryKey: ['tavoli', wedding?.id] });
+                  toast.success('Tavolo aggiornato');
+                  setShowEditTableDialog(false);
+                } catch (error) {
+                  console.error('Error updating table:', error);
+                  toast.error('Errore nell\'aggiornare il tavolo');
+                }
+              }}>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-nome">Nome Tavolo</Label>
+                    <Input
+                      id="edit-nome"
+                      name="nome"
+                      defaultValue={editingTable.nome}
+                      placeholder="Es: Tavolo 1"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-tipo">Tipo Tavolo</Label>
+                    <Select name="tipo" defaultValue={editingTable.tipo} required>
+                      <SelectTrigger id="edit-tipo">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="rotondo">Rotondo</SelectItem>
+                        <SelectItem value="rettangolare_singolo">Rettangolare Singolo</SelectItem>
+                        <SelectItem value="rettangolare_doppio">Rettangolare Doppio</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-capienza">Capienza (posti)</Label>
+                    <Input
+                      id="edit-capienza"
+                      name="capienza"
+                      type="number"
+                      min="1"
+                      max="30"
+                      defaultValue={editingTable.capienza}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setShowEditTableDialog(false)}>
+                    Annulla
+                  </Button>
+                  <Button type="submit">Salva Modifiche</Button>
+                </DialogFooter>
+              </form>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 

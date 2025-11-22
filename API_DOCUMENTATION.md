@@ -12,19 +12,20 @@ https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests
 
 ## Authentication
 
-All endpoints require HTTP Basic Authentication using credentials configured in the wedding settings.
+All endpoints require Bearer token authentication using API keys managed in Admin Settings.
 
 ```bash
-Authorization: Basic base64(username:password)
+Authorization: Bearer YOUR_API_KEY
 ```
 
-### Setting Up API Credentials
+### Setting Up API Keys
 
-1. Navigate to **Matrimoni** (Weddings) page
-2. Edit or create a wedding
-3. Scroll to **Credenziali API** section
-4. Enter a **Username API** and **Password API**
-5. Save the wedding
+1. Navigate to **Impostazioni Admin** (Admin Settings)
+2. Click **Nuova Chiave** (New Key)
+3. Enter a descriptive name for the key
+4. Select the weddings this key should have access to
+5. Click **Crea Chiave API**
+6. Copy and securely store the generated API key (it will only be shown once)
 
 ---
 
@@ -40,7 +41,7 @@ Retrieve all guests for a specific wedding.
 
 ```bash
 curl -X GET "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{weddingId}" \
-  -H "Authorization: Basic $(echo -n 'username:password' | base64)"
+  -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 #### Response (200 OK)
@@ -99,7 +100,7 @@ Retrieve details of a specific guest.
 
 ```bash
 curl -X GET "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{weddingId}/{guestId}" \
-  -H "Authorization: Basic $(echo -n 'username:password' | base64)"
+  -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 #### Response (200 OK)
@@ -143,7 +144,7 @@ Update guest information including WhatsApp message tracking.
 
 ```bash
 curl -X POST "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{weddingId}/{guestId}" \
-  -H "Authorization: Basic $(echo -n 'username:password' | base64)" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "rsvp_status": "Ci sarò",
@@ -184,13 +185,15 @@ Receives WhatsApp message status updates from Twilio and automatically updates g
    ```
    https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{YOUR_WEDDING_ID}/webhook
    ```
-3. Add Basic Auth header with your API credentials
+3. Add custom header:
+   - Name: `Authorization`
+   - Value: `Bearer YOUR_API_KEY`
 
 #### Request (from Twilio)
 
 ```bash
 curl -X POST "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{weddingId}/webhook" \
-  -H "Authorization: Basic $(echo -n 'username:password' | base64)" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "MessageSid=MM1234567890abcdef" \
   -d "MessageStatus=delivered" \
@@ -281,19 +284,15 @@ curl -X POST "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{wedd
 
 ```python
 import requests
-from base64 import b64encode
 
 # API Configuration
 WEDDING_ID = "your-wedding-id"
-USERNAME = "api_user"
-PASSWORD = "api_password"
+API_KEY = "sk_your_api_key_here"
 BASE_URL = f"https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{WEDDING_ID}"
 
-# Create Basic Auth header
-credentials = f"{USERNAME}:{PASSWORD}"
-token = b64encode(credentials.encode()).decode()
+# Create Bearer token header
 headers = {
-    "Authorization": f"Basic {token}",
+    "Authorization": f"Bearer {API_KEY}",
     "Content-Type": "application/json"
 }
 
@@ -322,13 +321,11 @@ print(response.json())
 const axios = require('axios');
 
 const WEDDING_ID = 'your-wedding-id';
-const USERNAME = 'api_user';
-const PASSWORD = 'api_password';
+const API_KEY = 'sk_your_api_key_here';
 const BASE_URL = `https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/${WEDDING_ID}`;
 
-const credentials = Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
 const headers = {
-  'Authorization': `Basic ${credentials}`,
+  'Authorization': `Bearer ${API_KEY}`,
   'Content-Type': 'application/json'
 };
 
@@ -374,7 +371,16 @@ axios.post(`${BASE_URL}/${guestId}`, updateData, { headers })
         "url": "=https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{{$env.WEDDING_ID}}/webhook",
         "method": "POST",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpBasicAuth",
+        "genericAuthType": "headerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.API_KEY}}"
+            }
+          ]
+        },
         "sendBody": true,
         "contentType": "form-urlencoded",
         "bodyParameters": {

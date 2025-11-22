@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import DraggableGuest from "@/components/tavoli/DraggableGuest";
 import TavoloSVG from "@/components/tavoli/TavoloSVG";
+import { GuestTooltip } from "@/components/tavoli/GuestTooltip";
 
 interface Tavolo {
   id: string;
@@ -52,6 +53,8 @@ const Tavoli = () => {
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [isDraggingTable, setIsDraggingTable] = useState(false);
   const [tableDragStart, setTableDragStart] = useState({ x: 0, y: 0, tableX: 0, tableY: 0 });
+  const [hoveredGuest, setHoveredGuest] = useState<any>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   const { register, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
@@ -330,12 +333,9 @@ const Tavoli = () => {
 
   // Table interaction handlers
   const handleTableClick = (tavoloId: string) => {
-    console.log('🎯 Table clicked:', {
-      tavoloId,
-      previousSelected: selectedTableId,
-      tavolo: tavoli.find(t => t.id === tavoloId)
-    });
+    console.log('🎯 Table selected (no save):', tavoloId);
     setSelectedTableId(tavoloId);
+    // NO database save - just selection
   };
 
   const handleTableDragStart = (tavoloId: string, e: React.MouseEvent) => {
@@ -417,7 +417,26 @@ const Tavoli = () => {
     const tavolo = tavoli.find((t) => t.id === selectedTableId);
     if (!tavolo) return;
 
-    // Save to database
+    // Get original table data to compare
+    const { data: originalTable } = await supabase
+      .from("tavoli")
+      .select("posizione_x, posizione_y")
+      .eq("id", selectedTableId)
+      .single();
+
+    if (!originalTable) return;
+
+    // ONLY save if position actually changed (threshold of 1 pixel)
+    const positionChanged = 
+      Math.abs(tavolo.posizione_x - originalTable.posizione_x) > 1 ||
+      Math.abs(tavolo.posizione_y - originalTable.posizione_y) > 1;
+
+    if (!positionChanged) {
+      console.log("⏭️ Position unchanged, not saving");
+      return;
+    }
+
+    // Save to database only if position changed
     try {
       const { error } = await supabase
         .from("tavoli")
@@ -818,6 +837,11 @@ const Tavoli = () => {
                     isSelected={selectedTableId === tavolo.id}
                     onTableClick={() => handleTableClick(tavolo.id)}
                     onTableDragStart={(e) => handleTableDragStart(tavolo.id, e)}
+                    onSeatMouseEnter={(guest, e) => {
+                      setHoveredGuest(guest);
+                      setTooltipPosition({ x: e.clientX, y: e.clientY });
+                    }}
+                    onSeatMouseLeave={() => setHoveredGuest(null)}
                   />
                 ))}
               </svg>
@@ -971,6 +995,13 @@ const Tavoli = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Guest Tooltip */}
+      <GuestTooltip
+        guest={hoveredGuest}
+        position={tooltipPosition}
+        visible={!!hoveredGuest}
+      />
     </>
   );
 };

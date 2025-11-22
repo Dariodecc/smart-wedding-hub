@@ -9,6 +9,9 @@ interface DroppableSeatProps {
   borderColor: string;
   onSeatClick: () => void;
   onDrop: (guestId: string) => void;
+  tableRotation?: number;
+  onMouseEnter?: (e: React.MouseEvent) => void;
+  onMouseLeave?: () => void;
 }
 
 const DroppableSeat = ({
@@ -19,6 +22,9 @@ const DroppableSeat = ({
   borderColor,
   onSeatClick,
   onDrop,
+  tableRotation = 0,
+  onMouseEnter,
+  onMouseLeave,
 }: DroppableSeatProps) => {
   const [isOver, setIsOver] = React.useState(false);
   const droppableId = `seat-${tavoloId}-${seatIndex}`;
@@ -54,13 +60,16 @@ const DroppableSeat = ({
             console.log("🪑 Seat clicked:", droppableId);
             onSeatClick();
           }}
+          onMouseEnter={guest ? onMouseEnter : undefined}
+          onMouseLeave={guest ? onMouseLeave : undefined}
           className={cn(
             "w-full h-full rounded-lg border-[3px] flex flex-col items-center justify-center cursor-pointer transition-all",
-            isOver ? "bg-blue-200 border-blue-600 scale-110" : guest ? "bg-white" : "bg-gray-100",
+            isOver ? "bg-blue-200 border-blue-600 scale-110" : guest ? "bg-white hover:shadow-lg" : "bg-gray-100",
             !guest && !isOver && "border-gray-400"
           )}
           style={{
             borderColor: guest ? borderColor : isOver ? "#2563EB" : "#9CA3AF",
+            transform: `rotate(${-tableRotation}deg)`
           }}
         >
           {guest ? (

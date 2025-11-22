@@ -156,7 +156,8 @@ const Invitati = () => {
 
     // Separate singles and family members
     filteredInvitati.forEach(invitato => {
-      if (!invitato.famiglia_id) {
+      // Treat as single if no famiglia_id OR if famiglia data is missing
+      if (!invitato.famiglia_id || !invitato.famiglia) {
         singles.push(invitato);
       } else {
         if (!familyMap.has(invitato.famiglia_id)) {

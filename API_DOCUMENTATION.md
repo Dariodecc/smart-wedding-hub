@@ -12,10 +12,10 @@ https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests
 
 ## Authentication
 
-All endpoints require Bearer token authentication using API keys managed in Admin Settings.
+All endpoints require API key authentication using a custom header. API keys are managed in Admin Settings.
 
 ```bash
-Authorization: Bearer YOUR_API_KEY
+x-api-key: YOUR_API_KEY
 ```
 
 ### Setting Up API Keys
@@ -41,7 +41,7 @@ Retrieve all guests for a specific wedding.
 
 ```bash
 curl -X GET "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{weddingId}" \
-  -H "Authorization: Bearer YOUR_API_KEY"
+  -H "x-api-key: YOUR_API_KEY"
 ```
 
 #### Response (200 OK)
@@ -100,7 +100,7 @@ Retrieve details of a specific guest.
 
 ```bash
 curl -X GET "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{weddingId}/{guestId}" \
-  -H "Authorization: Bearer YOUR_API_KEY"
+  -H "x-api-key: YOUR_API_KEY"
 ```
 
 #### Response (200 OK)
@@ -144,7 +144,7 @@ Update guest information including WhatsApp message tracking.
 
 ```bash
 curl -X POST "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{weddingId}/{guestId}" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "x-api-key: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "rsvp_status": "Ci sarò",
@@ -186,14 +186,14 @@ Receives WhatsApp message status updates from Twilio and automatically updates g
    https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{YOUR_WEDDING_ID}/webhook
    ```
 3. Add custom header:
-   - Name: `Authorization`
-   - Value: `Bearer YOUR_API_KEY`
+   - Name: `x-api-key`
+   - Value: `YOUR_API_KEY`
 
 #### Request (from Twilio)
 
 ```bash
 curl -X POST "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{weddingId}/webhook" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "x-api-key: YOUR_API_KEY" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "MessageSid=MM1234567890abcdef" \
   -d "MessageStatus=delivered" \
@@ -290,9 +290,9 @@ WEDDING_ID = "your-wedding-id"
 API_KEY = "sk_your_api_key_here"
 BASE_URL = f"https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/{WEDDING_ID}"
 
-# Create Bearer token header
+# Create headers with custom API key
 headers = {
-    "Authorization": f"Bearer {API_KEY}",
+    "x-api-key": API_KEY,
     "Content-Type": "application/json"
 }
 
@@ -325,7 +325,7 @@ const API_KEY = 'sk_your_api_key_here';
 const BASE_URL = `https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1/guests/${WEDDING_ID}`;
 
 const headers = {
-  'Authorization': `Bearer ${API_KEY}`,
+  'x-api-key': API_KEY,
   'Content-Type': 'application/json'
 };
 
@@ -351,6 +351,17 @@ axios.post(`${BASE_URL}/${guestId}`, updateData, { headers })
 
 ### n8n Workflow Example
 
+**Configuration:**
+```yaml
+Authentication: Generic Credential Type
+  Generic Auth Type: Header Auth
+
+Header Auth Credential:
+  Name: x-api-key
+  Value: sk_your_api_key_here
+```
+
+**Workflow JSON:**
 ```json
 {
   "name": "Twilio to Guest API",
@@ -376,8 +387,8 @@ axios.post(`${BASE_URL}/${guestId}`, updateData, { headers })
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": "=Bearer {{$env.API_KEY}}"
+              "name": "x-api-key",
+              "value": "={{$env.API_KEY}}"
             }
           ]
         },

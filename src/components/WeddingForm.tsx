@@ -26,8 +26,6 @@ interface FormData {
   enable_multi_rsvp: boolean;
   webhook_url: string;
   selected_spouses: string[];
-  api_username: string;
-  api_password: string;
 }
 
 interface WeddingFormProps {
@@ -233,34 +231,6 @@ export const WeddingForm = ({
             />
           </div>
         )}
-      </div>
-
-      <div className="space-y-4 pt-4 border-t border-border">
-        <h3 className="text-sm font-medium">Credenziali API</h3>
-        <p className="text-xs text-muted-foreground">
-          Genera credenziali per l'accesso API agli invitati
-        </p>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="api_username">Username API</Label>
-            <Input
-              id="api_username"
-              value={formData.api_username}
-              onChange={(e) => setFormData({ ...formData, api_username: e.target.value })}
-              placeholder="api_user"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="api_password">Password API</Label>
-            <Input
-              id="api_password"
-              type="password"
-              value={formData.api_password}
-              onChange={(e) => setFormData({ ...formData, api_password: e.target.value })}
-              placeholder="••••••••"
-            />
-          </div>
-        </div>
       </div>
 
       <div className="flex gap-2 justify-end">

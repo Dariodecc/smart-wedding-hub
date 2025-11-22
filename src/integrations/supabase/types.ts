@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_key_weddings: {
+        Row: {
+          api_key_id: string | null
+          created_at: string | null
+          id: string
+          wedding_id: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string | null
+          id?: string
+          wedding_id?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string | null
+          id?: string
+          wedding_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_key_weddings_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_key_weddings_wedding_id_fkey"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_keys: {
+        Row: {
+          api_key: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          key_name: string
+          last_used_at: string | null
+        }
+        Insert: {
+          api_key: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_name: string
+          last_used_at?: string | null
+        }
+        Update: {
+          api_key?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_name?: string
+          last_used_at?: string | null
+        }
+        Relationships: []
+      }
       famiglie: {
         Row: {
           created_at: string | null
@@ -343,8 +409,6 @@ export type Database = {
       }
       weddings: {
         Row: {
-          api_password: string | null
-          api_username: string | null
           ceremony_location: string
           couple_name: string
           created_at: string | null
@@ -358,8 +422,6 @@ export type Database = {
           wedding_date: string
         }
         Insert: {
-          api_password?: string | null
-          api_username?: string | null
           ceremony_location: string
           couple_name: string
           created_at?: string | null
@@ -373,8 +435,6 @@ export type Database = {
           wedding_date: string
         }
         Update: {
-          api_password?: string | null
-          api_username?: string | null
           ceremony_location?: string
           couple_name?: string
           created_at?: string | null

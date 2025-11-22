@@ -26,19 +26,29 @@ serve(async (req) => {
       )
     }
 
-    // Verify Basic Auth
+    // Verify API Key (Bearer token)
     const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Basic ')) {
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized. Basic Auth required.' }),
+        JSON.stringify({ 
+          code: 401,
+          error: 'Unauthorized',
+          message: 'Missing authorization header' 
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Decode credentials
-    const base64Credentials = authHeader.substring(6)
-    const credentials = atob(base64Credentials)
-    const [username, password] = credentials.split(':')
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ 
+          code: 401,
+          error: 'Unauthorized',
+          message: 'Invalid authorization format. Use: Authorization: Bearer YOUR_API_KEY' 
+        }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Admin client that bypasses RLS
     const supabaseAdmin = createClient(
@@ -46,20 +56,54 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Verify credentials against wedding
-    const { data: wedding, error: weddingError } = await supabaseAdmin
-      .from('weddings')
-      .select('api_username, api_password')
-      .eq('id', weddingId)
+    // Extract API key
+    const apiKey = authHeader.substring(7)
+    
+    // Verify API key exists and is active
+    const { data: keyData, error: keyError } = await supabaseAdmin
+      .from('api_keys')
+      .select('id, is_active')
+      .eq('api_key', apiKey)
+      .eq('is_active', true)
       .single()
-
-    if (weddingError || !wedding || wedding.api_username !== username || wedding.api_password !== password) {
-      console.error('Auth failed:', weddingError)
+    
+    if (keyError || !keyData) {
+      console.error('Invalid API key:', keyError)
       return new Response(
-        JSON.stringify({ error: 'Unauthorized. Invalid credentials.' }),
+        JSON.stringify({ 
+          code: 401,
+          error: 'Unauthorized',
+          message: 'Invalid or inactive API key' 
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+    
+    // Check if API key has access to this wedding
+    const { data: accessData, error: accessError } = await supabaseAdmin
+      .from('api_key_weddings')
+      .select('wedding_id')
+      .eq('api_key_id', keyData.id)
+      .eq('wedding_id', weddingId)
+      .single()
+    
+    if (accessError || !accessData) {
+      console.error('API key does not have access to wedding:', accessError)
+      return new Response(
+        JSON.stringify({ 
+          code: 403,
+          error: 'Forbidden',
+          message: 'API key does not have access to this wedding' 
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // Update last_used_at
+    await supabaseAdmin
+      .from('api_keys')
+      .update({ last_used_at: new Date().toISOString() })
+      .eq('id', keyData.id)
 
     // Route to appropriate handler
     const guestId = pathParts[1]

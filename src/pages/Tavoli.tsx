@@ -567,14 +567,7 @@ const Tavoli = () => {
   const isLoading = isLoadingTavoli || isLoadingInvitati;
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-      collisionDetection={closestCenter}
-    >
+    <>
       <div className="flex h-screen bg-gray-50 overflow-hidden">
         {/* Left Sidebar - Guests List */}
         <div className="w-[400px] bg-white border-r border-gray-200 flex flex-col overflow-hidden">
@@ -978,7 +971,7 @@ const Tavoli = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </DndContext>
+    </>
   );
 };
 

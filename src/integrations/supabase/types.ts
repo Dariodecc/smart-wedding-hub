@@ -146,7 +146,7 @@ export type Database = {
       }
       invitati: {
         Row: {
-          cellulare: string
+          cellulare: string | null
           cognome: string
           created_at: string | null
           email: string | null
@@ -176,7 +176,7 @@ export type Database = {
           whatsapp_rsvp_inviato_at: string | null
         }
         Insert: {
-          cellulare: string
+          cellulare?: string | null
           cognome: string
           created_at?: string | null
           email?: string | null
@@ -206,7 +206,7 @@ export type Database = {
           whatsapp_rsvp_inviato_at?: string | null
         }
         Update: {
-          cellulare?: string
+          cellulare?: string | null
           cognome?: string
           created_at?: string | null
           email?: string | null

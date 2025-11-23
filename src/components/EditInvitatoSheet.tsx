@@ -42,6 +42,10 @@ export function EditInvitatoSheet({
   const [creaFamiglia, setCreaFamiglia] = useState(false);
   const [famigliaHasCapo, setFamigliaHasCapo] = useState(false);
 
+  // Determine if phone field should be shown
+  // Show phone for: single guests (no family) OR family heads OR creating new family
+  const shouldShowPhoneField = !selectedFamiglia || isCapoFamiglia || creaFamiglia;
+
   // Placeholder data - will be replaced with real data later
   const tavoli: any[] = [];
 
@@ -211,11 +215,14 @@ export function EditInvitatoSheet({
       // Determine if guest should have RSVP link
       const shouldHaveRsvpLink = !famigliaId || shouldBeCapo;
       
+      // Clear phone if it shouldn't be visible (family member who is not capo)
+      const cellulareToSave = shouldShowPhoneField ? data.cellulare : null;
+      
       // Prepare update data
       const updateData: any = {
         nome: data.nome,
         cognome: data.cognome,
-        cellulare: data.cellulare,
+        cellulare: cellulareToSave,
         email: data.email || null,
         tipo_ospite: data.tipo_ospite,
         preferenze_alimentari: data.preferenze_alimentari,
@@ -413,14 +420,29 @@ export function EditInvitatoSheet({
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-sm font-medium text-gray-700">
-                      Cellulare *
-                    </Label>
-                    <Input type="tel" {...form.register("cellulare", {
-                    required: true
-                  })} className="h-10 bg-white border-gray-200 rounded-lg" />
-                  </div>
+                  {/* CONDITIONAL PHONE FIELD */}
+                  {shouldShowPhoneField ? (
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Cellulare *
+                      </Label>
+                      <Input type="tel" {...form.register("cellulare", {
+                      required: shouldShowPhoneField
+                    })} className="h-10 bg-white border-gray-200 rounded-lg" />
+                      <p className="text-xs text-gray-500">
+                        Necessario per l'invio degli inviti WhatsApp
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800 flex items-center gap-2">
+                        <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Il cellulare non è necessario per i membri della famiglia. Solo il capo famiglia riceverà gli inviti WhatsApp.
+                      </p>
+                    </div>
+                  )}
 
                   <div className="space-y-1.5">
                     <Label className="text-sm font-medium text-gray-700">
@@ -625,9 +647,11 @@ export function EditInvitatoSheet({
                     setCreaFamiglia(checked);
                     if (checked) {
                       setSelectedFamiglia(null);
-                      setIsCapoFamiglia(false);
+                      // Auto-check is_capo_famiglia when creating new family
+                      setIsCapoFamiglia(true);
                     } else {
                       form.setValue("nomeFamiglia", "");
+                      setIsCapoFamiglia(false);
                     }
                   }} />
                   </div>

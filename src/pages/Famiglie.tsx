@@ -795,19 +795,25 @@ const Famiglie = () => {
                                     </div>
                                   </td>
                                   <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-                                    <a
-                                      href={`https://wa.me/${membro.cellulare.replace(
-                                        /[^0-9+]/g,
-                                        ""
-                                      )}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <Phone className="h-3 w-3 shrink-0" />
-                                      <span>{membro.cellulare}</span>
-                                    </a>
+                                    {membro.cellulare ? (
+                                      <a
+                                        href={`https://wa.me/${membro.cellulare.replace(
+                                          /[^0-9+]/g,
+                                          ""
+                                        )}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <Phone className="h-3 w-3 shrink-0" />
+                                        <span>{membro.cellulare}</span>
+                                      </a>
+                                    ) : (
+                                      <span className="text-xs sm:text-sm text-gray-400 italic">
+                                        Nessun cellulare
+                                      </span>
+                                    )}
                                   </td>
                                   <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
                                     <div className="text-xs sm:text-sm text-gray-700">

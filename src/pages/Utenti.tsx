@@ -42,11 +42,16 @@ const Utenti = () => {
   });
 
   // Fetch all users with their roles and profiles
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading, error: usersError } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       console.log('=== FETCHING USERS ===');
       const { data: session } = await supabase.auth.getSession();
+      
+      // Check if session exists and is valid
+      if (!session.session?.access_token) {
+        throw new Error('No valid session');
+      }
       
       const { data, error } = await supabase.functions.invoke("list-users", {
         headers: {
@@ -62,7 +67,21 @@ const Utenti = () => {
       console.log('Fetched users:', data.users);
       return data.users as UserData[];
     },
+    retry: false, // Don't retry on auth errors
   });
+
+  // Handle authentication errors
+  useEffect(() => {
+    if (usersError) {
+      const errorMessage = usersError?.message || '';
+      if (errorMessage.includes('Unauthorized') || errorMessage.includes('No valid session')) {
+        toast.error('Sessione scaduta. Effettua nuovamente l\'accesso.');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+      }
+    }
+  }, [usersError]);
 
   // Fetch weddings for the select
   const { data: weddings = [] } = useQuery({

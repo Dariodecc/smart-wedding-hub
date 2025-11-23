@@ -38,10 +38,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 const formSchema = z.object({
   nome: z.string().min(1, "Il nome è obbligatorio"),
   cognome: z.string().min(1, "Il cognome è obbligatorio"),
-  cellulare: z
-    .string()
-    .min(8, "Numero troppo corto")
-    .regex(/^\+\d+$/, "Numero di telefono non valido"),
+  cellulare: z.string().optional(),
   email: z.string().email("Email non valida").optional().or(z.literal("")),
   tipo_ospite: z.enum(["Neonato", "Bambino", "Ragazzo", "Adulto"], {
     required_error: "Seleziona un tipo di ospite",
@@ -61,6 +58,28 @@ const formSchema = z.object({
   {
     message: "Il nome della famiglia è obbligatorio",
     path: ["nome_nuova_famiglia"],
+  }
+).refine(
+  (data) => {
+    // Phone is required if:
+    // 1. No family selected (single guest) OR creating new family
+    // 2. OR is family head
+    const needsPhone = !data.famiglia_id || data.is_capo_famiglia || data.crea_famiglia;
+    
+    if (needsPhone) {
+      if (!data.cellulare || data.cellulare.length < 8) {
+        return false;
+      }
+      if (!/^\+\d+$/.test(data.cellulare)) {
+        return false;
+      }
+    }
+    
+    return true;
+  },
+  {
+    message: "Il cellulare è obbligatorio per invitati singoli e capi famiglia",
+    path: ["cellulare"],
   }
 );
 
@@ -143,6 +162,11 @@ export function AddInvitatoDialog({
 
   const creaFamiglia = form.watch("crea_famiglia");
   const famigliaId = form.watch("famiglia_id");
+  const isCapoFamiglia = form.watch("is_capo_famiglia");
+  
+  // Determine if phone field should be shown
+  // Show phone for: single guests (no family) OR family heads OR creating new family
+  const shouldShowPhoneField = !famigliaId || isCapoFamiglia || creaFamiglia;
 
   // Check if phone number already exists for this matrimonio
   const checkDuplicatePhone = async (phoneNumber: string): Promise<boolean> => {
@@ -165,23 +189,25 @@ export function AddInvitatoDialog({
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      // CRITICAL: Check for duplicate phone number
-      const isDuplicate = await checkDuplicatePhone(values.cellulare);
-      
-      if (isDuplicate) {
-        toast({
-          title: "Invitato già presente in lista",
-          description: "Controlla il numero di cellulare inserito.",
-          variant: "destructive",
-        });
+      // CRITICAL: Check for duplicate phone number only if phone is provided
+      if (values.cellulare) {
+        const isDuplicate = await checkDuplicatePhone(values.cellulare);
         
-        form.setError('cellulare', {
-          type: 'manual',
-          message: 'Questo numero è già presente in lista'
-        });
-        
-        setIsSubmitting(false);
-        return;
+        if (isDuplicate) {
+          toast({
+            title: "Invitato già presente in lista",
+            description: "Controlla il numero di cellulare inserito.",
+            variant: "destructive",
+          });
+          
+          form.setError('cellulare', {
+            type: 'manual',
+            message: 'Questo numero è già presente in lista'
+          });
+          
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       let targetFamigliaId = values.famiglia_id;
@@ -228,13 +254,16 @@ export function AddInvitatoDialog({
       const shouldBeCapo = values.crea_famiglia ? true : values.is_capo_famiglia;
       const shouldHaveRsvpLink = !targetFamigliaId || shouldBeCapo;
       
+      // Clear phone if it shouldn't be visible (family member who is not capo)
+      const cellulareToSave = shouldShowPhoneField ? values.cellulare : null;
+      
       // Insert invitato
       const { error: invitatoError } = await supabase.from("invitati").insert({
         wedding_id: weddingId,
         famiglia_id: targetFamigliaId || null,
         nome: values.nome,
         cognome: values.cognome,
-        cellulare: values.cellulare,
+        cellulare: cellulareToSave,
         email: values.email || null,
         tipo_ospite: values.tipo_ospite,
         preferenze_alimentari: values.preferenze_alimentari,
@@ -335,25 +364,40 @@ export function AddInvitatoDialog({
                       />
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="cellulare"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">
-                            Cellulare *
-                          </FormLabel>
-                          <FormControl>
-                            <PhoneInput
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder="340 123 4567"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* CONDITIONAL PHONE FIELD */}
+                    {shouldShowPhoneField ? (
+                      <FormField
+                        control={form.control}
+                        name="cellulare"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700">
+                              Cellulare *
+                            </FormLabel>
+                            <FormControl>
+                              <PhoneInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="340 123 4567"
+                              />
+                            </FormControl>
+                            <p className="text-xs text-gray-500">
+                              Necessario per l'invio degli inviti WhatsApp
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ) : (
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800 flex items-center gap-2">
+                          <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Il cellulare non è necessario per i membri della famiglia. Solo il capo famiglia riceverà gli inviti WhatsApp.
+                        </p>
+                      </div>
+                    )}
 
                     <FormField
                       control={form.control}
@@ -518,6 +562,9 @@ export function AddInvitatoDialog({
                                   field.onChange(checked);
                                   if (checked) {
                                     form.setValue("famiglia_id", undefined);
+                                    // Auto-check is_capo_famiglia when creating new family
+                                    form.setValue("is_capo_famiglia", true);
+                                  } else {
                                     form.setValue("is_capo_famiglia", false);
                                   }
                                 }}

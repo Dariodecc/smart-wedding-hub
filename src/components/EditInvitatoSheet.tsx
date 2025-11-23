@@ -121,6 +121,14 @@ export function EditInvitatoSheet({
       nomeFamiglia: ""
     }
   });
+
+  // Clear phone number when field should be hidden
+  useEffect(() => {
+    if (!shouldShowPhoneField) {
+      form.setValue('cellulare', '');
+    }
+  }, [shouldShowPhoneField, form]);
+
   useEffect(() => {
     if (invitato) {
       form.reset({

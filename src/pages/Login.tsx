@@ -13,14 +13,18 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      if (isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     }
-  }, [user, navigate]);
+  }, [user, isAdmin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +61,18 @@ const Login = () => {
       }
 
       toast.success("Accesso effettuato!");
+      
+      // Navigate based on role - fetch roles for current user
+      const { data: userRoles } = await supabase.rpc("get_user_roles", {
+        _user_id: currentUser.id,
+      });
+      
+      const hasAdminRole = userRoles?.some((r: any) => r.role === "admin");
+      if (hasAdminRole) {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     }
 
     setLoading(false);

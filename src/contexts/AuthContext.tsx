@@ -88,13 +88,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error, data } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (!error) {
-      navigate("/dashboard");
+    // Don't navigate here - let the calling component handle navigation
+    // after checking profile is_active status
+    if (!error && data.user) {
+      const userRoles = await fetchUserRoles(data.user.id);
+      setRoles(userRoles);
     }
 
     return { error };

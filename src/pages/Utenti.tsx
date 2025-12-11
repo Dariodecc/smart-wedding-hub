@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Plus, Eye, EyeOff, RefreshCw, Users, UserCog, Heart, UserX, Trash2 } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface UserData {
   id: string;
@@ -291,17 +292,32 @@ const Utenti = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-semibold">Utenti</h1>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nuovo Utente
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
+    <div className="min-h-screen bg-gray-50">
+      {/* Page Header */}
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <SidebarTrigger className="text-gray-600 hover:text-gray-900 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
+                Utenti
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
+                Gestisci gli utenti del sistema
+              </p>
+            </div>
+          </div>
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Nuovo Utente</span>
+            <span className="sm:hidden">Nuovo</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Create Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Crea Nuovo Utente</DialogTitle>
             </DialogHeader>
@@ -394,53 +410,67 @@ const Utenti = () => {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Totale Utenti</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
+      {/* Page Content */}
+      <div className="p-3 sm:p-4 lg:p-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Statistics */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-500">Totale Utenti</CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-blue-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
+                <p className="text-xs text-gray-500 mt-1">Utenti registrati</p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Admin</CardTitle>
-            <UserCog className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.admin}</div>
-          </CardContent>
-        </Card>
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-500">Admin</CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <UserCog className="h-5 w-5 text-purple-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">{stats.admin}</div>
+                <p className="text-xs text-gray-500 mt-1">Amministratori</p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Sposi</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.sposi}</div>
-          </CardContent>
-        </Card>
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-500">Sposi</CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-pink-100 flex items-center justify-center">
+                  <Heart className="h-5 w-5 text-pink-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">{stats.sposi}</div>
+                <p className="text-xs text-gray-500 mt-1">Coppie di sposi</p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Disabilitati</CardTitle>
-            <UserX className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.expired}</div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-500">Disabilitati</CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+                  <UserX className="h-5 w-5 text-red-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">{stats.expired}</div>
+                <p className="text-xs text-gray-500 mt-1">Utenti disabilitati</p>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Users List */}
-      <Card>
+          {/* Users List */}
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <CardHeader>
           <CardTitle>Lista Utenti</CardTitle>
         </CardHeader>
@@ -513,7 +543,9 @@ const Utenti = () => {
             </div>
           )}
         </CardContent>
-      </Card>
+          </Card>
+        </div>
+      </div>
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

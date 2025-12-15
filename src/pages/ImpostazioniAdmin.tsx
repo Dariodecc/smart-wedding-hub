@@ -29,7 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink, X, Search, CheckCircle2 } from 'lucide-react'
+import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink, X, Search, CheckCircle2, RefreshCw, AlertTriangle } from 'lucide-react'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -71,6 +71,9 @@ export default function ImpostazioniAdmin() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [createdToken, setCreatedToken] = useState<string | null>(null)
   const [tokenCopied, setTokenCopied] = useState(false)
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false)
+  const [regeneratingKey, setRegeneratingKey] = useState<ApiKey | null>(null)
+  const [isRegenerating, setIsRegenerating] = useState(false)
 
   // Supabase configuration from env
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
@@ -235,6 +238,45 @@ export default function ImpostazioniAdmin() {
     setShowSuccessModal(false)
     setCreatedToken(null)
     setTokenCopied(false)
+    setRegeneratingKey(null)
+  }
+
+  // Regenerate API key token
+  const handleRegenerateToken = async () => {
+    if (!regeneratingKey) return
+    
+    setIsRegenerating(true)
+    try {
+      // Generate new token
+      const newToken = generateApiToken()
+      const newHash = await hashToken(newToken)
+      const newPreview = createTokenPreview(newToken)
+
+      // Update in database
+      const { error } = await supabase
+        .from('api_keys')
+        .update({
+          api_key_hash: newHash,
+          api_key_preview: newPreview,
+          api_key: null // Remove old plain text if present
+        })
+        .eq('id', regeneratingKey.id)
+
+      if (error) throw error
+
+      await queryClient.invalidateQueries({ queryKey: ['api-keys'] })
+      
+      // Close confirm modal and show success modal with new token
+      setShowRegenerateConfirm(false)
+      setCreatedToken(newToken)
+      setTokenCopied(false)
+      setShowSuccessModal(true)
+    } catch (error) {
+      console.error('Error regenerating API key:', error)
+      toast({ title: "Errore", description: "Errore nella rigenerazione della chiave API", variant: "destructive" })
+    } finally {
+      setIsRegenerating(false)
+    }
   }
 
   // Delete API key
@@ -623,13 +665,24 @@ export default function ImpostazioniAdmin() {
                         }
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleToggleActive(key.id, key.is_active)}
                           >
                             {key.is_active ? 'Disattiva' : 'Attiva'}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setRegeneratingKey(key)
+                              setShowRegenerateConfirm(true)
+                            }}
+                            title="Rigenera token"
+                          >
+                            <RefreshCw className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -871,6 +924,51 @@ export default function ImpostazioniAdmin() {
           <DialogFooter>
             <Button onClick={handleCloseSuccessModal} variant="outline" className="w-full">
               Ho copiato la chiave
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Regenerate Confirmation Modal */}
+      <Dialog open={showRegenerateConfirm} onOpenChange={setShowRegenerateConfirm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader className="text-center">
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <DialogTitle className="text-center">Rigenera Token</DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Stai per generare un nuovo token per "<span className="font-medium text-foreground">{regeneratingKey?.key_name}</span>". 
+              Il token attuale smetterà di funzionare immediatamente. Tutte le integrazioni che lo usano dovranno essere aggiornate.
+            </p>
+          </div>
+
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowRegenerateConfirm(false)
+                setRegeneratingKey(null)
+              }}
+              disabled={isRegenerating}
+            >
+              Annulla
+            </Button>
+            <Button 
+              onClick={handleRegenerateToken}
+              disabled={isRegenerating}
+            >
+              {isRegenerating ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Rigenerazione...
+                </>
+              ) : (
+                'Rigenera Token'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

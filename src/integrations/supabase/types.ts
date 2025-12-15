@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_key_permissions: {
+        Row: {
+          api_key_id: string
+          created_at: string | null
+          id: string
+          permission: string
+          resource: string
+        }
+        Insert: {
+          api_key_id: string
+          created_at?: string | null
+          id?: string
+          permission: string
+          resource: string
+        }
+        Update: {
+          api_key_id?: string
+          created_at?: string | null
+          id?: string
+          permission?: string
+          resource?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_key_permissions_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_key_weddings: {
         Row: {
           api_key_id: string | null

@@ -29,17 +29,19 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink, X, Search } from 'lucide-react'
+import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink, X, Search, CheckCircle2 } from 'lucide-react'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { API_PERMISSIONS } from '@/utils/api-tokens'
+import { API_PERMISSIONS, generateApiToken, hashToken, createTokenPreview } from '@/utils/api-tokens'
 
 interface ApiKey {
   id: string
   key_name: string
-  api_key: string
+  api_key: string | null
+  api_key_hash: string | null
+  api_key_preview: string | null
   created_at: string
   last_used_at: string | null
   is_active: boolean
@@ -60,6 +62,9 @@ export default function ImpostazioniAdmin() {
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
   const [permissionsOpen, setPermissionsOpen] = useState(false)
   const [permissionsSearch, setPermissionsSearch] = useState('')
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [createdToken, setCreatedToken] = useState<string | null>(null)
+  const [tokenCopied, setTokenCopied] = useState(false)
 
   // Supabase configuration from env
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
@@ -119,17 +124,11 @@ export default function ImpostazioniAdmin() {
     }
   })
 
-  // Generate random API key
-  const generateApiKey = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    const length = 32
-    let key = 'sk_'
-    for (let i = 0; i < length; i++) {
-      key += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return key
-  }
-
+  // Wedding options for multi-select
+  const weddingOptions = weddings.map(w => ({
+    value: w.id,
+    label: w.couple_name
+  }))
   // Create API key
   const handleCreateApiKey = async () => {
     if (!keyName.trim()) {
@@ -151,14 +150,19 @@ export default function ImpostazioniAdmin() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const apiKey = generateApiKey()
+      // Generate secure token
+      const token = generateApiToken()
+      const tokenHash = await hashToken(token)
+      const tokenPreview = createTokenPreview(token)
 
-      // Insert API key
+      // Insert API key with hash (NOT plain text)
       const { data: newKey, error: keyError } = await supabase
         .from('api_keys')
         .insert({
           key_name: keyName,
-          api_key: apiKey,
+          api_key_hash: tokenHash,
+          api_key_preview: tokenPreview,
+          api_key: null, // Do NOT save plain text
           created_by: user.id,
           is_active: true
         })
@@ -197,18 +201,37 @@ export default function ImpostazioniAdmin() {
 
       await queryClient.invalidateQueries({ queryKey: ['api-keys'] })
       
-      toast({ title: "Successo", description: "Chiave API creata con successo" })
+      // Close creation dialog and show success modal with token
       setShowDialog(false)
       setKeyName('')
       setSelectedWeddings([])
       setSelectedPermissions([])
-      
-      // Show the new key
-      setVisibleKeys(new Set([newKey.id]))
+      setCreatedToken(token)
+      setTokenCopied(false)
+      setShowSuccessModal(true)
     } catch (error) {
       console.error('Error creating API key:', error)
       toast({ title: "Errore", description: "Errore nella creazione della chiave API", variant: "destructive" })
     }
+  }
+
+  // Copy created token to clipboard
+  const copyCreatedToken = async () => {
+    if (!createdToken) return
+    try {
+      await navigator.clipboard.writeText(createdToken)
+      setTokenCopied(true)
+      toast({ title: "Successo", description: "Chiave copiata negli appunti" })
+    } catch (error) {
+      toast({ title: "Errore", description: "Errore nella copia della chiave", variant: "destructive" })
+    }
+  }
+
+  // Close success modal
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false)
+    setCreatedToken(null)
+    setTokenCopied(false)
   }
 
   // Delete API key
@@ -290,12 +313,6 @@ export default function ImpostazioniAdmin() {
       return newSet
     })
   }
-
-  // Wedding options for multi-select
-  const weddingOptions = weddings.map(w => ({
-    value: w.id,
-    label: w.couple_name
-  }))
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
@@ -501,33 +518,27 @@ export default function ImpostazioniAdmin() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                            {visibleKeys.has(key.id) 
-                              ? key.api_key 
-                              : `${key.api_key.substring(0, 12)}...${key.api_key.substring(key.api_key.length - 4)}`
-                            }
+                            {/* Show preview for new keys, or masked old key for backward compatibility */}
+                            {key.api_key_preview || (key.api_key 
+                              ? `${key.api_key.substring(0, 8)}...${key.api_key.substring(key.api_key.length - 6)}`
+                              : 'N/A'
+                            )}
                           </code>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleKeyVisibility(key.id)}
-                          >
-                            {visibleKeys.has(key.id) ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(key.api_key, key.id)}
-                          >
-                            {copiedKey === key.id ? (
-                              <Check className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
+                          {/* Only show copy button for legacy keys that have api_key stored */}
+                          {key.api_key && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(key.api_key!, key.id)}
+                              title="Copia chiave (solo chiavi legacy)"
+                            >
+                              {copiedKey === key.id ? (
+                                <Check className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -750,6 +761,59 @@ export default function ImpostazioniAdmin() {
             </Button>
             <Button onClick={handleCreateApiKey}>
               Crea Chiave API
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal - Shows token only once */}
+      <Dialog open={showSuccessModal} onOpenChange={(open) => !open && handleCloseSuccessModal()}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader className="text-center">
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+              <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+            </div>
+            <DialogTitle className="text-center">Chiave API creata!</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+              <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                ⚠️ Copia questa chiave ora. Non sarà più visibile dopo aver chiuso.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">La tua chiave API</Label>
+              <div className="relative">
+                <code className="block w-full p-3 bg-muted rounded-lg font-mono text-sm break-all select-all">
+                  {createdToken}
+                </code>
+              </div>
+            </div>
+
+            <Button
+              onClick={copyCreatedToken}
+              className="w-full"
+              variant={tokenCopied ? "outline" : "default"}
+            >
+              {tokenCopied ? (
+                <>
+                  <Check className="h-4 w-4 mr-2 text-green-600" />
+                  Copiato!
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copia chiave
+                </>
+              )}
+            </Button>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={handleCloseSuccessModal} variant="outline" className="w-full">
+              Ho copiato la chiave
             </Button>
           </DialogFooter>
         </DialogContent>

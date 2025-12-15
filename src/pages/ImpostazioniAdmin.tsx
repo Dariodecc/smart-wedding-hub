@@ -29,7 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database } from 'lucide-react'
+import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink } from 'lucide-react'
 import { MultiSelect } from '@/components/ui/multi-select'
 
 interface ApiKey {
@@ -424,10 +424,19 @@ export default function ImpostazioniAdmin() {
                 Crea e gestisci chiavi API per accedere agli endpoint degli invitati
               </CardDescription>
             </div>
-            <Button onClick={() => setShowDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nuova Chiave
-            </Button>
+            <div className="flex flex-col-reverse sm:flex-row gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => window.open('https://docs.example.com/api', '_blank')}
+              >
+                Documentazione API
+                <ExternalLink className="h-4 w-4 ml-2" />
+              </Button>
+              <Button onClick={() => setShowDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nuova Chiave
+              </Button>
+            </div>
           </div>
         </CardHeader>
 

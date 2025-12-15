@@ -29,8 +29,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink } from 'lucide-react'
+import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink, X, Search } from 'lucide-react'
 import { MultiSelect } from '@/components/ui/multi-select'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Checkbox } from '@/components/ui/checkbox'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { API_PERMISSIONS } from '@/utils/api-tokens'
 
 interface ApiKey {
   id: string
@@ -53,6 +57,9 @@ export default function ImpostazioniAdmin() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [showServiceRole, setShowServiceRole] = useState(false)
   const [copiedConfig, setCopiedConfig] = useState<string | null>(null)
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
+  const [permissionsOpen, setPermissionsOpen] = useState(false)
+  const [permissionsSearch, setPermissionsSearch] = useState('')
 
   // Supabase configuration from env
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
@@ -135,6 +142,11 @@ export default function ImpostazioniAdmin() {
       return
     }
 
+    if (selectedPermissions.length === 0) {
+      toast({ title: "Errore", description: "Seleziona almeno un permesso", variant: "destructive" })
+      return
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
@@ -167,12 +179,29 @@ export default function ImpostazioniAdmin() {
 
       if (assocError) throw assocError
 
+      // Insert permissions
+      const permissionsToInsert = selectedPermissions.map(perm => {
+        const [resource, permission] = perm.split(':')
+        return {
+          api_key_id: newKey.id,
+          resource,
+          permission
+        }
+      })
+
+      const { error: permError } = await supabase
+        .from('api_key_permissions')
+        .insert(permissionsToInsert)
+
+      if (permError) throw permError
+
       await queryClient.invalidateQueries({ queryKey: ['api-keys'] })
       
       toast({ title: "Successo", description: "Chiave API creata con successo" })
       setShowDialog(false)
       setKeyName('')
       setSelectedWeddings([])
+      setSelectedPermissions([])
       
       // Show the new key
       setVisibleKeys(new Set([newKey.id]))
@@ -578,7 +607,123 @@ export default function ImpostazioniAdmin() {
             </div>
 
             <div>
-              <Label htmlFor="weddings">Matrimoni</Label>
+              <Label>Permessi *</Label>
+              <Popover open={permissionsOpen} onOpenChange={setPermissionsOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={permissionsOpen}
+                    className="w-full justify-start h-auto min-h-10 font-normal"
+                  >
+                    {selectedPermissions.length === 0 ? (
+                      <span className="text-muted-foreground">Seleziona i permessi...</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {selectedPermissions.map(perm => {
+                          const permObj = API_PERMISSIONS.find(p => p.value === perm)
+                          return (
+                            <Badge
+                              key={perm}
+                              variant="secondary"
+                              className="mr-1 mb-1"
+                            >
+                              {permObj?.label}
+                              <button
+                                className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    setSelectedPermissions(prev => prev.filter(p => p !== perm))
+                                  }
+                                }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                }}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  setSelectedPermissions(prev => prev.filter(p => p !== perm))
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0 bg-popover" align="start">
+                  <div className="flex items-center border-b px-3">
+                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <input
+                      placeholder="Cerca permessi..."
+                      value={permissionsSearch}
+                      onChange={(e) => setPermissionsSearch(e.target.value)}
+                      className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                  <ScrollArea className="h-[300px]">
+                    <div className="p-2">
+                      {(() => {
+                        const groups = [...new Set(API_PERMISSIONS.map(p => p.group))]
+                        const filteredPermissions = API_PERMISSIONS.filter(p => 
+                          p.label.toLowerCase().includes(permissionsSearch.toLowerCase()) ||
+                          p.group.toLowerCase().includes(permissionsSearch.toLowerCase())
+                        )
+                        
+                        return groups.map(group => {
+                          const groupPerms = filteredPermissions.filter(p => p.group === group)
+                          if (groupPerms.length === 0) return null
+                          
+                          return (
+                            <div key={group} className="mb-3">
+                              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {group}
+                              </div>
+                              {groupPerms.map(perm => (
+                                <div
+                                  key={perm.value}
+                                  className="flex items-center space-x-2 px-2 py-2 hover:bg-accent rounded-sm cursor-pointer"
+                                  onClick={() => {
+                                    setSelectedPermissions(prev => 
+                                      prev.includes(perm.value)
+                                        ? prev.filter(p => p !== perm.value)
+                                        : [...prev, perm.value]
+                                    )
+                                  }}
+                                >
+                                  <Checkbox
+                                    checked={selectedPermissions.includes(perm.value)}
+                                    onCheckedChange={(checked) => {
+                                      setSelectedPermissions(prev => 
+                                        checked
+                                          ? [...prev, perm.value]
+                                          : prev.filter(p => p !== perm.value)
+                                      )
+                                    }}
+                                  />
+                                  <span className="text-sm">{perm.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        })
+                      })()}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground mt-1">
+                Seleziona quali operazioni potrà eseguire questa chiave
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="weddings">Matrimoni *</Label>
               <MultiSelect
                 options={weddingOptions}
                 selected={selectedWeddings}

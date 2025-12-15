@@ -36,6 +36,11 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { API_PERMISSIONS, generateApiToken, hashToken, createTokenPreview } from '@/utils/api-tokens'
 
+interface ApiKeyPermission {
+  resource: string
+  permission: string
+}
+
 interface ApiKey {
   id: string
   key_name: string
@@ -46,6 +51,7 @@ interface ApiKey {
   last_used_at: string | null
   is_active: boolean
   weddings: { id: string; couple_name: string }[]
+  permissions: ApiKeyPermission[]
 }
 
 export default function ImpostazioniAdmin() {
@@ -92,35 +98,32 @@ export default function ImpostazioniAdmin() {
     queryFn: async () => {
       const { data: keys, error: keysError } = await supabase
         .from('api_keys')
-        .select('*')
+        .select(`
+          *,
+          api_key_permissions (
+            resource,
+            permission
+          ),
+          api_key_weddings (
+            wedding_id,
+            weddings:wedding_id (
+              id,
+              couple_name
+            )
+          )
+        `)
         .order('created_at', { ascending: false })
 
       if (keysError) throw keysError
 
-      // Fetch associated weddings for each key
-      const keysWithWeddings = await Promise.all(
-        (keys || []).map(async (key) => {
-          const { data: keyWeddings, error: weddingsError } = await supabase
-            .from('api_key_weddings')
-            .select(`
-              wedding_id,
-              weddings:wedding_id (
-                id,
-                couple_name
-              )
-            `)
-            .eq('api_key_id', key.id)
+      // Transform the data
+      const transformedKeys = (keys || []).map((key: any) => ({
+        ...key,
+        weddings: (key.api_key_weddings || []).map((kw: any) => kw.weddings).filter(Boolean),
+        permissions: key.api_key_permissions || []
+      }))
 
-          if (weddingsError) throw weddingsError
-
-          return {
-            ...key,
-            weddings: (keyWeddings || []).map((kw: any) => kw.weddings).filter(Boolean)
-          }
-        })
-      )
-
-      return keysWithWeddings
+      return transformedKeys
     }
   })
 
@@ -505,9 +508,10 @@ export default function ImpostazioniAdmin() {
                   <TableRow>
                     <TableHead>Nome</TableHead>
                     <TableHead>Chiave API</TableHead>
+                    <TableHead className="hidden md:table-cell">Permessi</TableHead>
                     <TableHead>Matrimoni</TableHead>
                     <TableHead>Stato</TableHead>
-                    <TableHead>Ultimo Utilizzo</TableHead>
+                    <TableHead className="hidden lg:table-cell">Ultimo Utilizzo</TableHead>
                     <TableHead>Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -541,6 +545,59 @@ export default function ImpostazioniAdmin() {
                           )}
                         </div>
                       </TableCell>
+                      {/* Permissions column - hidden on mobile */}
+                      <TableCell className="hidden md:table-cell">
+                        {(() => {
+                          const perms = key.permissions || []
+                          if (perms.length === 0) {
+                            return <span className="text-xs text-muted-foreground">Nessuno</span>
+                          }
+                          
+                          const formatPerm = (p: ApiKeyPermission) => {
+                            const resourceMap: Record<string, string> = {
+                              'famiglie': 'Fam',
+                              'gruppi': 'Grp',
+                              'invitati': 'Inv',
+                              'preferenze_alimentari_custom': 'Pref',
+                              'tavoli': 'Tav',
+                              'weddings': 'Wed'
+                            }
+                            const abbr = resourceMap[p.resource] || p.resource.substring(0, 3)
+                            const permAbbr = p.permission === 'read' ? 'R' : 'W'
+                            return `${abbr} ${permAbbr}`
+                          }
+                          
+                          const displayPerms = perms.slice(0, 3)
+                          const remainingCount = perms.length - 3
+                          
+                          return (
+                            <div className="flex flex-wrap gap-1">
+                              {displayPerms.map((perm, idx) => (
+                                <Badge
+                                  key={`${perm.resource}-${perm.permission}-${idx}`}
+                                  variant="outline"
+                                  className={`text-xs ${
+                                    perm.permission === 'read'
+                                      ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
+                                      : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
+                                  }`}
+                                >
+                                  {formatPerm(perm)}
+                                </Badge>
+                              ))}
+                              {remainingCount > 0 && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs bg-muted"
+                                  title={perms.slice(3).map(p => `${p.resource}: ${p.permission}`).join(', ')}
+                                >
+                                  +{remainingCount}
+                                </Badge>
+                              )}
+                            </div>
+                          )
+                        })()}
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {key.weddings.length === 0 ? (
@@ -559,7 +616,7 @@ export default function ImpostazioniAdmin() {
                           {key.is_active ? 'Attiva' : 'Disattivata'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
                         {key.last_used_at 
                           ? new Date(key.last_used_at).toLocaleDateString('it-IT')
                           : 'Mai'

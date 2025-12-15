@@ -628,25 +628,35 @@ export default function ImpostazioniAdmin() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                            {/* Show preview for new keys, or masked old key for backward compatibility */}
                             {key.api_key_preview || (key.api_key 
                               ? `${key.api_key.substring(0, 8)}...${key.api_key.substring(key.api_key.length - 6)}`
                               : 'N/A'
                             )}
                           </code>
-                          {/* Only show copy button for legacy keys that have api_key stored */}
-                          {key.api_key && (
+                          {/* Legacy keys: show copy button */}
+                          {key.api_key ? (
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => copyToClipboard(key.api_key!, key.id)}
-                              title="Copia chiave (solo chiavi legacy)"
+                              title="Copia chiave"
                             >
                               {copiedKey === key.id ? (
                                 <Check className="h-4 w-4 text-green-600" />
                               ) : (
                                 <Copy className="h-4 w-4" />
                               )}
+                            </Button>
+                          ) : (
+                            /* New keys (hash only): disabled copy with tooltip */
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled
+                              title="Il token può essere copiato solo alla creazione. Usa 'Rigenera' per ottenere un nuovo token."
+                              className="opacity-50 cursor-not-allowed"
+                            >
+                              <Copy className="h-4 w-4" />
                             </Button>
                           )}
                         </div>

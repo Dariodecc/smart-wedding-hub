@@ -29,7 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink, X, Search, CheckCircle2, RefreshCw, AlertTriangle } from 'lucide-react'
+import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink, X, Search, CheckCircle2, RefreshCw, AlertTriangle, Shield } from 'lucide-react'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -74,6 +74,12 @@ export default function ImpostazioniAdmin() {
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false)
   const [regeneratingKey, setRegeneratingKey] = useState<ApiKey | null>(null)
   const [isRegenerating, setIsRegenerating] = useState(false)
+  const [showEditPermissions, setShowEditPermissions] = useState(false)
+  const [editingKey, setEditingKey] = useState<ApiKey | null>(null)
+  const [editPermissions, setEditPermissions] = useState<string[]>([])
+  const [editPermissionsOpen, setEditPermissionsOpen] = useState(false)
+  const [editPermissionsSearch, setEditPermissionsSearch] = useState('')
+  const [isSavingPermissions, setIsSavingPermissions] = useState(false)
 
   // Supabase configuration from env
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
@@ -279,7 +285,65 @@ export default function ImpostazioniAdmin() {
     }
   }
 
-  // Delete API key
+  // Open edit permissions modal
+  const openEditPermissions = (key: ApiKey) => {
+    setEditingKey(key)
+    // Convert current permissions to the format used by the selector
+    const currentPerms = key.permissions.map(p => `${p.resource}:${p.permission}`)
+    setEditPermissions(currentPerms)
+    setEditPermissionsSearch('')
+    setShowEditPermissions(true)
+  }
+
+  // Save updated permissions
+  const handleSavePermissions = async () => {
+    if (!editingKey) return
+    
+    if (editPermissions.length === 0) {
+      toast({ title: "Errore", description: "Seleziona almeno un permesso", variant: "destructive" })
+      return
+    }
+
+    setIsSavingPermissions(true)
+    try {
+      // Delete existing permissions
+      const { error: deleteError } = await supabase
+        .from('api_key_permissions')
+        .delete()
+        .eq('api_key_id', editingKey.id)
+
+      if (deleteError) throw deleteError
+
+      // Insert new permissions
+      const newPermissions = editPermissions.map(perm => {
+        const [resource, permission] = perm.split(':')
+        return {
+          api_key_id: editingKey.id,
+          resource,
+          permission
+        }
+      })
+
+      const { error: insertError } = await supabase
+        .from('api_key_permissions')
+        .insert(newPermissions)
+
+      if (insertError) throw insertError
+
+      await queryClient.invalidateQueries({ queryKey: ['api-keys'] })
+      
+      setShowEditPermissions(false)
+      setEditingKey(null)
+      setEditPermissions([])
+      toast({ title: "Successo", description: "Permessi aggiornati con successo" })
+    } catch (error) {
+      console.error('Error updating permissions:', error)
+      toast({ title: "Errore", description: "Errore nell'aggiornamento dei permessi", variant: "destructive" })
+    } finally {
+      setIsSavingPermissions(false)
+    }
+  }
+
   const handleDeleteApiKey = async (keyId: string) => {
     if (!confirm('Sei sicuro di voler eliminare questa chiave API? Questa azione non può essere annullata.')) {
       return
@@ -676,6 +740,14 @@ export default function ImpostazioniAdmin() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => openEditPermissions(key)}
+                            title="Modifica permessi"
+                          >
+                            <Shield className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => {
                               setRegeneratingKey(key)
                               setShowRegenerateConfirm(true)
@@ -969,6 +1041,164 @@ export default function ImpostazioniAdmin() {
               ) : (
                 'Rigenera Token'
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Permissions Modal */}
+      <Dialog open={showEditPermissions} onOpenChange={(open) => {
+        if (!open) {
+          setShowEditPermissions(false)
+          setEditingKey(null)
+          setEditPermissions([])
+        }
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Modifica Permessi - {editingKey?.key_name}</DialogTitle>
+            <DialogDescription>
+              Seleziona i permessi per questa chiave API
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Permessi *</Label>
+              <Popover open={editPermissionsOpen} onOpenChange={setEditPermissionsOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={editPermissionsOpen}
+                    className="w-full justify-start h-auto min-h-10 font-normal"
+                  >
+                    {editPermissions.length === 0 ? (
+                      <span className="text-muted-foreground">Seleziona i permessi...</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {editPermissions.map(perm => {
+                          const permObj = API_PERMISSIONS.find(p => p.value === perm)
+                          return (
+                            <Badge
+                              key={perm}
+                              variant="secondary"
+                              className="mr-1 mb-1"
+                            >
+                              {permObj?.label}
+                              <button
+                                className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    setEditPermissions(prev => prev.filter(p => p !== perm))
+                                  }
+                                }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                }}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  setEditPermissions(prev => prev.filter(p => p !== perm))
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0 bg-popover" align="start">
+                  <div className="flex items-center border-b px-3">
+                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <input
+                      placeholder="Cerca permessi..."
+                      value={editPermissionsSearch}
+                      onChange={(e) => setEditPermissionsSearch(e.target.value)}
+                      className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                  <ScrollArea className="h-[300px]">
+                    <div className="p-2">
+                      {(() => {
+                        const groups = [...new Set(API_PERMISSIONS.map(p => p.group))]
+                        const filteredPermissions = API_PERMISSIONS.filter(p => 
+                          p.label.toLowerCase().includes(editPermissionsSearch.toLowerCase()) ||
+                          p.group.toLowerCase().includes(editPermissionsSearch.toLowerCase())
+                        )
+                        
+                        return groups.map(group => {
+                          const groupPerms = filteredPermissions.filter(p => p.group === group)
+                          if (groupPerms.length === 0) return null
+                          
+                          return (
+                            <div key={group} className="mb-3">
+                              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {group}
+                              </div>
+                              {groupPerms.map(perm => (
+                                <div
+                                  key={perm.value}
+                                  className="flex items-center space-x-2 px-2 py-2 hover:bg-accent rounded-sm cursor-pointer"
+                                  onClick={() => {
+                                    setEditPermissions(prev => 
+                                      prev.includes(perm.value)
+                                        ? prev.filter(p => p !== perm.value)
+                                        : [...prev, perm.value]
+                                    )
+                                  }}
+                                >
+                                  <Checkbox
+                                    checked={editPermissions.includes(perm.value)}
+                                    onCheckedChange={(checked) => {
+                                      setEditPermissions(prev => 
+                                        checked
+                                          ? [...prev, perm.value]
+                                          : prev.filter(p => p !== perm.value)
+                                      )
+                                    }}
+                                  />
+                                  <span className="text-sm">{perm.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        })
+                      })()}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+              {editPermissions.length === 0 && (
+                <p className="text-xs text-destructive mt-1">
+                  Seleziona almeno un permesso
+                </p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowEditPermissions(false)
+                setEditingKey(null)
+                setEditPermissions([])
+              }}
+              disabled={isSavingPermissions}
+            >
+              Annulla
+            </Button>
+            <Button 
+              onClick={handleSavePermissions}
+              disabled={isSavingPermissions || editPermissions.length === 0}
+            >
+              {isSavingPermissions ? 'Salvataggio...' : 'Salva Permessi'}
             </Button>
           </DialogFooter>
         </DialogContent>

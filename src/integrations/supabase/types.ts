@@ -84,7 +84,7 @@ export type Database = {
       }
       api_keys: {
         Row: {
-          api_key: string
+          api_key: string | null
           api_key_hash: string | null
           api_key_preview: string | null
           created_at: string | null
@@ -95,7 +95,7 @@ export type Database = {
           last_used_at: string | null
         }
         Insert: {
-          api_key: string
+          api_key?: string | null
           api_key_hash?: string | null
           api_key_preview?: string | null
           created_at?: string | null
@@ -106,7 +106,7 @@ export type Database = {
           last_used_at?: string | null
         }
         Update: {
-          api_key?: string
+          api_key?: string | null
           api_key_hash?: string | null
           api_key_preview?: string | null
           created_at?: string | null

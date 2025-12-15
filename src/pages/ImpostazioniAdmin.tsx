@@ -30,7 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, Book, X, Search, CheckCircle2, RefreshCw, AlertTriangle, Shield } from 'lucide-react'
+import { Plus, Key, Copy, Trash2, Check, Database, Book, X, Search, CheckCircle2, RefreshCw, AlertTriangle, Shield } from 'lucide-react'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -65,7 +65,6 @@ export default function ImpostazioniAdmin() {
   const [selectedWeddings, setSelectedWeddings] = useState<string[]>([])
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set())
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
-  const [showServiceRole, setShowServiceRole] = useState(false)
   const [copiedConfig, setCopiedConfig] = useState<string | null>(null)
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
   const [permissionsOpen, setPermissionsOpen] = useState(false)
@@ -84,10 +83,7 @@ export default function ImpostazioniAdmin() {
   const [isSavingPermissions, setIsSavingPermissions] = useState(false)
 
   // Supabase configuration from env
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''
   const supabaseProjectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || ''
-  const supabaseServiceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imloamh4dHdnYnJxYWJvZ3lzZHNhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzU4NTk3NCwiZXhwIjoyMDc5MTYxOTc0fQ.Ny-2wM6VwmT_Kt-_O1xhXjGw8BULmJ3W3wEgpFVCYp0'
 
   // Fetch all weddings for selection
   const { data: weddings = [] } = useQuery({
@@ -469,100 +465,6 @@ export default function ImpostazioniAdmin() {
                   )}
                 </Button>
               </div>
-            </div>
-
-            {/* Supabase URL */}
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground mb-2 block">
-                URL
-              </Label>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 text-sm bg-muted px-3 py-2 rounded font-mono border">
-                  {supabaseUrl}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => copyConfigToClipboard(supabaseUrl, 'url')}
-                >
-                  {copiedConfig === 'url' ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            {/* Anon Key */}
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Anon Key (Publishable)
-              </Label>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 text-sm bg-muted px-3 py-2 rounded font-mono border overflow-x-auto">
-                  {supabaseAnonKey}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => copyConfigToClipboard(supabaseAnonKey, 'anon')}
-                >
-                  {copiedConfig === 'anon' ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            {/* Service Role Key */}
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Service Role Key
-              </Label>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 text-sm bg-muted px-3 py-2 rounded font-mono border overflow-x-auto">
-                  {showServiceRole 
-                    ? supabaseServiceRoleKey 
-                    : `${supabaseServiceRoleKey.substring(0, 20)}...${supabaseServiceRoleKey.substring(supabaseServiceRoleKey.length - 10)}`
-                  }
-                </code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowServiceRole(!showServiceRole)}
-                >
-                  {showServiceRole ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => copyConfigToClipboard(supabaseServiceRoleKey, 'service-role')}
-                >
-                  {copiedConfig === 'service-role' ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                ⚠️ Questa chiave bypassa tutte le politiche RLS. Non esporla mai nel codice client.
-              </p>
-            </div>
-
-            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-2">⚠️ Sicurezza</h4>
-              <p className="text-xs text-amber-700 dark:text-amber-300">
-                La Service Role Key deve essere utilizzata solo in ambienti server-side sicuri 
-                (come Edge Functions). Non includerla mai nel codice frontend o in repository pubblici.
-              </p>
             </div>
           </div>
         </CardContent>

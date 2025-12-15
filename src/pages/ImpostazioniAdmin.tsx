@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -29,7 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, ExternalLink, X, Search, CheckCircle2, RefreshCw, AlertTriangle, Shield } from 'lucide-react'
+import { Plus, Key, Copy, Trash2, Eye, EyeOff, Check, Database, Book, X, Search, CheckCircle2, RefreshCw, AlertTriangle, Shield } from 'lucide-react'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -57,6 +58,7 @@ interface ApiKey {
 export default function ImpostazioniAdmin() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   
   const [showDialog, setShowDialog] = useState(false)
   const [keyName, setKeyName] = useState('')
@@ -582,10 +584,10 @@ export default function ImpostazioniAdmin() {
             <div className="flex flex-col-reverse sm:flex-row gap-2">
               <Button 
                 variant="outline" 
-                onClick={() => window.open('https://docs.example.com/api', '_blank')}
+                onClick={() => navigate('/api')}
               >
+                <Book className="h-4 w-4 mr-2" />
                 Documentazione API
-                <ExternalLink className="h-4 w-4 ml-2" />
               </Button>
               <Button onClick={() => setShowDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />

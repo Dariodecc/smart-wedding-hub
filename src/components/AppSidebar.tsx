@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, UsersRound, Group, Table2, Settings, Heart, LogOut, AlertTriangle } from "lucide-react";
+import { LayoutDashboard, Users, UsersRound, Group, Table2, Settings, Heart, LogOut, AlertTriangle, Book } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,11 @@ const adminItems = [
     title: "Impostazioni Admin",
     url: "/impostazioni-admin",
     icon: Settings,
+  },
+  {
+    title: "Documentazione API",
+    url: "/api",
+    icon: Book,
   },
 ];
 

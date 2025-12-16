@@ -578,6 +578,19 @@ export type Database = {
           tipo_ospite: string
         }[]
       }
+      get_wedding_tavoli_secure: {
+        Args: { _password_attempt: string; _wedding_id: string }
+        Returns: {
+          capienza: number
+          created_at: string
+          id: string
+          nome: string
+          posizione_x: number
+          posizione_y: number
+          rotazione: number
+          tipo: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -136,17 +136,22 @@ export default function ConfigurazioneTavoli() {
     toast.success('Disconnesso');
   };
 
-  // Fetch tables
+  // Fetch tables using secure password-validated RPC function
   const { data: tavoli = [], isLoading: tavoliLoading } = useQuery({
-    queryKey: ['tavoli-public', weddingId],
+    queryKey: ['tavoli-public', weddingId, verifiedPassword],
     queryFn: async () => {
+      if (!verifiedPassword) {
+        console.log('⚠️ No verified password, cannot fetch tables');
+        return [];
+      }
+      
       console.log('🔍 Fetching tables for wedding:', weddingId);
       
       const { data, error } = await supabase
-        .from('tavoli')
-        .select('*')
-        .eq('wedding_id', weddingId)
-        .order('created_at');
+        .rpc('get_wedding_tavoli_secure', {
+          _wedding_id: weddingId,
+          _password_attempt: verifiedPassword
+        });
 
       if (error) {
         console.error('❌ Error fetching tables:', error);
@@ -154,10 +159,9 @@ export default function ConfigurazioneTavoli() {
       }
       
       console.log('✅ Tables loaded:', data?.length, 'tables');
-      console.log('📋 Tables data:', data);
-      return data as Tavolo[];
+      return (data || []) as Tavolo[];
     },
-    enabled: isAuthenticated && !!weddingId,
+    enabled: isAuthenticated && !!weddingId && !!verifiedPassword,
   });
 
   // Fetch guests using secure password-validated RPC function

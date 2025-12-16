@@ -67,6 +67,7 @@ export default function ConfigurazioneTavoli() {
 
   const [weddingCoupleName, setWeddingCoupleName] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [verifiedPassword, setVerifiedPassword] = useState<string | null>(null);
 
   // Check password using secure verification function (doesn't expose password)
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -111,6 +112,9 @@ export default function ConfigurazioneTavoli() {
         
         localStorage.setItem(SESSION_KEY, JSON.stringify(session));
         
+        // Store verified password for RPC calls
+        setVerifiedPassword(password.trim());
+        
         setIsAuthenticated(true);
         toast.success('Accesso consentito - sessione valida per 7 giorni');
       } else {
@@ -127,6 +131,7 @@ export default function ConfigurazioneTavoli() {
   // Logout function
   const handleLogout = () => {
     localStorage.removeItem(SESSION_KEY);
+    setVerifiedPassword(null);
     setIsAuthenticated(false);
     toast.success('Disconnesso');
   };
@@ -287,9 +292,9 @@ export default function ConfigurazioneTavoli() {
     }
   }, [localTavoli, isInitialViewSet]);
 
-  // Rotation handler with save
+  // Rotation handler with save - uses secure RPC function
   const rotateTable = async (degrees: number) => {
-    if (!selectedTableId) return;
+    if (!selectedTableId || !weddingId || !verifiedPassword) return;
 
     const tavolo = localTavoli.find((t) => t.id === selectedTableId);
     if (!tavolo) return;
@@ -306,14 +311,19 @@ export default function ConfigurazioneTavoli() {
         : t
     ));
 
-    // Save to database
+    // Save to database using secure RPC function
     try {
-      const { error } = await supabase
-        .from('tavoli')
-        .update({ rotazione: newRotation })
-        .eq('id', selectedTableId);
+      const { data, error } = await supabase.rpc('update_tavolo_position', {
+        _tavolo_id: selectedTableId,
+        _wedding_id: weddingId,
+        _password_attempt: verifiedPassword,
+        _posizione_x: tavolo.posizione_x,
+        _posizione_y: tavolo.posizione_y,
+        _rotazione: newRotation
+      });
 
       if (error) throw error;
+      if (!data) throw new Error('Password verification failed');
 
       // Invalidate query to refresh from server
       await queryClient.invalidateQueries({ queryKey: ['tavoli-public', weddingId] });
@@ -383,8 +393,9 @@ export default function ConfigurazioneTavoli() {
     ));
   };
 
+  // Table drag end - uses secure RPC function
   const handleTableDragEnd = async () => {
-    if (!isDraggingTable || !selectedTableId) return;
+    if (!isDraggingTable || !selectedTableId || !weddingId || !verifiedPassword) return;
 
     setIsDraggingTable(false);
 
@@ -410,17 +421,19 @@ export default function ConfigurazioneTavoli() {
       y: tavolo.posizione_y
     });
 
-    // Save to database
+    // Save to database using secure RPC function
     try {
-      const { error } = await supabase
-        .from('tavoli')
-        .update({
-          posizione_x: tavolo.posizione_x,
-          posizione_y: tavolo.posizione_y
-        })
-        .eq('id', selectedTableId);
+      const { data, error } = await supabase.rpc('update_tavolo_position', {
+        _tavolo_id: selectedTableId,
+        _wedding_id: weddingId,
+        _password_attempt: verifiedPassword,
+        _posizione_x: tavolo.posizione_x,
+        _posizione_y: tavolo.posizione_y,
+        _rotazione: tavolo.rotazione
+      });
 
       if (error) throw error;
+      if (!data) throw new Error('Password verification failed');
 
       // Invalidate query to refresh from server
       await queryClient.invalidateQueries({ queryKey: ['tavoli-public', weddingId] });

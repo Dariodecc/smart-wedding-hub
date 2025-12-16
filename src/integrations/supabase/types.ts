@@ -508,6 +508,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_tavolo_position: {
+        Args: {
+          _password_attempt: string
+          _posizione_x: number
+          _posizione_y: number
+          _rotazione?: number
+          _tavolo_id: string
+          _wedding_id: string
+        }
+        Returns: boolean
+      }
       verify_wedding_password: {
         Args: { _password_attempt: string; _wedding_id: string }
         Returns: {

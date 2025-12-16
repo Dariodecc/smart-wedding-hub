@@ -496,6 +496,39 @@ export type Database = {
     }
     Functions: {
       check_rsvp_access: { Args: { _rsvp_uuid: string }; Returns: boolean }
+      get_rsvp_family_members: {
+        Args: { _famiglia_id: string; _rsvp_uuid: string }
+        Returns: {
+          cellulare: string
+          cognome: string
+          email: string
+          famiglia_id: string
+          id: string
+          is_capo_famiglia: boolean
+          nome: string
+          preferenze_alimentari: string[]
+          rsvp_status: string
+          tipo_ospite: string
+          wedding_id: string
+        }[]
+      }
+      get_rsvp_guest_data: {
+        Args: { _rsvp_uuid: string }
+        Returns: {
+          cellulare: string
+          cognome: string
+          email: string
+          famiglia_id: string
+          id: string
+          is_capo_famiglia: boolean
+          nome: string
+          preferenze_alimentari: string[]
+          rsvp_status: string
+          rsvp_uuid: string
+          tipo_ospite: string
+          wedding_id: string
+        }[]
+      }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: {
@@ -548,6 +581,18 @@ export type Database = {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
+        }
+        Returns: boolean
+      }
+      update_rsvp_guest: {
+        Args: {
+          _cognome: string
+          _email: string
+          _guest_id: string
+          _nome: string
+          _preferenze_alimentari: string[]
+          _rsvp_status: string
+          _rsvp_uuid: string
         }
         Returns: boolean
       }

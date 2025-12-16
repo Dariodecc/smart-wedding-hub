@@ -31,29 +31,22 @@ const Rsvp = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Fetch guest/family data by RSVP UUID
+  // Fetch guest/family data by RSVP UUID using secure RPC functions
   const { data: rsvpData, isLoading } = useQuery({
     queryKey: ['rsvp', uuid],
     queryFn: async () => {
-      // Find guest with this RSVP UUID - uses existing RLS policy "Public can read invitati via RSVP UUID"
-      const { data: mainGuest, error: mainError } = await supabase
-        .from('invitati')
-        .select(`
-          *,
-          famiglia:famiglie(id, nome),
-          gruppo:gruppi(id, nome, colore)
-        `)
-        .eq('rsvp_uuid', uuid)
-        .maybeSingle();
+      // Use secure RPC function to get guest data
+      const { data: guestData, error: guestError } = await supabase
+        .rpc('get_rsvp_guest_data', { _rsvp_uuid: uuid });
 
-      if (mainError) throw mainError;
-      if (!mainGuest) return null;
+      if (guestError) throw guestError;
+      if (!guestData || guestData.length === 0) return null;
 
-      // Fetch wedding data using secure RPC function that excludes sensitive fields
+      const mainGuest = guestData[0];
+
+      // Fetch wedding data using secure RPC function
       const { data: weddingData, error: weddingError } = await supabase
-        .rpc('get_wedding_for_rsvp', {
-          _rsvp_uuid: uuid
-        });
+        .rpc('get_wedding_for_rsvp', { _rsvp_uuid: uuid });
 
       if (weddingError) {
         console.error('Error fetching wedding:', weddingError);
@@ -61,13 +54,13 @@ const Rsvp = () => {
 
       const wedding = weddingData?.[0] || null;
 
-      // If guest is capofamiglia, fetch all family members
+      // If guest is capofamiglia, fetch all family members using secure RPC
       if (mainGuest.is_capo_famiglia && mainGuest.famiglia_id) {
         const { data: familyMembers, error: familyError } = await supabase
-          .from('invitati')
-          .select('*')
-          .eq('famiglia_id', mainGuest.famiglia_id)
-          .order('is_capo_famiglia', { ascending: false });
+          .rpc('get_rsvp_family_members', { 
+            _famiglia_id: mainGuest.famiglia_id,
+            _rsvp_uuid: uuid
+          });
 
         if (familyError) throw familyError;
 
@@ -151,29 +144,29 @@ const Rsvp = () => {
   };
 
   const handleSubmit = async () => {
-    if (!isFormValid() || !rsvpData) return;
+    if (!isFormValid() || !rsvpData || !uuid) return;
 
     setIsSubmitting(true);
 
     try {
-      const updates = rsvpData.familyMembers.map((member: any) => ({
-        id: member.id,
-        wedding_id: member.wedding_id,
-        cellulare: member.cellulare,
-        tipo_ospite: member.tipo_ospite,
-        rsvp_status: formData[member.id].rsvp_status,
-        nome: formData[member.id].nome.trim(),
-        cognome: formData[member.id].cognome.trim(),
-        email: formData[member.id].email?.trim() || null,
-        preferenze_alimentari: formData[member.id].preferenze_alimentari,
-        rsvp_updated_at: new Date().toISOString()
-      }));
+      // Update each family member using secure RPC function
+      for (const member of rsvpData.familyMembers) {
+        const data = formData[member.id];
+        
+        const { data: success, error } = await supabase
+          .rpc('update_rsvp_guest', {
+            _guest_id: member.id,
+            _rsvp_uuid: uuid,
+            _rsvp_status: data.rsvp_status,
+            _nome: data.nome.trim().slice(0, 100),
+            _cognome: data.cognome.trim().slice(0, 100),
+            _email: data.email?.trim().slice(0, 255) || null,
+            _preferenze_alimentari: data.preferenze_alimentari
+          });
 
-      const { error } = await supabase
-        .from('invitati')
-        .upsert(updates);
-
-      if (error) throw error;
+        if (error) throw error;
+        if (!success) throw new Error('Update failed - unauthorized');
+      }
 
       toast({
         title: "Successo!",

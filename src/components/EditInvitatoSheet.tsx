@@ -307,7 +307,7 @@ export function EditInvitatoSheet({
   if (!invitato) return null;
   return <>
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side="right" className="w-full sm:w-[85vw] md:w-[45vw] lg:w-[45vw] h-full p-0 flex flex-col overflow-hidden">
+        <SheetContent side="right" className="w-full sm:max-w-md lg:max-w-lg xl:max-w-xl h-full p-0 flex flex-col overflow-hidden">
           {/* Header */}
           <div className="shrink-0 bg-white border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">

@@ -320,6 +320,7 @@ const Utenti = () => {
         <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Crea Nuovo Utente</DialogTitle>
+              <DialogDescription>Inserisci le informazioni per creare un nuovo utente</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <div>

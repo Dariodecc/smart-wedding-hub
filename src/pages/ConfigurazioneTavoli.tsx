@@ -160,39 +160,65 @@ export default function ConfigurazioneTavoli() {
     enabled: isAuthenticated && !!weddingId,
   });
 
-  // Fetch guests with assignments
+  // Fetch guests using secure password-validated RPC function
   const { data: invitati = [], isLoading: invitatiLoading } = useQuery({
-    queryKey: ['invitati-public', weddingId],
+    queryKey: ['invitati-public', weddingId, verifiedPassword],
     queryFn: async () => {
-      console.log('🔍 Fetching guests for wedding:', weddingId);
-      
-      const { data, error } = await supabase
-        .from('invitati')
-        .select(`
-          id,
-          nome,
-          cognome,
-          tipo_ospite,
-          rsvp_status,
-          is_capo_famiglia,
-          famiglia_id,
-          tavolo_id,
-          posto_numero,
-          preferenze_alimentari,
-          famiglie!famiglia_id(id, nome),
-          gruppi!gruppo_id(id, nome, colore)
-        `)
-        .eq('wedding_id', weddingId);
-
-      if (error) {
-        console.error('❌ Error fetching guests:', error);
-        throw error;
+      if (!verifiedPassword) {
+        console.log('⚠️ No verified password, cannot fetch guests');
+        return [];
       }
       
-      console.log('✅ Guests loaded:', data?.length, 'guests');
-      return data || [];
+      console.log('🔍 Fetching guests for wedding:', weddingId);
+      
+      // Use secure RPC function that requires password verification
+      const { data: guests, error: guestsError } = await supabase
+        .rpc('get_wedding_guests_secure', {
+          _wedding_id: weddingId,
+          _password_attempt: verifiedPassword
+        });
+
+      if (guestsError) {
+        console.error('❌ Error fetching guests:', guestsError);
+        throw guestsError;
+      }
+
+      // Fetch famiglie using secure RPC
+      const { data: famiglie, error: famiglieError } = await supabase
+        .rpc('get_wedding_famiglie_secure', {
+          _wedding_id: weddingId,
+          _password_attempt: verifiedPassword
+        });
+
+      if (famiglieError) {
+        console.error('❌ Error fetching famiglie:', famiglieError);
+      }
+
+      // Fetch gruppi using secure RPC  
+      const { data: gruppi, error: gruppiError } = await supabase
+        .rpc('get_wedding_gruppi_secure', {
+          _wedding_id: weddingId,
+          _password_attempt: verifiedPassword
+        });
+
+      if (gruppiError) {
+        console.error('❌ Error fetching gruppi:', gruppiError);
+      }
+
+      // Map famiglia and gruppo data to guests
+      const famiglieMap = new Map((famiglie || []).map((f: any) => [f.id, f]));
+      const gruppiMap = new Map((gruppi || []).map((g: any) => [g.id, g]));
+
+      const enrichedGuests = (guests || []).map((guest: any) => ({
+        ...guest,
+        famiglie: guest.famiglia_id ? famiglieMap.get(guest.famiglia_id) : null,
+        gruppi: guest.gruppo_id ? gruppiMap.get(guest.gruppo_id) : null
+      }));
+      
+      console.log('✅ Guests loaded:', enrichedGuests.length, 'guests');
+      return enrichedGuests;
     },
-    enabled: isAuthenticated && !!weddingId,
+    enabled: isAuthenticated && !!weddingId && !!verifiedPassword,
   });
 
   // Get assignments for table
@@ -545,8 +571,8 @@ export default function ConfigurazioneTavoli() {
   }
 
 
-  // Loading tables
-  if (isAuthenticated && (tavoliLoading || invitatiLoading)) {
+  // Loading tables (only show when we have verified password)
+  if (isAuthenticated && verifiedPassword && (tavoliLoading || invitatiLoading)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -557,8 +583,9 @@ export default function ConfigurazioneTavoli() {
     );
   }
 
-  // Password protection screen
-  if (!isAuthenticated) {
+  // Password protection screen - show when not authenticated OR when no verified password
+  // This handles: first visit, session expired, and returning with localStorage session but no password
+  if (!isAuthenticated || !verifiedPassword) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-8">
@@ -567,7 +594,10 @@ export default function ConfigurazioneTavoli() {
               Configurazione Tavoli
             </h1>
             <p className="text-sm text-gray-600">
-              Inserisci la password per accedere alla disposizione dei tavoli
+              {isAuthenticated && !verifiedPassword 
+                ? 'Reinserisci la password per continuare la sessione'
+                : 'Inserisci la password per accedere alla disposizione dei tavoli'
+              }
             </p>
           </div>
 

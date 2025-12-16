@@ -35,26 +35,31 @@ const Rsvp = () => {
   const { data: rsvpData, isLoading } = useQuery({
     queryKey: ['rsvp', uuid],
     queryFn: async () => {
-      // Find guest with this RSVP UUID
+      // Find guest with this RSVP UUID - uses existing RLS policy "Public can read invitati via RSVP UUID"
       const { data: mainGuest, error: mainError } = await supabase
         .from('invitati')
         .select(`
           *,
           famiglia:famiglie(id, nome),
-          gruppo:gruppi(id, nome, colore),
-          wedding:weddings(
-            id,
-            couple_name,
-            wedding_date,
-            ceremony_location,
-            reception_location
-          )
+          gruppo:gruppi(id, nome, colore)
         `)
         .eq('rsvp_uuid', uuid)
         .maybeSingle();
 
       if (mainError) throw mainError;
       if (!mainGuest) return null;
+
+      // Fetch wedding data using secure RPC function that excludes sensitive fields
+      const { data: weddingData, error: weddingError } = await supabase
+        .rpc('get_wedding_for_rsvp', {
+          _rsvp_uuid: uuid
+        });
+
+      if (weddingError) {
+        console.error('Error fetching wedding:', weddingError);
+      }
+
+      const wedding = weddingData?.[0] || null;
 
       // If guest is capofamiglia, fetch all family members
       if (mainGuest.is_capo_famiglia && mainGuest.famiglia_id) {
@@ -70,7 +75,7 @@ const Rsvp = () => {
           mainGuest,
           familyMembers: familyMembers || [],
           isFamily: true,
-          wedding: mainGuest.wedding
+          wedding
         };
       }
 
@@ -79,7 +84,7 @@ const Rsvp = () => {
         mainGuest,
         familyMembers: [mainGuest],
         isFamily: false,
-        wedding: mainGuest.wedding
+        wedding
       };
     },
     enabled: !!uuid

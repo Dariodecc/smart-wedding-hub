@@ -501,6 +501,48 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_wedding_famiglie_secure: {
+        Args: { _password_attempt: string; _wedding_id: string }
+        Returns: {
+          id: string
+          nome: string
+        }[]
+      }
+      get_wedding_for_rsvp: {
+        Args: { _rsvp_uuid: string }
+        Returns: {
+          ceremony_location: string
+          couple_name: string
+          enable_multi_rsvp: boolean
+          id: string
+          reception_location: string
+          wedding_date: string
+        }[]
+      }
+      get_wedding_gruppi_secure: {
+        Args: { _password_attempt: string; _wedding_id: string }
+        Returns: {
+          colore: string
+          id: string
+          nome: string
+        }[]
+      }
+      get_wedding_guests_secure: {
+        Args: { _password_attempt: string; _wedding_id: string }
+        Returns: {
+          cognome: string
+          famiglia_id: string
+          gruppo_id: string
+          id: string
+          is_capo_famiglia: boolean
+          nome: string
+          posto_numero: number
+          preferenze_alimentari: string[]
+          rsvp_status: string
+          tavolo_id: string
+          tipo_ospite: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

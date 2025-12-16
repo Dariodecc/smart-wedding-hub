@@ -1,0 +1,49 @@
+{
+  "title": "Famiglie",
+  "subtitle": "Gestisci le famiglie degli invitati",
+  "addFamily": "Aggiungi Famiglia",
+  "editFamily": "Modifica Famiglia",
+  "deleteFamily": "Elimina Famiglia",
+  "deleteFamilyConfirm": "Eliminare questa famiglia?",
+  "deleteFamilyDescription": "La famiglia verrà eliminata ma i membri diventeranno invitati singoli.",
+  "familyDeleted": "Famiglia eliminata con successo",
+  "familyUpdated": "Famiglia aggiornata con successo",
+  "familyCreated": "Famiglia creata con successo",
+  "stats": {
+    "total": "Famiglie Totali",
+    "responded": "Hanno Risposto",
+    "partial": "Risposte Parziali",
+    "noResponse": "Nessuna Risposta"
+  },
+  "status": {
+    "responded": "Risposto",
+    "partial": "Parziale",
+    "noResponse": "Nessuna risposta"
+  },
+  "members": "membri",
+  "member": "membro",
+  "noHead": "Nessun capofamiglia",
+  "head": "Capo",
+  "form": {
+    "name": "Nome famiglia",
+    "namePlaceholder": "es. Famiglia Rossi"
+  },
+  "filters": {
+    "searchPlaceholder": "Cerca famiglia...",
+    "allHeadStatus": "Tutti",
+    "withHead": "Con capofamiglia",
+    "withoutHead": "Senza capofamiglia",
+    "allResponseStatus": "Tutti gli stati"
+  },
+  "empty": {
+    "title": "Nessuna famiglia",
+    "description": "Le famiglie vengono create automaticamente quando aggiungi invitati"
+  },
+  "table": {
+    "name": "NOME",
+    "surname": "COGNOME",
+    "phone": "CELLULARE",
+    "type": "TIPO",
+    "rsvp": "RSVP"
+  }
+}

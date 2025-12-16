@@ -1,0 +1,43 @@
+{
+  "title": "Groups",
+  "subtitle": "Organize guests into custom groups",
+  "addGroup": "Add Group",
+  "editGroup": "Edit Group",
+  "deleteGroup": "Delete Group",
+  "deleteGroupConfirm": "Delete this group?",
+  "deleteGroupDescription": "The group will be deleted but members will not be deleted.",
+  "groupDeleted": "Group deleted successfully",
+  "groupUpdated": "Group updated successfully",
+  "groupCreated": "Group created successfully",
+  "totalGroups": "Total groups",
+  "members": "members",
+  "member": "member",
+  "noMembers": "No members",
+  "manageMembers": "Manage members",
+  "form": {
+    "name": "Group name",
+    "namePlaceholder": "e.g. Groom's friends",
+    "color": "Color",
+    "selectColor": "Select a color"
+  },
+  "filters": {
+    "searchPlaceholder": "Search group...",
+    "showing": "Showing",
+    "of": "of",
+    "groups": "groups"
+  },
+  "empty": {
+    "title": "No groups",
+    "description": "Create groups to organize guests"
+  },
+  "membersDialog": {
+    "title": "Manage members",
+    "subtitle": "Select guests to add to the group",
+    "searchPlaceholder": "Search guest...",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "noAvailable": "No guests available",
+    "noAvailableDesc": "All guests are already assigned to a group",
+    "selected": "selected"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "title": "Users",
+  "subtitle": "Manage system users",
+  "addUser": "Add User",
+  "editUser": "Edit User",
+  "deleteUser": "Delete User",
+  "deleteUserConfirm": "Delete this user?",
+  "deleteUserDescription": "This action cannot be undone.",
+  "userDeleted": "User deleted successfully",
+  "userUpdated": "User updated successfully",
+  "userCreated": "User created successfully",
+  "stats": {
+    "total": "Total Users",
+    "admin": "Admin",
+    "sposi": "Couples",
+    "expired": "Deactivated"
+  },
+  "form": {
+    "email": "Email",
+    "emailPlaceholder": "example@email.com",
+    "password": "Password",
+    "generatePassword": "Generate password",
+    "role": "Role",
+    "selectRole": "Select role",
+    "wedding": "Wedding",
+    "selectWedding": "Select wedding",
+    "isActive": "User active",
+    "activate": "Activate user",
+    "deactivate": "Deactivate user"
+  },
+  "roles": {
+    "admin": "Admin",
+    "sposi": "Couple"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Deactivated"
+  },
+  "errors": {
+    "emailExists": "User already registered",
+    "cannotDeleteSelf": "You cannot delete your own account",
+    "cannotDeactivateSelf": "You cannot deactivate your own account"
+  },
+  "empty": {
+    "title": "No users",
+    "description": "Start by creating the first user"
+  },
+  "table": {
+    "email": "EMAIL",
+    "role": "ROLE",
+    "wedding": "WEDDING",
+    "status": "STATUS",
+    "createdAt": "CREATED AT"
+  }
+}

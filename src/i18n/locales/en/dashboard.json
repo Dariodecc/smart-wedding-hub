@@ -1,0 +1,37 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Wedding overview",
+  "adminTitle": "Admin Dashboard",
+  "adminSubtitle": "General overview",
+  "stats": {
+    "totalGuests": "Total Guests",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "declined": "Declined",
+    "tables": "Tables",
+    "families": "Families",
+    "groups": "Groups"
+  },
+  "tables": {
+    "title": "Table Statistics",
+    "total": "Total Tables",
+    "totalCapacity": "Total capacity",
+    "occupancy": "Table Occupancy",
+    "seatedGuests": "Seated Guests",
+    "unseatedGuests": "Unseated Guests",
+    "occupancyDetail": "Table Occupancy Detail"
+  },
+  "whatsapp": {
+    "title": "WhatsApp Status",
+    "sent": "Sent",
+    "notSent": "Not Sent",
+    "failed": "Failed",
+    "cost": "Message Cost"
+  },
+  "countdown": {
+    "title": "Countdown",
+    "daysToGo": "days to go",
+    "today": "The big day is today!",
+    "passed": "The wedding has already happened"
+  }
+}

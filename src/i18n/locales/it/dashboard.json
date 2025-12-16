@@ -1,0 +1,37 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Panoramica del matrimonio",
+  "adminTitle": "Dashboard Admin",
+  "adminSubtitle": "Panoramica generale",
+  "stats": {
+    "totalGuests": "Totale Invitati",
+    "confirmed": "Confermati",
+    "pending": "In Attesa",
+    "declined": "Non Partecipano",
+    "tables": "Tavoli",
+    "families": "Famiglie",
+    "groups": "Gruppi"
+  },
+  "tables": {
+    "title": "Statistiche Tavoli",
+    "total": "Tavoli Totali",
+    "totalCapacity": "Capienza totale",
+    "occupancy": "Occupazione Tavoli",
+    "seatedGuests": "Invitati Posizionati",
+    "unseatedGuests": "Invitati da Posizionare",
+    "occupancyDetail": "Dettaglio Occupazione Tavoli"
+  },
+  "whatsapp": {
+    "title": "Stato WhatsApp",
+    "sent": "Inviati",
+    "notSent": "Non Inviati",
+    "failed": "Falliti",
+    "cost": "Costo Messaggi"
+  },
+  "countdown": {
+    "title": "Countdown",
+    "daysToGo": "giorni al matrimonio",
+    "today": "Il grande giorno è oggi!",
+    "passed": "Il matrimonio è già avvenuto"
+  }
+}

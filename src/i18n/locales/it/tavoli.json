@@ -1,0 +1,49 @@
+{
+  "title": "Tavoli",
+  "subtitle": "Gestisci la disposizione dei tavoli",
+  "addTable": "Aggiungi Tavolo",
+  "editTable": "Modifica Tavolo",
+  "deleteTable": "Elimina Tavolo",
+  "deleteTableConfirm": "Eliminare questo tavolo?",
+  "deleteTableDescription": "Il tavolo verrà eliminato e gli invitati assegnati verranno rimossi dal tavolo.",
+  "tableDeleted": "Tavolo eliminato con successo",
+  "tableUpdated": "Tavolo aggiornato con successo",
+  "tableCreated": "Tavolo creato con successo",
+  "seats": "posti",
+  "seat": "posto",
+  "occupied": "occupati",
+  "available": "disponibili",
+  "form": {
+    "name": "Nome tavolo",
+    "namePlaceholder": "es. Tavolo 1",
+    "type": "Tipo tavolo",
+    "capacity": "Capienza"
+  },
+  "types": {
+    "round": "Rotondo",
+    "rectangular": "Rettangolare",
+    "square": "Quadrato",
+    "oval": "Ovale"
+  },
+  "configuration": {
+    "title": "Configurazione Tavoli",
+    "subtitle": "Trascina i tavoli per posizionarli",
+    "save": "Salva posizioni",
+    "reset": "Ripristina",
+    "rotate": "Ruota"
+  },
+  "empty": {
+    "title": "Nessun tavolo",
+    "description": "Inizia creando il primo tavolo"
+  },
+  "publicConfig": {
+    "title": "Configurazione Pubblica",
+    "enterPassword": "Inserisci la password per accedere",
+    "password": "Password",
+    "passwordPlaceholder": "Inserisci password...",
+    "access": "Accedi",
+    "invalidPassword": "Password non corretta",
+    "sessionExpiring": "La sessione scade tra meno di un'ora",
+    "logout": "Esci"
+  }
+}

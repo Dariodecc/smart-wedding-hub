@@ -1,0 +1,37 @@
+{
+  "title": "Matrimoni",
+  "subtitle": "Gestisci i tuoi matrimoni",
+  "addWedding": "Nuovo Matrimonio",
+  "editWedding": "Modifica Matrimonio",
+  "deleteWedding": "Elimina Matrimonio",
+  "deleteWeddingConfirm": "Eliminare questo matrimonio?",
+  "deleteWeddingDescription": "Questa azione è irreversibile. Tutti i dati associati al matrimonio verranno eliminati.",
+  "coupleName": "Nome Coppia",
+  "date": "Data",
+  "location": "Luogo",
+  "guests": "invitati",
+  "budget": "Budget",
+  "createdAt": "Creato il",
+  "dashboard": "Dashboard",
+  "manageGuests": "Invitati",
+  "manage": "Gestisci",
+  "empty": {
+    "title": "Nessun matrimonio",
+    "description": "Inizia creando il primo matrimonio"
+  },
+  "form": {
+    "coupleName": "Nome della coppia",
+    "coupleNamePlaceholder": "es. Mario e Giulia",
+    "weddingDate": "Data del matrimonio",
+    "ceremonyLocation": "Location della cerimonia",
+    "ceremonyLocationPlaceholder": "es. Chiesa di San Pietro",
+    "receptionLocation": "Location del ricevimento",
+    "receptionLocationPlaceholder": "es. Villa Rossi",
+    "serviceCost": "Costo servizio (€)",
+    "users": "Utenti (Sposi)",
+    "usersPlaceholder": "Seleziona gli sposi",
+    "enableMultiRsvp": "Abilita RSVP multiplo",
+    "webhookUrl": "URL Webhook",
+    "webhookUrlPlaceholder": "https://..."
+  }
+}

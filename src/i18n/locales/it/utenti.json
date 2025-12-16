@@ -1,0 +1,55 @@
+{
+  "title": "Utenti",
+  "subtitle": "Gestisci gli utenti del sistema",
+  "addUser": "Aggiungi Utente",
+  "editUser": "Modifica Utente",
+  "deleteUser": "Elimina Utente",
+  "deleteUserConfirm": "Eliminare questo utente?",
+  "deleteUserDescription": "Questa azione è irreversibile.",
+  "userDeleted": "Utente eliminato con successo",
+  "userUpdated": "Utente aggiornato con successo",
+  "userCreated": "Utente creato con successo",
+  "stats": {
+    "total": "Totale Utenti",
+    "admin": "Admin",
+    "sposi": "Sposi",
+    "expired": "Disattivati"
+  },
+  "form": {
+    "email": "Email",
+    "emailPlaceholder": "esempio@email.com",
+    "password": "Password",
+    "generatePassword": "Genera password",
+    "role": "Ruolo",
+    "selectRole": "Seleziona ruolo",
+    "wedding": "Matrimonio",
+    "selectWedding": "Seleziona matrimonio",
+    "isActive": "Utente attivo",
+    "activate": "Attiva utente",
+    "deactivate": "Disattiva utente"
+  },
+  "roles": {
+    "admin": "Admin",
+    "sposi": "Sposi"
+  },
+  "status": {
+    "active": "Attivo",
+    "inactive": "Disattivato"
+  },
+  "errors": {
+    "emailExists": "Utenza già registrata",
+    "cannotDeleteSelf": "Non puoi eliminare il tuo account",
+    "cannotDeactivateSelf": "Non puoi disattivare il tuo account"
+  },
+  "empty": {
+    "title": "Nessun utente",
+    "description": "Inizia creando il primo utente"
+  },
+  "table": {
+    "email": "EMAIL",
+    "role": "RUOLO",
+    "wedding": "MATRIMONIO",
+    "status": "STATO",
+    "createdAt": "CREATO IL"
+  }
+}

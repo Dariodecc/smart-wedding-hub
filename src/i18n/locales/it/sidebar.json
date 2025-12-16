@@ -1,0 +1,24 @@
+{
+  "adminSection": "MATRIMONIO SMART",
+  "guestSection": "GESTIONE INVITATI",
+  "dashboardAdmin": "Dashboard Admin",
+  "matrimoni": "Matrimoni",
+  "utenti": "Utenti",
+  "impostazioniAdmin": "Impostazioni Admin",
+  "documentazioneApi": "Documentazione API",
+  "dashboard": "Dashboard",
+  "invitati": "Invitati",
+  "famiglie": "Famiglie",
+  "gruppi": "Gruppi",
+  "tavoli": "Tavoli",
+  "impostazioni": "Impostazioni",
+  "impersonation": {
+    "title": "Modalità impersonificazione",
+    "exit": "Esci da impersonificazione"
+  },
+  "userInfo": {
+    "admin": "Admin",
+    "sposi": "Sposi"
+  },
+  "logout": "Esci"
+}

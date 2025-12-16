@@ -495,6 +495,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rsvp_access: { Args: { _rsvp_uuid: string }; Returns: boolean }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: {

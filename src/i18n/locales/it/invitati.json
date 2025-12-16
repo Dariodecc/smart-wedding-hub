@@ -1,0 +1,116 @@
+{
+  "title": "Invitati",
+  "subtitle": "Gestisci gli invitati del matrimonio",
+  "addGuest": "Aggiungi Invitato",
+  "editGuest": "Modifica i dettagli dell'invitato",
+  "deleteGuest": "Eliminare questo invitato?",
+  "deleteGuestDescription": "Questa azione è irreversibile. L'invitato \"{{name}}\" sarà eliminato definitivamente.",
+  "guestDeleted": "Invitato eliminato con successo",
+  "guestUpdated": "Invitato aggiornato con successo",
+  "guestCreated": "Invitato creato con successo",
+  "stats": {
+    "total": "Totale Invitati",
+    "confirmed": "Confermati",
+    "pending": "In Attesa",
+    "declined": "Non Partecipano"
+  },
+  "form": {
+    "basicInfo": "Informazioni Base",
+    "name": "Nome",
+    "surname": "Cognome",
+    "phone": "Cellulare",
+    "phoneHelper": "Necessario per l'invio degli inviti WhatsApp",
+    "email": "Email",
+    "guestType": "Tipo Ospite",
+    "dietaryPreferences": "Preferenze Alimentari",
+    "dietaryPlaceholder": "Seleziona preferenze alimentari",
+    "noDietaryPreferences": "Nessuna preferenza"
+  },
+  "guestTypes": {
+    "baby": "Neonato",
+    "child": "Bambino",
+    "teen": "Ragazzo",
+    "adult": "Adulto"
+  },
+  "rsvp": {
+    "title": "Status RSVP",
+    "status": "Stato",
+    "link": "Link RSVP",
+    "linkHelper": "Condividi questo link con l'invitato per confermare la presenza",
+    "familyLinkHelper": "Questo link serve per gestire tutta la famiglia",
+    "statuses": {
+      "confirmed": "Ci sarò",
+      "pending": "In attesa",
+      "declined": "Non ci sarò"
+    }
+  },
+  "family": {
+    "title": "Famiglia",
+    "select": "Seleziona famiglia",
+    "selectPlaceholder": "Seleziona famiglia (opzionale)",
+    "isHead": "Capo Famiglia",
+    "isHeadHelper": "Il capo famiglia riceve gli inviti e gestisce l'RSVP per tutti i membri",
+    "createNew": "Nuova Famiglia",
+    "newFamilyName": "Nome Nuova Famiglia",
+    "newFamilyPlaceholder": "es. Famiglia Rossi",
+    "newFamilyHelper": "Questo invitato diventerà automaticamente il capo famiglia",
+    "alreadyHasHead": "Questa famiglia ha già un capo famiglia",
+    "memberInfo": "Il cellulare non è necessario per i membri della famiglia. Solo il capo famiglia riceverà gli inviti WhatsApp.",
+    "memberRsvpInfo": "Questo invitato è un membro della famiglia. Il capo famiglia gestisce l'RSVP per tutti.",
+    "noFamily": "Nessuna",
+    "options": {
+      "title": "Opzioni disponibili:",
+      "single": "Invitato singolo",
+      "singleDesc": "Non selezionare nessuna famiglia",
+      "member": "Membro famiglia",
+      "memberDesc": "Associa ad una famiglia esistente",
+      "head": "Capo famiglia",
+      "headDesc": "Associa ad una famiglia e attiva lo switch",
+      "new": "Nuova famiglia",
+      "newDesc": "Crea una nuova famiglia (diventerà automaticamente capo)"
+    }
+  },
+  "assignments": {
+    "title": "Assegnazioni",
+    "group": "Gruppo",
+    "groupPlaceholder": "Seleziona gruppo (opzionale)",
+    "groupHelper": "Opzionale - Assegna l'invitato ad un gruppo",
+    "noGroup": "Nessun gruppo",
+    "noGroupFound": "Nessun gruppo trovato",
+    "table": "Tavolo",
+    "tablePlaceholder": "Seleziona tavolo (opzionale)",
+    "tableHelper": "Opzionale - Assegna l'invitato ad un tavolo",
+    "noTableFound": "Nessun tavolo ancora creato",
+    "seats": "{{occupied}}/{{total}} posti"
+  },
+  "whatsapp": {
+    "received": "WhatsApp ricevuto",
+    "sent": "WhatsApp inviato",
+    "pending": "WhatsApp in attesa",
+    "delivered": "Consegnato",
+    "read": "Letto",
+    "failed": "Fallito"
+  },
+  "filters": {
+    "allTypes": "Tutti i tipi",
+    "allFamilies": "Tutte le famiglie",
+    "allStatuses": "Tutti gli stati",
+    "singleGuests": "Invitati singoli",
+    "searchPlaceholder": "Cerca per nome o cognome...",
+    "clearFilters": "Cancella filtri",
+    "activeFilters": "filtri attivi"
+  },
+  "table": {
+    "name": "NOME",
+    "surname": "COGNOME",
+    "phone": "CELLULARE",
+    "type": "TIPO",
+    "family": "FAMIGLIA",
+    "singleGuest": "Invitato singolo",
+    "head": "Capo"
+  },
+  "empty": {
+    "title": "Nessun invitato",
+    "description": "Inizia aggiungendo il primo invitato al matrimonio"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "title": "Families",
+  "subtitle": "Manage guest families",
+  "addFamily": "Add Family",
+  "editFamily": "Edit Family",
+  "deleteFamily": "Delete Family",
+  "deleteFamilyConfirm": "Delete this family?",
+  "deleteFamilyDescription": "The family will be deleted but members will become single guests.",
+  "familyDeleted": "Family deleted successfully",
+  "familyUpdated": "Family updated successfully",
+  "familyCreated": "Family created successfully",
+  "stats": {
+    "total": "Total Families",
+    "responded": "Responded",
+    "partial": "Partial Response",
+    "noResponse": "No Response"
+  },
+  "status": {
+    "responded": "Responded",
+    "partial": "Partial",
+    "noResponse": "No response"
+  },
+  "members": "members",
+  "member": "member",
+  "noHead": "No family head",
+  "head": "Head",
+  "form": {
+    "name": "Family name",
+    "namePlaceholder": "e.g. Smith Family"
+  },
+  "filters": {
+    "searchPlaceholder": "Search family...",
+    "allHeadStatus": "All",
+    "withHead": "With family head",
+    "withoutHead": "Without family head",
+    "allResponseStatus": "All statuses"
+  },
+  "empty": {
+    "title": "No families",
+    "description": "Families are automatically created when you add guests"
+  },
+  "table": {
+    "name": "NAME",
+    "surname": "SURNAME",
+    "phone": "PHONE",
+    "type": "TYPE",
+    "rsvp": "RSVP"
+  }
+}

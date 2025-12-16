@@ -1,0 +1,116 @@
+{
+  "title": "Guests",
+  "subtitle": "Manage wedding guests",
+  "addGuest": "Add Guest",
+  "editGuest": "Edit guest details",
+  "deleteGuest": "Delete this guest?",
+  "deleteGuestDescription": "This action cannot be undone. The guest \"{{name}}\" will be permanently deleted.",
+  "guestDeleted": "Guest deleted successfully",
+  "guestUpdated": "Guest updated successfully",
+  "guestCreated": "Guest created successfully",
+  "stats": {
+    "total": "Total Guests",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "declined": "Declined"
+  },
+  "form": {
+    "basicInfo": "Basic Information",
+    "name": "First Name",
+    "surname": "Last Name",
+    "phone": "Phone",
+    "phoneHelper": "Required for WhatsApp invitations",
+    "email": "Email",
+    "guestType": "Guest Type",
+    "dietaryPreferences": "Dietary Preferences",
+    "dietaryPlaceholder": "Select dietary preferences",
+    "noDietaryPreferences": "No preferences"
+  },
+  "guestTypes": {
+    "baby": "Baby",
+    "child": "Child",
+    "teen": "Teenager",
+    "adult": "Adult"
+  },
+  "rsvp": {
+    "title": "RSVP Status",
+    "status": "Status",
+    "link": "RSVP Link",
+    "linkHelper": "Share this link with the guest to confirm attendance",
+    "familyLinkHelper": "This link is for managing the entire family",
+    "statuses": {
+      "confirmed": "Attending",
+      "pending": "Pending",
+      "declined": "Not attending"
+    }
+  },
+  "family": {
+    "title": "Family",
+    "select": "Select family",
+    "selectPlaceholder": "Select family (optional)",
+    "isHead": "Family Head",
+    "isHeadHelper": "The family head receives invitations and manages RSVP for all members",
+    "createNew": "New Family",
+    "newFamilyName": "New Family Name",
+    "newFamilyPlaceholder": "e.g. Smith Family",
+    "newFamilyHelper": "This guest will automatically become the family head",
+    "alreadyHasHead": "This family already has a head",
+    "memberInfo": "Phone number is not required for family members. Only the family head will receive WhatsApp invitations.",
+    "memberRsvpInfo": "This guest is a family member. The family head manages RSVP for everyone.",
+    "noFamily": "None",
+    "options": {
+      "title": "Available options:",
+      "single": "Single guest",
+      "singleDesc": "Don't select any family",
+      "member": "Family member",
+      "memberDesc": "Associate with an existing family",
+      "head": "Family head",
+      "headDesc": "Associate with a family and enable the switch",
+      "new": "New family",
+      "newDesc": "Create a new family (will automatically become head)"
+    }
+  },
+  "assignments": {
+    "title": "Assignments",
+    "group": "Group",
+    "groupPlaceholder": "Select group (optional)",
+    "groupHelper": "Optional - Assign guest to a group",
+    "noGroup": "No group",
+    "noGroupFound": "No groups found",
+    "table": "Table",
+    "tablePlaceholder": "Select table (optional)",
+    "tableHelper": "Optional - Assign guest to a table",
+    "noTableFound": "No tables created yet",
+    "seats": "{{occupied}}/{{total}} seats"
+  },
+  "whatsapp": {
+    "received": "WhatsApp received",
+    "sent": "WhatsApp sent",
+    "pending": "WhatsApp pending",
+    "delivered": "Delivered",
+    "read": "Read",
+    "failed": "Failed"
+  },
+  "filters": {
+    "allTypes": "All types",
+    "allFamilies": "All families",
+    "allStatuses": "All statuses",
+    "singleGuests": "Single guests",
+    "searchPlaceholder": "Search by name...",
+    "clearFilters": "Clear filters",
+    "activeFilters": "active filters"
+  },
+  "table": {
+    "name": "NAME",
+    "surname": "SURNAME",
+    "phone": "PHONE",
+    "type": "TYPE",
+    "family": "FAMILY",
+    "singleGuest": "Single guest",
+    "head": "Head"
+  },
+  "empty": {
+    "title": "No guests",
+    "description": "Start by adding the first guest to the wedding"
+  }
+}

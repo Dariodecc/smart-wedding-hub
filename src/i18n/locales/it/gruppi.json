@@ -1,0 +1,43 @@
+{
+  "title": "Gruppi",
+  "subtitle": "Organizza gli invitati in gruppi personalizzati",
+  "addGroup": "Aggiungi Gruppo",
+  "editGroup": "Modifica Gruppo",
+  "deleteGroup": "Elimina Gruppo",
+  "deleteGroupConfirm": "Eliminare questo gruppo?",
+  "deleteGroupDescription": "Il gruppo verrà eliminato ma i membri non verranno eliminati.",
+  "groupDeleted": "Gruppo eliminato con successo",
+  "groupUpdated": "Gruppo aggiornato con successo",
+  "groupCreated": "Gruppo creato con successo",
+  "totalGroups": "Gruppi totali",
+  "members": "membri",
+  "member": "membro",
+  "noMembers": "Nessun membro",
+  "manageMembers": "Gestisci membri",
+  "form": {
+    "name": "Nome gruppo",
+    "namePlaceholder": "es. Amici dello sposo",
+    "color": "Colore",
+    "selectColor": "Seleziona un colore"
+  },
+  "filters": {
+    "searchPlaceholder": "Cerca gruppo...",
+    "showing": "Mostrando",
+    "of": "di",
+    "groups": "gruppi"
+  },
+  "empty": {
+    "title": "Nessun gruppo",
+    "description": "Crea gruppi per organizzare gli invitati"
+  },
+  "membersDialog": {
+    "title": "Gestisci membri",
+    "subtitle": "Seleziona gli invitati da aggiungere al gruppo",
+    "searchPlaceholder": "Cerca invitato...",
+    "selectAll": "Seleziona tutti",
+    "deselectAll": "Deseleziona tutti",
+    "noAvailable": "Nessun invitato disponibile",
+    "noAvailableDesc": "Tutti gli invitati sono già assegnati a un gruppo",
+    "selected": "selezionati"
+  }
+}

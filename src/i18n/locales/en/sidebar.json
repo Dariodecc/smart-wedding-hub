@@ -1,0 +1,24 @@
+{
+  "adminSection": "SMART WEDDING",
+  "guestSection": "GUEST MANAGEMENT",
+  "dashboardAdmin": "Admin Dashboard",
+  "matrimoni": "Weddings",
+  "utenti": "Users",
+  "impostazioniAdmin": "Admin Settings",
+  "documentazioneApi": "API Documentation",
+  "dashboard": "Dashboard",
+  "invitati": "Guests",
+  "famiglie": "Families",
+  "gruppi": "Groups",
+  "tavoli": "Tables",
+  "impostazioni": "Settings",
+  "impersonation": {
+    "title": "Impersonation mode",
+    "exit": "Exit impersonation"
+  },
+  "userInfo": {
+    "admin": "Admin",
+    "sposi": "Couple"
+  },
+  "logout": "Logout"
+}

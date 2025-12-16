@@ -1,0 +1,49 @@
+{
+  "title": "Tables",
+  "subtitle": "Manage table layout",
+  "addTable": "Add Table",
+  "editTable": "Edit Table",
+  "deleteTable": "Delete Table",
+  "deleteTableConfirm": "Delete this table?",
+  "deleteTableDescription": "The table will be deleted and assigned guests will be removed from the table.",
+  "tableDeleted": "Table deleted successfully",
+  "tableUpdated": "Table updated successfully",
+  "tableCreated": "Table created successfully",
+  "seats": "seats",
+  "seat": "seat",
+  "occupied": "occupied",
+  "available": "available",
+  "form": {
+    "name": "Table name",
+    "namePlaceholder": "e.g. Table 1",
+    "type": "Table type",
+    "capacity": "Capacity"
+  },
+  "types": {
+    "round": "Round",
+    "rectangular": "Rectangular",
+    "square": "Square",
+    "oval": "Oval"
+  },
+  "configuration": {
+    "title": "Table Configuration",
+    "subtitle": "Drag tables to position them",
+    "save": "Save positions",
+    "reset": "Reset",
+    "rotate": "Rotate"
+  },
+  "empty": {
+    "title": "No tables",
+    "description": "Start by creating the first table"
+  },
+  "publicConfig": {
+    "title": "Public Configuration",
+    "enterPassword": "Enter password to access",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password...",
+    "access": "Access",
+    "invalidPassword": "Incorrect password",
+    "sessionExpiring": "Session expires in less than an hour",
+    "logout": "Logout"
+  }
+}

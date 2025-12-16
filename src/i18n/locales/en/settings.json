@@ -1,0 +1,61 @@
+{
+  "title": "Settings",
+  "subtitle": "Configure wedding settings",
+  "adminTitle": "Admin Settings",
+  "adminSubtitle": "Manage system settings",
+  "weddingDate": {
+    "title": "Wedding Date",
+    "description": "Set the wedding date for countdown",
+    "currentDate": "Current date",
+    "daysRemaining": "days remaining",
+    "notSet": "Not set"
+  },
+  "password": {
+    "title": "Protection Password",
+    "description": "Password to access public table configuration",
+    "currentPassword": "Current password",
+    "notSet": "Not set",
+    "show": "Show",
+    "hide": "Hide",
+    "newPassword": "New password",
+    "passwordPlaceholder": "Enter password..."
+  },
+  "dietaryPreferences": {
+    "title": "Dietary Preferences",
+    "description": "Manage available dietary preference options",
+    "addNew": "Add new preference",
+    "addPlaceholder": "e.g. Lactose free",
+    "default": "Default",
+    "custom": "Custom",
+    "noCustom": "No custom preferences",
+    "duplicate": "This preference already exists"
+  },
+  "apiKeys": {
+    "title": "API Keys",
+    "description": "Manage API access keys",
+    "addKey": "New API key",
+    "keyName": "Key name",
+    "keyNamePlaceholder": "e.g. n8n Integration",
+    "weddings": "Associated weddings",
+    "weddingsPlaceholder": "Select weddings",
+    "permissions": "Permissions",
+    "lastUsed": "Last used",
+    "never": "Never",
+    "active": "Active",
+    "inactive": "Deactivated",
+    "regenerate": "Regenerate",
+    "documentation": "API Documentation",
+    "copyKey": "Copy key",
+    "keyCopied": "Key copied",
+    "keyCreated": "API key created",
+    "keyCreatedDesc": "The key has been created. Copy it now, it won't be visible again.",
+    "keyRegenerated": "Key regenerated",
+    "keyDeleted": "Key deleted",
+    "deleteKeyConfirm": "Delete this API key?",
+    "deleteKeyDescription": "Integrations using this key will stop working."
+  },
+  "projectInfo": {
+    "title": "Project Information",
+    "projectId": "Project ID"
+  }
+}

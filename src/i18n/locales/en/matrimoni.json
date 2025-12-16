@@ -1,0 +1,37 @@
+{
+  "title": "Weddings",
+  "subtitle": "Manage your weddings",
+  "addWedding": "New Wedding",
+  "editWedding": "Edit Wedding",
+  "deleteWedding": "Delete Wedding",
+  "deleteWeddingConfirm": "Delete this wedding?",
+  "deleteWeddingDescription": "This action cannot be undone. All data associated with the wedding will be deleted.",
+  "coupleName": "Couple Name",
+  "date": "Date",
+  "location": "Location",
+  "guests": "guests",
+  "budget": "Budget",
+  "createdAt": "Created at",
+  "dashboard": "Dashboard",
+  "manageGuests": "Guests",
+  "manage": "Manage",
+  "empty": {
+    "title": "No weddings",
+    "description": "Start by creating the first wedding"
+  },
+  "form": {
+    "coupleName": "Couple name",
+    "coupleNamePlaceholder": "e.g. John and Jane",
+    "weddingDate": "Wedding date",
+    "ceremonyLocation": "Ceremony location",
+    "ceremonyLocationPlaceholder": "e.g. St. Peter's Church",
+    "receptionLocation": "Reception location",
+    "receptionLocationPlaceholder": "e.g. Villa Rosa",
+    "serviceCost": "Service cost (€)",
+    "users": "Users (Couple)",
+    "usersPlaceholder": "Select the couple",
+    "enableMultiRsvp": "Enable multiple RSVP",
+    "webhookUrl": "Webhook URL",
+    "webhookUrlPlaceholder": "https://..."
+  }
+}

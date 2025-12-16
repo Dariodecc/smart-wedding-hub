@@ -1,0 +1,61 @@
+{
+  "title": "Impostazioni",
+  "subtitle": "Configura le impostazioni del matrimonio",
+  "adminTitle": "Impostazioni Admin",
+  "adminSubtitle": "Gestisci le impostazioni di sistema",
+  "weddingDate": {
+    "title": "Data del Matrimonio",
+    "description": "Imposta la data del matrimonio per il countdown",
+    "currentDate": "Data attuale",
+    "daysRemaining": "giorni mancanti",
+    "notSet": "Non impostata"
+  },
+  "password": {
+    "title": "Password Protezione",
+    "description": "Password per accedere alla configurazione pubblica dei tavoli",
+    "currentPassword": "Password attuale",
+    "notSet": "Non impostata",
+    "show": "Mostra",
+    "hide": "Nascondi",
+    "newPassword": "Nuova password",
+    "passwordPlaceholder": "Inserisci password..."
+  },
+  "dietaryPreferences": {
+    "title": "Preferenze Alimentari",
+    "description": "Gestisci le opzioni di preferenze alimentari disponibili",
+    "addNew": "Aggiungi nuova preferenza",
+    "addPlaceholder": "es. Senza lattosio",
+    "default": "Default",
+    "custom": "Personalizzate",
+    "noCustom": "Nessuna preferenza personalizzata",
+    "duplicate": "Questa preferenza esiste già"
+  },
+  "apiKeys": {
+    "title": "Chiavi API",
+    "description": "Gestisci le chiavi di accesso API",
+    "addKey": "Nuova chiave API",
+    "keyName": "Nome chiave",
+    "keyNamePlaceholder": "es. Integrazione n8n",
+    "weddings": "Matrimoni associati",
+    "weddingsPlaceholder": "Seleziona matrimoni",
+    "permissions": "Permessi",
+    "lastUsed": "Ultimo utilizzo",
+    "never": "Mai",
+    "active": "Attiva",
+    "inactive": "Disattivata",
+    "regenerate": "Rigenera",
+    "documentation": "Documentazione API",
+    "copyKey": "Copia chiave",
+    "keyCopied": "Chiave copiata",
+    "keyCreated": "Chiave API creata",
+    "keyCreatedDesc": "La chiave è stata creata. Copiala ora, non sarà più visibile.",
+    "keyRegenerated": "Chiave rigenerata",
+    "keyDeleted": "Chiave eliminata",
+    "deleteKeyConfirm": "Eliminare questa chiave API?",
+    "deleteKeyDescription": "Le integrazioni che usano questa chiave smetteranno di funzionare."
+  },
+  "projectInfo": {
+    "title": "Informazioni Progetto",
+    "projectId": "Project ID"
+  }
+}

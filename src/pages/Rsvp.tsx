@@ -266,7 +266,7 @@ const Rsvp = () => {
               <CardHeader>
                 <CardTitle className="text-2xl">
                   {isFamily 
-                    ? `Conferma presenza - Famiglia ${mainGuest.famiglia?.nome || ''}`
+                    ? `Conferma presenza - Famiglia ${mainGuest.famiglia_nome || ''}`
                     : 'Conferma la tua presenza'
                   }
                 </CardTitle>

@@ -519,6 +519,7 @@ export type Database = {
           cognome: string
           email: string
           famiglia_id: string
+          famiglia_nome: string
           id: string
           is_capo_famiglia: boolean
           nome: string

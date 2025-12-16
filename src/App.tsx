@@ -28,12 +28,10 @@ const queryClient = new QueryClient();
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider>
-    <div className="flex min-h-screen w-full">
-      <AppSidebar />
-      <SidebarInset>
-        {children}
-      </SidebarInset>
-    </div>
+    <AppSidebar />
+    <SidebarInset>
+      {children}
+    </SidebarInset>
   </SidebarProvider>
 );
 

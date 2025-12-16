@@ -88,7 +88,7 @@ export function AppSidebar() {
   const showSposiMenu = !isAdmin || isImpersonating;
 
   return (
-    <Sidebar className={isCollapsed ? "w-14" : "w-60"} collapsible="icon">
+    <Sidebar collapsible="icon">
       <SidebarContent className="w-full">
         {isImpersonating && !isCollapsed && (
           <div className="px-3 py-3 border-b border-sidebar-border">

@@ -65,76 +65,62 @@ export default function ConfigurazioneTavoli() {
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Fetch wedding password using security definer function
-  const { data: wedding, isLoading: weddingLoading } = useQuery({
-    queryKey: ['wedding-public', weddingId],
-    queryFn: async () => {
-      console.log('🔍 Fetching wedding password:', weddingId);
-      
-      const { data, error } = await supabase
-        .rpc('get_wedding_password_public', { _wedding_id: weddingId });
+  const [weddingCoupleName, setWeddingCoupleName] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
-      if (error) {
-        console.error('❌ Error fetching wedding:', error);
-        throw error;
-      }
-      
-      // Function returns array, get first element
-      const weddingData = data?.[0];
-      
-      console.log('✅ Wedding data loaded:', {
-        couple_name: weddingData?.couple_name,
-        password_set: !!weddingData?.password,
-        password_value: weddingData?.password ? `"${weddingData.password}"` : 'null'
-      });
-      
-      return weddingData;
-    },
-    enabled: !!weddingId,
-  });
-
-  // Check password
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  // Check password using secure verification function (doesn't expose password)
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const correctPassword = wedding?.password;
     
-    console.log('🔐 Password check:', {
-      entered: `"${password}"`,
-      correct: correctPassword ? `"${correctPassword}"` : 'null',
-      enteredLength: password.length,
-      correctLength: correctPassword?.length || 0,
-      passwordSet: !!correctPassword
-    });
-
-    if (!correctPassword) {
-      toast.error('Nessuna password configurata per questo matrimonio');
-      console.warn('⚠️ No password set for this wedding');
+    if (!weddingId || !password.trim()) {
+      toast.error('Inserisci una password');
       return;
     }
 
-    // Trim both passwords to avoid whitespace issues
-    if (password.trim() === correctPassword.trim()) {
-      // Save session to localStorage
-      const session = {
-        weddingId,
-        expiresAt: Date.now() + SESSION_DURATION,
-        authenticatedAt: Date.now()
-      };
+    setIsVerifying(true);
+    
+    try {
+      const { data, error } = await supabase
+        .rpc('verify_wedding_password', { 
+          _wedding_id: weddingId,
+          _password_attempt: password.trim()
+        });
+
+      if (error) {
+        console.error('❌ Error verifying password:', error);
+        toast.error('Errore nella verifica della password');
+        return;
+      }
+
+      const result = data?.[0];
       
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-      console.log('💾 Session saved, expires:', new Date(session.expiresAt));
-      
-      setIsAuthenticated(true);
-      toast.success('Accesso consentito - sessione valida per 7 giorni');
-      console.log('✅ Password correct - authenticated');
-    } else {
-      toast.error('Password errata');
-      console.error('❌ Password mismatch:', { 
-        entered: `"${password.trim()}"`, 
-        correct: `"${correctPassword.trim()}"`,
-        match: password.trim() === correctPassword.trim()
-      });
+      if (!result) {
+        toast.error('Matrimonio non trovato');
+        return;
+      }
+
+      setWeddingCoupleName(result.couple_name);
+
+      if (result.verified) {
+        // Save session to localStorage
+        const session = {
+          weddingId,
+          expiresAt: Date.now() + SESSION_DURATION,
+          authenticatedAt: Date.now()
+        };
+        
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+        
+        setIsAuthenticated(true);
+        toast.success('Accesso consentito - sessione valida per 7 giorni');
+      } else {
+        toast.error('Password errata');
+      }
+    } catch (error) {
+      console.error('❌ Password verification error:', error);
+      toast.error('Errore nella verifica');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -545,17 +531,6 @@ export default function ConfigurazioneTavoli() {
     return <Navigate to="/" replace />;
   }
 
-  // Loading state
-  if (weddingLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Caricamento...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Loading tables
   if (isAuthenticated && (tavoliLoading || invitatiLoading)) {
@@ -574,17 +549,6 @@ export default function ConfigurazioneTavoli() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-8">
-          {/* Debug info - visible only in development */}
-          {import.meta.env.DEV && wedding && (
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs font-mono">
-              <p className="font-bold mb-1">🔍 Debug Info:</p>
-              <p>Wedding ID: {weddingId}</p>
-              <p>Password set: {wedding.password ? 'Yes' : 'No'}</p>
-              <p>Password value: {wedding.password ? `"${wedding.password}"` : 'null'}</p>
-              <p>Password length: {wedding.password?.length || 0}</p>
-            </div>
-          )}
-          
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Configurazione Tavoli
@@ -602,12 +566,13 @@ export default function ConfigurazioneTavoli() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isVerifying}
                 className="text-center text-lg"
               />
             </div>
 
-            <Button type="submit" className="w-full">
-              Accedi
+            <Button type="submit" className="w-full" disabled={isVerifying}>
+              {isVerifying ? 'Verifica...' : 'Accedi'}
             </Button>
           </form>
         </Card>
@@ -624,7 +589,7 @@ export default function ConfigurazioneTavoli() {
           <div>
             <h1 className="text-xl font-bold text-gray-900">Disposizione Tavoli</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              {wedding?.couple_name || 'Matrimonio'} • {localTavoli.length} tavoli
+              {weddingCoupleName || 'Matrimonio'} • {localTavoli.length} tavoli
             </p>
           </div>
 

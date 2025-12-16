@@ -501,19 +501,19 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
-      get_wedding_password_public: {
-        Args: { _wedding_id: string }
-        Returns: {
-          couple_name: string
-          password: string
-        }[]
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      verify_wedding_password: {
+        Args: { _password_attempt: string; _wedding_id: string }
+        Returns: {
+          couple_name: string
+          verified: boolean
+        }[]
       }
     }
     Enums: {

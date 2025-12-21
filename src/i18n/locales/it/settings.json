@@ -1,61 +1,135 @@
 {
   "title": "Impostazioni",
   "subtitle": "Configura le impostazioni del matrimonio",
-  "adminTitle": "Impostazioni Admin",
-  "adminSubtitle": "Gestisci le impostazioni di sistema",
-  "weddingDate": {
-    "title": "Data del Matrimonio",
-    "description": "Imposta la data del matrimonio per il countdown",
-    "currentDate": "Data attuale",
-    "daysRemaining": "giorni mancanti",
-    "notSet": "Non impostata"
+  
+  "admin": {
+    "title": "Impostazioni Admin",
+    "subtitle": "Gestisci le chiavi API e la configurazione del progetto"
   },
-  "password": {
-    "title": "Password Protezione",
-    "description": "Password per accedere alla configurazione pubblica dei tavoli",
-    "currentPassword": "Password attuale",
-    "notSet": "Non impostata",
-    "show": "Mostra",
-    "hide": "Nascondi",
-    "newPassword": "Nuova password",
-    "passwordPlaceholder": "Inserisci password..."
+  
+  "projectConfig": {
+    "title": "Configurazione Lovable Cloud",
+    "description": "Credenziali e configurazione del progetto",
+    "projectId": "Project ID"
   },
-  "dietaryPreferences": {
-    "title": "Preferenze Alimentari",
-    "description": "Gestisci le opzioni di preferenze alimentari disponibili",
-    "addNew": "Aggiungi nuova preferenza",
-    "addPlaceholder": "es. Senza lattosio",
-    "default": "Default",
-    "custom": "Personalizzate",
-    "noCustom": "Nessuna preferenza personalizzata",
-    "duplicate": "Questa preferenza esiste già"
-  },
+  
   "apiKeys": {
     "title": "Chiavi API",
-    "description": "Gestisci le chiavi di accesso API",
-    "addKey": "Nuova chiave API",
-    "keyName": "Nome chiave",
-    "keyNamePlaceholder": "es. Integrazione n8n",
-    "weddings": "Matrimoni associati",
-    "weddingsPlaceholder": "Seleziona matrimoni",
-    "permissions": "Permessi",
-    "lastUsed": "Ultimo utilizzo",
-    "never": "Mai",
-    "active": "Attiva",
-    "inactive": "Disattivata",
-    "regenerate": "Rigenera",
+    "description": "Crea e gestisci chiavi API per accedere agli endpoint degli invitati",
     "documentation": "Documentazione API",
-    "copyKey": "Copia chiave",
-    "keyCopied": "Chiave copiata",
-    "keyCreated": "Chiave API creata",
-    "keyCreatedDesc": "La chiave è stata creata. Copiala ora, non sarà più visibile.",
-    "keyRegenerated": "Chiave rigenerata",
-    "keyDeleted": "Chiave eliminata",
-    "deleteKeyConfirm": "Eliminare questa chiave API?",
-    "deleteKeyDescription": "Le integrazioni che usano questa chiave smetteranno di funzionare."
+    "newKey": "Nuova Chiave",
+    "newKeyShort": "Nuova",
+    
+    "table": {
+      "name": "Nome",
+      "apiKey": "Chiave API",
+      "permissions": "Permessi",
+      "weddings": "Matrimoni",
+      "status": "Stato",
+      "lastUsed": "Ultimo Utilizzo",
+      "actions": "Azioni",
+      "never": "Mai",
+      "none": "Nessuno",
+      "active": "Attiva",
+      "inactive": "Disattivata",
+      "activate": "Attiva",
+      "deactivate": "Disattiva"
+    },
+    
+    "empty": {
+      "title": "Nessuna chiave API creata",
+      "button": "Crea la prima chiave"
+    },
+    
+    "loading": "Caricamento...",
+    
+    "copy": {
+      "button": "Copia chiave",
+      "success": "Chiave copiata negli appunti",
+      "disabled": "Il token può essere copiato solo alla creazione. Usa 'Rigenera' per ottenere un nuovo token.",
+      "valueCopied": "Valore copiato negli appunti"
+    },
+    
+    "createDialog": {
+      "title": "Crea Nuova Chiave API",
+      "description": "La chiave API sarà generata automaticamente e potrà essere usata per accedere agli endpoint degli invitati",
+      "keyName": {
+        "label": "Nome Chiave",
+        "placeholder": "Es: Production API Key",
+        "description": "Un nome descrittivo per identificare questa chiave"
+      },
+      "permissions": {
+        "label": "Permessi",
+        "required": "*",
+        "placeholder": "Seleziona i permessi...",
+        "search": "Cerca permessi...",
+        "description": "Seleziona quali operazioni potrà eseguire questa chiave",
+        "error": "Seleziona almeno un permesso"
+      },
+      "weddings": {
+        "label": "Matrimoni",
+        "required": "*",
+        "placeholder": "Seleziona i matrimoni...",
+        "description": "Questa chiave avrà accesso solo ai matrimoni selezionati"
+      },
+      "note": {
+        "title": "Nota Importante",
+        "description": "La chiave API sarà mostrata una sola volta dopo la creazione. Assicurati di copiarla e conservarla in un luogo sicuro."
+      },
+      "buttons": {
+        "cancel": "Annulla",
+        "create": "Crea Chiave API"
+      }
+    },
+    
+    "successDialog": {
+      "title": "Chiave API creata!",
+      "warning": "Copia questa chiave ora. Non sarà più visibile dopo aver chiuso.",
+      "label": "La tua chiave API",
+      "copyButton": "Copia chiave",
+      "copied": "Copiato!",
+      "closeButton": "Ho copiato la chiave"
+    },
+    
+    "regenerateDialog": {
+      "title": "Rigenera Token",
+      "description": "Stai per generare un nuovo token. Il token attuale smetterà di funzionare immediatamente.",
+      "buttons": {
+        "cancel": "Annulla",
+        "regenerate": "Rigenera Token",
+        "regenerating": "Rigenerazione..."
+      }
+    },
+    
+    "editPermissionsDialog": {
+      "title": "Modifica Permessi",
+      "description": "Seleziona i permessi per questa chiave API",
+      "buttons": {
+        "cancel": "Annulla",
+        "save": "Salva Permessi",
+        "saving": "Salvataggio..."
+      }
+    },
+    
+    "deleteConfirm": "Sei sicuro di voler eliminare questa chiave API? Questa azione non può essere annullata."
   },
-  "projectInfo": {
-    "title": "Informazioni Progetto",
-    "projectId": "Project ID"
+  
+  "toast": {
+    "success": "Successo",
+    "error": "Errore",
+    "keyCreated": "Chiave API creata con successo",
+    "keyDeleted": "Chiave API eliminata",
+    "keyActivated": "Chiave API attivata",
+    "keyDeactivated": "Chiave API disattivata",
+    "permissionsUpdated": "Permessi aggiornati con successo",
+    "errorCreating": "Errore nella creazione della chiave API",
+    "errorDeleting": "Errore nell'eliminazione della chiave API",
+    "errorUpdating": "Errore nell'aggiornamento della chiave API",
+    "errorRegenerating": "Errore nella rigenerazione della chiave API",
+    "errorPermissions": "Errore nell'aggiornamento dei permessi",
+    "errorCopy": "Errore nella copia",
+    "enterKeyName": "Inserisci un nome per la chiave API",
+    "selectWedding": "Seleziona almeno un matrimonio",
+    "selectPermission": "Seleziona almeno un permesso"
   }
 }

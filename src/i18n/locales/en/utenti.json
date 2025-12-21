@@ -1,55 +1,109 @@
 {
   "title": "Users",
   "subtitle": "Manage system users",
-  "addUser": "Add User",
+  "addUser": "New User",
+  "addUserShort": "New",
   "editUser": "Edit User",
+  "createUser": "Create New User",
+  "createUserDescription": "Enter the information to create a new user",
   "deleteUser": "Delete User",
-  "deleteUserConfirm": "Delete this user?",
+  "deleteUserConfirm": "Are you sure you want to delete user",
   "deleteUserDescription": "This action cannot be undone.",
-  "userDeleted": "User deleted successfully",
-  "userUpdated": "User updated successfully",
-  "userCreated": "User created successfully",
+  
   "stats": {
-    "total": "Total Users",
-    "admin": "Admin",
-    "sposi": "Couples",
-    "expired": "Deactivated"
+    "total": {
+      "title": "Total Users",
+      "description": "Registered users"
+    },
+    "admin": {
+      "title": "Admins",
+      "description": "Administrators"
+    },
+    "sposi": {
+      "title": "Couples",
+      "description": "Wedding couples"
+    },
+    "disabled": {
+      "title": "Disabled",
+      "description": "Disabled users"
+    }
   },
-  "form": {
-    "email": "Email",
-    "emailPlaceholder": "example@email.com",
-    "password": "Password",
-    "generatePassword": "Generate password",
-    "role": "Role",
-    "selectRole": "Select role",
+  
+  "list": {
+    "title": "Users List",
+    "search": {
+      "placeholder": "Search by email...",
+      "noResults": "No users found"
+    },
+    "filter": {
+      "wedding": "Filter by wedding",
+      "allWeddings": "All weddings",
+      "noWedding": "No wedding",
+      "searchWedding": "Search wedding...",
+      "clearFilters": "Clear filters"
+    },
+    "you": "You",
+    "disabled": "Disabled",
     "wedding": "Wedding",
-    "selectWedding": "Select wedding",
-    "isActive": "User active",
-    "activate": "Activate user",
-    "deactivate": "Deactivate user"
+    "loading": "Loading...",
+    "empty": "No users found"
   },
-  "roles": {
-    "admin": "Admin",
-    "sposi": "Couple"
+  
+  "form": {
+    "email": {
+      "label": "Email",
+      "required": "*"
+    },
+    "password": {
+      "label": "Password",
+      "required": "*",
+      "leaveEmpty": "Password (leave empty to keep current)",
+      "generate": "Generate"
+    },
+    "role": {
+      "label": "Role",
+      "required": "*",
+      "admin": "Admin",
+      "sposi": "Couple"
+    },
+    "wedding": {
+      "label": "Wedding",
+      "placeholder": "Select wedding",
+      "search": "Search wedding..."
+    },
+    "status": {
+      "label": "User Status",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "cannotDisableSelf": "You cannot disable your own account",
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create User",
+      "save": "Save Changes",
+      "delete": "Delete",
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "deleting": "Deleting..."
+    }
   },
-  "status": {
-    "active": "Active",
-    "inactive": "Deactivated"
+  
+  "toast": {
+    "created": "User created successfully",
+    "updated": "User updated successfully",
+    "deleted": "User deleted successfully",
+    "passwordGenerated": "Password generated",
+    "error": "Error",
+    "errorCreating": "Error creating user",
+    "errorUpdating": "Error updating user",
+    "errorDeleting": "Error deleting user",
+    "userExists": "User already exists",
+    "userExistsDescription": "A user with this email already exists in the system",
+    "sessionExpired": "Session expired. Please log in again."
   },
-  "errors": {
-    "emailExists": "User already registered",
-    "cannotDeleteSelf": "You cannot delete your own account",
-    "cannotDeactivateSelf": "You cannot deactivate your own account"
-  },
-  "empty": {
-    "title": "No users",
-    "description": "Start by creating the first user"
-  },
-  "table": {
-    "email": "EMAIL",
-    "role": "ROLE",
-    "wedding": "WEDDING",
-    "status": "STATUS",
-    "createdAt": "CREATED AT"
+  
+  "deleteDialog": {
+    "title": "Delete User",
+    "cannotDeleteSelf": "You cannot delete your own account"
   }
 }

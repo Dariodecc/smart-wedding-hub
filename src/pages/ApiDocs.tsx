@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,100 +23,119 @@ import {
   ArrowRight,
   Terminal,
   FileJson,
-  Globe
+  Globe,
+  ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from 'react-i18next';
 
 const BASE_URL = "https://ihjhxtwgbrqabogysdsa.supabase.co/functions/v1";
 
-const CodeBlock = ({ code, language = "bash" }: { code: string; language?: string }) => {
-  const [copied, setCopied] = useState(false);
+const ApiDocs = () => {
+  const { t } = useTranslation('api');
+  const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code);
-    setCopied(true);
-    toast({ title: "Copiato negli appunti" });
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const CodeBlock = ({ code, language = "bash" }: { code: string; language?: string }) => {
+    const [copied, setCopied] = useState(false);
 
-  return (
-    <div className="relative group">
-      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
-        <code>{code}</code>
-      </pre>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 bg-gray-800 hover:bg-gray-700 text-gray-300"
-        onClick={handleCopy}
-      >
-        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-      </Button>
-    </div>
-  );
-};
+    const handleCopy = async () => {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      toast({ title: t('copied') });
+      setTimeout(() => setCopied(false), 2000);
+    };
 
-const MethodBadge = ({ method }: { method: string }) => {
-  const colors: Record<string, string> = {
-    GET: "bg-green-100 text-green-800 border-green-200",
-    POST: "bg-blue-100 text-blue-800 border-blue-200",
-    PUT: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    DELETE: "bg-red-100 text-red-800 border-red-200",
-  };
-
-  return (
-    <Badge className={`${colors[method] || "bg-gray-100 text-gray-800"} font-mono`}>
-      {method}
-    </Badge>
-  );
-};
-
-const EndpointCard = ({ 
-  method, 
-  endpoint, 
-  title, 
-  description,
-  children 
-}: { 
-  method: string;
-  endpoint: string;
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) => (
-  <Card className="border-gray-200">
-    <CardHeader>
-      <div className="flex items-center gap-3 mb-2">
-        <MethodBadge method={method} />
-        <code className="text-sm bg-gray-100 px-2 py-1 rounded">{endpoint}</code>
+    return (
+      <div className="relative group">
+        <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+          <code>{code}</code>
+        </pre>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 bg-gray-800 hover:bg-gray-700 text-gray-300"
+          onClick={handleCopy}
+        >
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        </Button>
       </div>
-      <CardTitle className="text-lg">{title}</CardTitle>
-      <CardDescription>{description}</CardDescription>
-    </CardHeader>
-    <CardContent>{children}</CardContent>
-  </Card>
-);
+    );
+  };
 
-const ApiDocs = () => {
+  const MethodBadge = ({ method }: { method: string }) => {
+    const colors: Record<string, string> = {
+      GET: "bg-green-100 text-green-800 border-green-200",
+      POST: "bg-blue-100 text-blue-800 border-blue-200",
+      PUT: "bg-yellow-100 text-yellow-800 border-yellow-200",
+      DELETE: "bg-red-100 text-red-800 border-red-200",
+    };
+
+    return (
+      <Badge className={`${colors[method] || "bg-gray-100 text-gray-800"} font-mono`}>
+        {method}
+      </Badge>
+    );
+  };
+
+  const EndpointCard = ({ 
+    method, 
+    endpoint, 
+    title, 
+    description,
+    children 
+  }: { 
+    method: string;
+    endpoint: string;
+    title: string;
+    description: string;
+    children: React.ReactNode;
+  }) => (
+    <Card className="border-gray-200">
+      <CardHeader>
+        <div className="flex items-center gap-3 mb-2">
+          <MethodBadge method={method} />
+          <code className="text-sm bg-gray-100 px-2 py-1 rounded">{endpoint}</code>
+        </div>
+        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-4">
-            <SidebarTrigger className="lg:hidden" />
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Documentazione API</h1>
-              <p className="text-sm text-gray-500">Guida completa per l'integrazione con le API</p>
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <SidebarTrigger className="text-gray-600 hover:text-gray-900 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
+                {t('title')}
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
+                {t('subtitle')}
+              </p>
             </div>
           </div>
-          <Badge variant="outline" className="hidden sm:flex items-center gap-1">
-            <Globe className="h-3 w-3" />
-            v2.0
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="hidden sm:flex items-center gap-1">
+              <Globe className="h-3 w-3" />
+              {t('version')}
+            </Badge>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/impostazioni-admin')}
+              className="shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">{t('backToSettings')}</span>
+            </Button>
+          </div>
         </div>
-      </header>
+      </div>
 
       <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Overview */}

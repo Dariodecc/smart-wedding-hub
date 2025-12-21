@@ -1,0 +1,193 @@
+{
+  "title": "Documentazione API",
+  "subtitle": "Guida completa per l'integrazione con le API",
+  "version": "v2.0",
+  "backToSettings": "Impostazioni",
+  "copied": "Copiato negli appunti",
+  
+  "overview": {
+    "title": "Panoramica",
+    "description": "Le API di Matrimonio SMART forniscono accesso sicuro ai dati degli invitati con autenticazione tramite API Key. Supportano operazioni CRUD su diverse risorse e integrazione con webhook Twilio per il tracciamento dei messaggi WhatsApp.",
+    "restful": "RESTful",
+    "restfulDesc": "Endpoints standard",
+    "secure": "Sicuro",
+    "secureDesc": "API Key + Hash SHA-256",
+    "granularPerms": "Permessi Granulari",
+    "granularPermsDesc": "Per risorsa e operazione",
+    "webhook": "Webhook",
+    "webhookDesc": "Integrazione Twilio"
+  },
+  
+  "baseUrl": {
+    "title": "Base URL",
+    "httpsNote": "Tutte le richieste devono utilizzare HTTPS."
+  },
+  
+  "auth": {
+    "title": "Autenticazione",
+    "description": "Tutte le richieste richiedono autenticazione tramite Bearer Token",
+    "important": "Importante",
+    "tokenNote": "Il token API è visibile solo al momento della creazione. Conservalo in modo sicuro.",
+    "header": "Header di autenticazione",
+    "curlExample": "Esempio cURL",
+    "configTitle": "Configurazione API Key",
+    "configSteps": {
+      "step1": "Vai su <strong>Impostazioni Admin</strong> → <strong>API Keys</strong>",
+      "step2": "Clicca <strong>Nuova Chiave</strong>",
+      "step3": "Inserisci un nome descrittivo",
+      "step4": "Seleziona i matrimoni a cui la chiave avrà accesso",
+      "step5": "Configura i permessi per ogni risorsa (lettura/scrittura)",
+      "step6": "Copia e conserva il token generato"
+    }
+  },
+  
+  "permissionsSection": {
+    "title": "Sistema di Permessi",
+    "description": "Ogni API Key può avere permessi granulari per risorsa",
+    "resource": "Risorsa",
+    "resourceDesc": "Descrizione",
+    "read": "Lettura",
+    "write": "Scrittura",
+    "resources": {
+      "invitati": "Gestione invitati",
+      "famiglie": "Gestione famiglie",
+      "gruppi": "Gestione gruppi",
+      "tavoli": "Gestione tavoli",
+      "weddings": "Informazioni matrimonio",
+      "preferenze_alimentari_custom": "Preferenze alimentari personalizzate"
+    }
+  },
+  
+  "endpoints": {
+    "title": "Endpoints",
+    "tabs": {
+      "invitati": "Invitati",
+      "famiglie": "Famiglie",
+      "gruppi": "Gruppi",
+      "tavoli": "Tavoli",
+      "webhook": "Webhook"
+    },
+    "invitati": {
+      "list": {
+        "title": "Lista Invitati",
+        "description": "Recupera tutti gli invitati. Filtra automaticamente per i matrimoni autorizzati.",
+        "queryParams": "Query Parameters (opzionali)",
+        "params": {
+          "wedding_id": "Filtra per matrimonio specifico",
+          "limit": "Numero massimo di risultati (default: 100)",
+          "offset": "Offset per paginazione"
+        },
+        "response": "Response (200 OK)"
+      },
+      "detail": {
+        "title": "Dettaglio Invitato",
+        "description": "Recupera i dettagli di un singolo invitato."
+      },
+      "create": {
+        "title": "Crea Invitato",
+        "description": "Crea un nuovo invitato. Richiede permesso di scrittura."
+      },
+      "update": {
+        "title": "Aggiorna Invitato",
+        "description": "Aggiorna i dati di un invitato esistente."
+      },
+      "delete": {
+        "title": "Elimina Invitato",
+        "description": "Elimina un invitato. Richiede permesso di scrittura."
+      }
+    },
+    "famiglie": {
+      "list": {
+        "title": "Lista Famiglie",
+        "description": "Recupera tutte le famiglie."
+      },
+      "create": {
+        "title": "Crea Famiglia",
+        "description": "Crea una nuova famiglia."
+      }
+    },
+    "gruppi": {
+      "list": {
+        "title": "Lista Gruppi",
+        "description": "Recupera tutti i gruppi."
+      },
+      "create": {
+        "title": "Crea Gruppo",
+        "description": "Crea un nuovo gruppo."
+      }
+    },
+    "tavoli": {
+      "list": {
+        "title": "Lista Tavoli",
+        "description": "Recupera tutti i tavoli."
+      },
+      "create": {
+        "title": "Crea Tavolo",
+        "description": "Crea un nuovo tavolo."
+      }
+    },
+    "webhook": {
+      "title": "Webhook Twilio per WhatsApp",
+      "description": "Ricevi aggiornamenti sullo stato dei messaggi WhatsApp inviati tramite Twilio",
+      "configTitle": "Configurazione Twilio",
+      "step1": "Vai su <strong>Twilio Console</strong> → <strong>Messaging</strong> → <strong>Settings</strong>",
+      "step2": "Imposta <strong>Status Callback URL</strong>:",
+      "step3": "Aggiungi l'header <code>x-api-key</code> con il tuo token",
+      "handler": {
+        "title": "Webhook Handler",
+        "description": "Endpoint per ricevere gli aggiornamenti di stato da Twilio.",
+        "note": "Twilio invia automaticamente le notifiche a questo endpoint quando lo stato di un messaggio cambia.",
+        "fieldsTitle": "Campi tracciati",
+        "fields": {
+          "status": "queued, sent, delivered, read, failed",
+          "price": "Costo del messaggio",
+          "sid": "ID univoco Twilio",
+          "dateSent": "Data invio"
+        }
+      }
+    }
+  },
+  
+  "errors": {
+    "title": "Risposte di Errore",
+    "format": "Formato errore",
+    "codes": {
+      "400": { "title": "Bad Request", "desc": "Parametri mancanti o non validi" },
+      "401": { "title": "Unauthorized", "desc": "Token API mancante o non valido" },
+      "403": { "title": "Forbidden", "desc": "Permessi insufficienti per l'operazione" },
+      "404": { "title": "Not Found", "desc": "Risorsa non trovata" },
+      "405": { "title": "Method Not Allowed", "desc": "Metodo HTTP non supportato" },
+      "500": { "title": "Internal Server Error", "desc": "Errore interno del server" }
+    }
+  },
+  
+  "examples": {
+    "title": "Esempi di Integrazione",
+    "tabs": {
+      "python": "Python",
+      "nodejs": "Node.js",
+      "n8n": "n8n"
+    },
+    "n8nConfig": "Configura l'autenticazione in n8n usando <strong>Header Auth</strong>:"
+  },
+  
+  "security": {
+    "title": "Best Practices di Sicurezza",
+    "practices": {
+      "https": { "title": "Usa sempre HTTPS", "desc": "Tutte le chiamate API devono utilizzare HTTPS" },
+      "rotate": { "title": "Ruota le chiavi", "desc": "Rigenera periodicamente le API key" },
+      "minPerms": { "title": "Permessi minimi", "desc": "Assegna solo i permessi strettamente necessari" },
+      "monitor": { "title": "Monitora l'uso", "desc": "Controlla regolarmente last_used_at delle chiavi" },
+      "noShare": { "title": "Non condividere", "desc": "Non esporre le API key nel codice client" },
+      "limitWeddings": { "title": "Limita i matrimoni", "desc": "Associa ogni chiave solo ai matrimoni necessari" }
+    }
+  },
+  
+  "rateLimit": {
+    "title": "Rate Limiting",
+    "description": "Al momento non ci sono limiti rigidi sulle richieste API. Linee guida consigliate:",
+    "polling": "Polling status",
+    "bulk": "Bulk updates",
+    "webhooks": "Webhooks (Twilio)"
+  }
+}

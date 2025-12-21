@@ -34,8 +34,9 @@ import { Plus, Key, Copy, Trash2, Check, Database, Book, X, Search, CheckCircle2
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { API_PERMISSIONS, generateApiToken, hashToken, createTokenPreview } from '@/utils/api-tokens'
+import { useTranslation } from 'react-i18next'
+import { SidebarTrigger } from '@/components/ui/sidebar'
 
 interface ApiKeyPermission {
   resource: string
@@ -59,6 +60,7 @@ export default function ImpostazioniAdmin() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation('settings')
   
   const [showDialog, setShowDialog] = useState(false)
   const [keyName, setKeyName] = useState('')
@@ -142,17 +144,17 @@ export default function ImpostazioniAdmin() {
   // Create API key
   const handleCreateApiKey = async () => {
     if (!keyName.trim()) {
-      toast({ title: "Errore", description: "Inserisci un nome per la chiave API", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.enterKeyName'), variant: "destructive" })
       return
     }
 
     if (selectedWeddings.length === 0) {
-      toast({ title: "Errore", description: "Seleziona almeno un matrimonio", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.selectWedding'), variant: "destructive" })
       return
     }
 
     if (selectedPermissions.length === 0) {
-      toast({ title: "Errore", description: "Seleziona almeno un permesso", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.selectPermission'), variant: "destructive" })
       return
     }
 
@@ -221,7 +223,7 @@ export default function ImpostazioniAdmin() {
       setShowSuccessModal(true)
     } catch (error) {
       console.error('Error creating API key:', error)
-      toast({ title: "Errore", description: "Errore nella creazione della chiave API", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.errorCreating'), variant: "destructive" })
     }
   }
 
@@ -231,9 +233,9 @@ export default function ImpostazioniAdmin() {
     try {
       await navigator.clipboard.writeText(createdToken)
       setTokenCopied(true)
-      toast({ title: "Successo", description: "Chiave copiata negli appunti" })
+      toast({ title: t('toast.success'), description: t('apiKeys.copy.success') })
     } catch (error) {
-      toast({ title: "Errore", description: "Errore nella copia della chiave", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.errorCopy'), variant: "destructive" })
     }
   }
 
@@ -277,7 +279,7 @@ export default function ImpostazioniAdmin() {
       setShowSuccessModal(true)
     } catch (error) {
       console.error('Error regenerating API key:', error)
-      toast({ title: "Errore", description: "Errore nella rigenerazione della chiave API", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.errorRegenerating'), variant: "destructive" })
     } finally {
       setIsRegenerating(false)
     }
@@ -298,7 +300,7 @@ export default function ImpostazioniAdmin() {
     if (!editingKey) return
     
     if (editPermissions.length === 0) {
-      toast({ title: "Errore", description: "Seleziona almeno un permesso", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.selectPermission'), variant: "destructive" })
       return
     }
 
@@ -333,17 +335,17 @@ export default function ImpostazioniAdmin() {
       setShowEditPermissions(false)
       setEditingKey(null)
       setEditPermissions([])
-      toast({ title: "Successo", description: "Permessi aggiornati con successo" })
+      toast({ title: t('toast.success'), description: t('toast.permissionsUpdated') })
     } catch (error) {
       console.error('Error updating permissions:', error)
-      toast({ title: "Errore", description: "Errore nell'aggiornamento dei permessi", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.errorPermissions'), variant: "destructive" })
     } finally {
       setIsSavingPermissions(false)
     }
   }
 
   const handleDeleteApiKey = async (keyId: string) => {
-    if (!confirm('Sei sicuro di voler eliminare questa chiave API? Questa azione non può essere annullata.')) {
+    if (!confirm(t('apiKeys.deleteConfirm'))) {
       return
     }
 
@@ -356,10 +358,10 @@ export default function ImpostazioniAdmin() {
       if (error) throw error
 
       await queryClient.invalidateQueries({ queryKey: ['api-keys'] })
-      toast({ title: "Successo", description: "Chiave API eliminata" })
+      toast({ title: t('toast.success'), description: t('toast.keyDeleted') })
     } catch (error) {
       console.error('Error deleting API key:', error)
-      toast({ title: "Errore", description: "Errore nell'eliminazione della chiave API", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.errorDeleting'), variant: "destructive" })
     }
   }
 
@@ -375,12 +377,12 @@ export default function ImpostazioniAdmin() {
 
       await queryClient.invalidateQueries({ queryKey: ['api-keys'] })
       toast({ 
-        title: "Successo", 
-        description: currentStatus ? 'Chiave API disattivata' : 'Chiave API attivata' 
+        title: t('toast.success'), 
+        description: currentStatus ? t('toast.keyDeactivated') : t('toast.keyActivated')
       })
     } catch (error) {
       console.error('Error toggling API key:', error)
-      toast({ title: "Errore", description: "Errore nell'aggiornamento della chiave API", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.errorUpdating'), variant: "destructive" })
     }
   }
 
@@ -389,10 +391,10 @@ export default function ImpostazioniAdmin() {
     try {
       await navigator.clipboard.writeText(apiKey)
       setCopiedKey(keyId)
-      toast({ title: "Successo", description: "Chiave copiata negli appunti" })
+      toast({ title: t('toast.success'), description: t('apiKeys.copy.success') })
       setTimeout(() => setCopiedKey(null), 2000)
     } catch (error) {
-      toast({ title: "Errore", description: "Errore nella copia della chiave", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.errorCopy'), variant: "destructive" })
     }
   }
 
@@ -401,10 +403,10 @@ export default function ImpostazioniAdmin() {
     try {
       await navigator.clipboard.writeText(value)
       setCopiedConfig(key)
-      toast({ title: "Successo", description: "Valore copiato negli appunti" })
+      toast({ title: t('toast.success'), description: t('apiKeys.copy.valueCopied') })
       setTimeout(() => setCopiedConfig(null), 2000)
     } catch (error) {
-      toast({ title: "Errore", description: "Errore nella copia", variant: "destructive" })
+      toast({ title: t('toast.error'), description: t('toast.errorCopy'), variant: "destructive" })
     }
   }
 
@@ -422,299 +424,323 @@ export default function ImpostazioniAdmin() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Impostazioni Admin</h1>
-        <p className="text-muted-foreground">Gestisci le chiavi API e la configurazione del progetto</p>
+    <div className="min-h-screen bg-background">
+      {/* Page Header */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center px-4">
+          <div className="flex items-center gap-4">
+            <SidebarTrigger className="shrink-0" />
+            <div className="flex flex-col">
+              <h1 className="text-lg font-semibold tracking-tight">
+                {t('admin.title')}
+              </h1>
+              <p className="text-sm text-muted-foreground hidden sm:block">
+                {t('admin.subtitle')}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Supabase Configuration Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Database className="h-5 w-5 text-primary" />
-            <div>
-              <CardTitle>Configurazione Lovable Cloud</CardTitle>
-              <CardDescription className="mt-2">
-                Credenziali e configurazione del progetto
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent>
-          <div className="space-y-4">
-            {/* Project ID */}
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Project ID
-              </Label>
+      {/* Page Content */}
+      <div className="container mx-auto py-8 px-4 max-w-6xl">
+        <div className="space-y-6">
+          {/* Supabase Configuration Section */}
+          <Card>
+            <CardHeader>
               <div className="flex items-center gap-2">
-                <code className="flex-1 text-sm bg-muted px-3 py-2 rounded font-mono border">
-                  {supabaseProjectId}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => copyConfigToClipboard(supabaseProjectId, 'project-id')}
-                >
-                  {copiedConfig === 'project-id' ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
+                <Database className="h-5 w-5 text-primary" />
+                <div>
+                  <CardTitle>{t('projectConfig.title')}</CardTitle>
+                  <CardDescription className="mt-2">
+                    {t('projectConfig.description')}
+                  </CardDescription>
+                </div>
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardHeader>
 
-      {/* API Keys Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5 text-primary" />
-                Chiavi API
-              </CardTitle>
-              <CardDescription className="mt-2">
-                Crea e gestisci chiavi API per accedere agli endpoint degli invitati
-              </CardDescription>
-            </div>
-            <div className="flex flex-col-reverse sm:flex-row gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/api')}
-              >
-                <Book className="h-4 w-4 mr-2" />
-                Documentazione API
-              </Button>
-              <Button onClick={() => setShowDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nuova Chiave
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Project ID */}
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    {t('projectConfig.projectId')}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-sm bg-muted px-3 py-2 rounded font-mono border">
+                      {supabaseProjectId}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyConfigToClipboard(supabaseProjectId, 'project-id')}
+                    >
+                      {copiedConfig === 'project-id' ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Caricamento...</div>
-          ) : apiKeys.length === 0 ? (
-            <div className="text-center py-12">
-              <Key className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">Nessuna chiave API creata</p>
-              <Button onClick={() => setShowDialog(true)} variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Crea la prima chiave
-              </Button>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Chiave API</TableHead>
-                    <TableHead className="hidden md:table-cell">Permessi</TableHead>
-                    <TableHead>Matrimoni</TableHead>
-                    <TableHead>Stato</TableHead>
-                    <TableHead className="hidden lg:table-cell">Ultimo Utilizzo</TableHead>
-                    <TableHead>Azioni</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {apiKeys.map((key) => (
-                    <TableRow key={key.id}>
-                      <TableCell className="font-medium">{key.key_name}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                            {key.api_key_preview || (key.api_key 
-                              ? `${key.api_key.substring(0, 8)}...${key.api_key.substring(key.api_key.length - 6)}`
-                              : 'N/A'
-                            )}
-                          </code>
-                          {/* Legacy keys: show copy button */}
-                          {key.api_key ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(key.api_key!, key.id)}
-                              title="Copia chiave"
-                            >
-                              {copiedKey === key.id ? (
-                                <Check className="h-4 w-4 text-green-600" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          ) : (
-                            /* New keys (hash only): disabled copy with tooltip */
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled
-                              title="Il token può essere copiato solo alla creazione. Usa 'Rigenera' per ottenere un nuovo token."
-                              className="opacity-50 cursor-not-allowed"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                      {/* Permissions column - hidden on mobile */}
-                      <TableCell className="hidden md:table-cell">
-                        {(() => {
-                          const perms = key.permissions || []
-                          if (perms.length === 0) {
-                            return <span className="text-xs text-muted-foreground">Nessuno</span>
-                          }
-                          
-                          const formatPerm = (p: ApiKeyPermission) => {
-                            const resourceMap: Record<string, string> = {
-                              'famiglie': 'Fam',
-                              'gruppi': 'Grp',
-                              'invitati': 'Inv',
-                              'preferenze_alimentari_custom': 'Pref',
-                              'tavoli': 'Tav',
-                              'weddings': 'Wed'
-                            }
-                            const abbr = resourceMap[p.resource] || p.resource.substring(0, 3)
-                            const permAbbr = p.permission === 'read' ? 'R' : 'W'
-                            return `${abbr} ${permAbbr}`
-                          }
-                          
-                          const displayPerms = perms.slice(0, 3)
-                          const remainingCount = perms.length - 3
-                          
-                          return (
+          {/* API Keys Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Key className="h-5 w-5 text-primary" />
+                    {t('apiKeys.title')}
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    {t('apiKeys.description')}
+                  </CardDescription>
+                </div>
+                <div className="flex flex-col-reverse sm:flex-row gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/api')}
+                  >
+                    <Book className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">{t('apiKeys.documentation')}</span>
+                  </Button>
+                  <Button onClick={() => setShowDialog(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">{t('apiKeys.newKey')}</span>
+                    <span className="sm:hidden">{t('apiKeys.newKeyShort')}</span>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8 text-muted-foreground">{t('apiKeys.loading')}</div>
+              ) : apiKeys.length === 0 ? (
+                <div className="text-center py-12">
+                  <Key className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-4">{t('apiKeys.empty.title')}</p>
+                  <Button onClick={() => setShowDialog(true)} variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('apiKeys.empty.button')}
+                  </Button>
+                </div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t('apiKeys.table.name')}</TableHead>
+                        <TableHead>{t('apiKeys.table.apiKey')}</TableHead>
+                        <TableHead className="hidden md:table-cell">{t('apiKeys.table.permissions')}</TableHead>
+                        <TableHead>{t('apiKeys.table.weddings')}</TableHead>
+                        <TableHead>{t('apiKeys.table.status')}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{t('apiKeys.table.lastUsed')}</TableHead>
+                        <TableHead>{t('apiKeys.table.actions')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {apiKeys.map((key) => (
+                        <TableRow key={key.id}>
+                          <TableCell className="font-medium">{key.key_name}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+                                {key.api_key_preview || (key.api_key 
+                                  ? `${key.api_key.substring(0, 8)}...${key.api_key.substring(key.api_key.length - 6)}`
+                                  : 'N/A'
+                                )}
+                              </code>
+                              {key.api_key ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => copyToClipboard(key.api_key!, key.id)}
+                                  title={t('apiKeys.copy.button')}
+                                >
+                                  {copiedKey === key.id ? (
+                                    <Check className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              ) : key.api_key_preview ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(key.api_key_preview!)
+                                    setCopiedKey(key.id)
+                                    toast({ title: t('toast.success'), description: t('apiKeys.copy.valueCopied') })
+                                    setTimeout(() => setCopiedKey(null), 2000)
+                                  }}
+                                  title={t('apiKeys.copy.button')}
+                                >
+                                  {copiedKey === key.id ? (
+                                    <Check className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              ) : null}
+                            </div>
+                          </TableCell>
+                          {/* Permissions column - hidden on mobile */}
+                          <TableCell className="hidden md:table-cell">
+                            {(() => {
+                              const perms = key.permissions || []
+                              if (perms.length === 0) {
+                                return <span className="text-xs text-muted-foreground">{t('apiKeys.table.none')}</span>
+                              }
+                              
+                              const formatPerm = (p: ApiKeyPermission) => {
+                                const resourceMap: Record<string, string> = {
+                                  'famiglie': 'Fam',
+                                  'gruppi': 'Grp',
+                                  'invitati': 'Inv',
+                                  'preferenze_alimentari_custom': 'Pref',
+                                  'tavoli': 'Tav',
+                                  'weddings': 'Wed'
+                                }
+                                const abbr = resourceMap[p.resource] || p.resource.substring(0, 3)
+                                const permAbbr = p.permission === 'read' ? 'R' : 'W'
+                                return `${abbr} ${permAbbr}`
+                              }
+                              
+                              const displayPerms = perms.slice(0, 3)
+                              const remainingCount = perms.length - 3
+                              
+                              return (
+                                <div className="flex flex-wrap gap-1">
+                                  {displayPerms.map((perm, idx) => (
+                                    <Badge
+                                      key={`${perm.resource}-${perm.permission}-${idx}`}
+                                      variant="outline"
+                                      className={`text-xs ${
+                                        perm.permission === 'read'
+                                          ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
+                                          : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
+                                      }`}
+                                    >
+                                      {formatPerm(perm)}
+                                    </Badge>
+                                  ))}
+                                  {remainingCount > 0 && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs bg-muted"
+                                      title={perms.slice(3).map(p => `${p.resource}: ${p.permission}`).join(', ')}
+                                    >
+                                      +{remainingCount}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )
+                            })()}
+                          </TableCell>
+                          <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {displayPerms.map((perm, idx) => (
-                                <Badge
-                                  key={`${perm.resource}-${perm.permission}-${idx}`}
-                                  variant="outline"
-                                  className={`text-xs ${
-                                    perm.permission === 'read'
-                                      ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
-                                      : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
-                                  }`}
-                                >
-                                  {formatPerm(perm)}
-                                </Badge>
-                              ))}
-                              {remainingCount > 0 && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs bg-muted"
-                                  title={perms.slice(3).map(p => `${p.resource}: ${p.permission}`).join(', ')}
-                                >
-                                  +{remainingCount}
-                                </Badge>
+                              {key.weddings.length === 0 ? (
+                                <span className="text-xs text-muted-foreground">{t('apiKeys.table.none')}</span>
+                              ) : (
+                                key.weddings.map((wedding) => (
+                                  <Badge key={wedding.id} variant="secondary" className="text-xs">
+                                    {wedding.couple_name}
+                                  </Badge>
+                                ))
                               )}
                             </div>
-                          )
-                        })()}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {key.weddings.length === 0 ? (
-                            <span className="text-xs text-muted-foreground">Nessuno</span>
-                          ) : (
-                            key.weddings.map((wedding) => (
-                              <Badge key={wedding.id} variant="secondary" className="text-xs">
-                                {wedding.couple_name}
-                              </Badge>
-                            ))
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={key.is_active ? 'default' : 'secondary'}>
-                          {key.is_active ? 'Attiva' : 'Disattivata'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
-                        {key.last_used_at 
-                          ? new Date(key.last_used_at).toLocaleDateString('it-IT')
-                          : 'Mai'
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleToggleActive(key.id, key.is_active)}
-                          >
-                            {key.is_active ? 'Disattiva' : 'Attiva'}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditPermissions(key)}
-                            title="Modifica permessi"
-                          >
-                            <Shield className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setRegeneratingKey(key)
-                              setShowRegenerateConfirm(true)
-                            }}
-                            title="Rigenera token"
-                          >
-                            <RefreshCw className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteApiKey(key.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={key.is_active ? 'default' : 'secondary'}>
+                              {key.is_active ? t('apiKeys.table.active') : t('apiKeys.table.inactive')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
+                            {key.last_used_at 
+                              ? new Date(key.last_used_at).toLocaleDateString(i18n.language === 'it' ? 'it-IT' : 'en-US')
+                              : t('apiKeys.table.never')
+                            }
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleToggleActive(key.id, key.is_active)}
+                              >
+                                {key.is_active ? t('apiKeys.table.deactivate') : t('apiKeys.table.activate')}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditPermissions(key)}
+                                title={t('apiKeys.editPermissionsDialog.title')}
+                              >
+                                <Shield className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setRegeneratingKey(key)
+                                  setShowRegenerateConfirm(true)
+                                }}
+                                title={t('apiKeys.regenerateDialog.title')}
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteApiKey(key.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Create API Key Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Crea Nuova Chiave API</DialogTitle>
+            <DialogTitle>{t('apiKeys.createDialog.title')}</DialogTitle>
             <DialogDescription>
-              La chiave API sarà generata automaticamente e potrà essere usata per accedere agli endpoint degli invitati
+              {t('apiKeys.createDialog.description')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="key_name">Nome Chiave</Label>
+              <Label htmlFor="key_name">{t('apiKeys.createDialog.keyName.label')}</Label>
               <Input
                 id="key_name"
                 value={keyName}
                 onChange={(e) => setKeyName(e.target.value)}
-                placeholder="Es: Production API Key"
+                placeholder={t('apiKeys.createDialog.keyName.placeholder')}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Un nome descrittivo per identificare questa chiave
+                {t('apiKeys.createDialog.keyName.description')}
               </p>
             </div>
 
             <div>
-              <Label>Permessi *</Label>
+              <Label>{t('apiKeys.createDialog.permissions.label')} {t('apiKeys.createDialog.permissions.required')}</Label>
               <Popover open={permissionsOpen} onOpenChange={setPermissionsOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -724,7 +750,7 @@ export default function ImpostazioniAdmin() {
                     className="w-full justify-start h-auto min-h-10 font-normal"
                   >
                     {selectedPermissions.length === 0 ? (
-                      <span className="text-muted-foreground">Seleziona i permessi...</span>
+                      <span className="text-muted-foreground">{t('apiKeys.createDialog.permissions.placeholder')}</span>
                     ) : (
                       <div className="flex flex-wrap gap-1">
                         {selectedPermissions.map(perm => {
@@ -765,100 +791,101 @@ export default function ImpostazioniAdmin() {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0 bg-popover" align="start">
+                <PopoverContent 
+                  className="w-[400px] p-0 bg-popover z-50" 
+                  align="start"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
                   <div className="flex items-center border-b px-3">
                     <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
                     <input
-                      placeholder="Cerca permessi..."
+                      placeholder={t('apiKeys.createDialog.permissions.search')}
                       value={permissionsSearch}
                       onChange={(e) => setPermissionsSearch(e.target.value)}
                       className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
-                  <ScrollArea className="h-[300px]">
-                    <div className="p-2">
-                      {(() => {
-                        const groups = [...new Set(API_PERMISSIONS.map(p => p.group))]
-                        const filteredPermissions = API_PERMISSIONS.filter(p => 
-                          p.label.toLowerCase().includes(permissionsSearch.toLowerCase()) ||
-                          p.group.toLowerCase().includes(permissionsSearch.toLowerCase())
-                        )
+                  <div className="max-h-[300px] overflow-y-auto p-2">
+                    {(() => {
+                      const groups = [...new Set(API_PERMISSIONS.map(p => p.group))]
+                      const filteredPermissions = API_PERMISSIONS.filter(p => 
+                        p.label.toLowerCase().includes(permissionsSearch.toLowerCase()) ||
+                        p.group.toLowerCase().includes(permissionsSearch.toLowerCase())
+                      )
+                      
+                      return groups.map(group => {
+                        const groupPerms = filteredPermissions.filter(p => p.group === group)
+                        if (groupPerms.length === 0) return null
                         
-                        return groups.map(group => {
-                          const groupPerms = filteredPermissions.filter(p => p.group === group)
-                          if (groupPerms.length === 0) return null
-                          
-                          return (
-                            <div key={group} className="mb-3">
-                              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {group}
-                              </div>
-                              {groupPerms.map(perm => (
-                                <div
-                                  key={perm.value}
-                                  className="flex items-center space-x-2 px-2 py-2 hover:bg-accent rounded-sm cursor-pointer"
-                                  onClick={() => {
+                        return (
+                          <div key={group} className="mb-3">
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {group}
+                            </div>
+                            {groupPerms.map(perm => (
+                              <div
+                                key={perm.value}
+                                className="flex items-center space-x-2 px-2 py-2 hover:bg-accent rounded-sm cursor-pointer"
+                                onClick={() => {
+                                  setSelectedPermissions(prev => 
+                                    prev.includes(perm.value)
+                                      ? prev.filter(p => p !== perm.value)
+                                      : [...prev, perm.value]
+                                  )
+                                }}
+                              >
+                                <Checkbox
+                                  checked={selectedPermissions.includes(perm.value)}
+                                  onCheckedChange={(checked) => {
                                     setSelectedPermissions(prev => 
-                                      prev.includes(perm.value)
-                                        ? prev.filter(p => p !== perm.value)
-                                        : [...prev, perm.value]
+                                      checked
+                                        ? [...prev, perm.value]
+                                        : prev.filter(p => p !== perm.value)
                                     )
                                   }}
-                                >
-                                  <Checkbox
-                                    checked={selectedPermissions.includes(perm.value)}
-                                    onCheckedChange={(checked) => {
-                                      setSelectedPermissions(prev => 
-                                        checked
-                                          ? [...prev, perm.value]
-                                          : prev.filter(p => p !== perm.value)
-                                      )
-                                    }}
-                                  />
-                                  <span className="text-sm">{perm.label}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )
-                        })
-                      })()}
-                    </div>
-                  </ScrollArea>
+                                />
+                                <span className="text-sm">{perm.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })
+                    })()}
+                  </div>
                 </PopoverContent>
               </Popover>
               <p className="text-xs text-muted-foreground mt-1">
-                Seleziona quali operazioni potrà eseguire questa chiave
+                {t('apiKeys.createDialog.permissions.description')}
               </p>
             </div>
 
             <div>
-              <Label htmlFor="weddings">Matrimoni *</Label>
+              <Label htmlFor="weddings">{t('apiKeys.createDialog.weddings.label')} {t('apiKeys.createDialog.weddings.required')}</Label>
               <MultiSelect
                 options={weddingOptions}
                 selected={selectedWeddings}
                 onChange={setSelectedWeddings}
-                placeholder="Seleziona i matrimoni..."
+                placeholder={t('apiKeys.createDialog.weddings.placeholder')}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Questa chiave avrà accesso solo ai matrimoni selezionati
+                {t('apiKeys.createDialog.weddings.description')}
               </p>
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">ℹ️ Nota Importante</h4>
+              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">ℹ️ {t('apiKeys.createDialog.note.title')}</h4>
               <p className="text-xs text-blue-700 dark:text-blue-300">
-                La chiave API sarà mostrata una sola volta dopo la creazione. 
-                Assicurati di copiarla e conservarla in un luogo sicuro.
+                {t('apiKeys.createDialog.note.description')}
               </p>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>
-              Annulla
+              {t('apiKeys.createDialog.buttons.cancel')}
             </Button>
             <Button onClick={handleCreateApiKey}>
-              Crea Chiave API
+              {t('apiKeys.createDialog.buttons.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -871,18 +898,18 @@ export default function ImpostazioniAdmin() {
             <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
               <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
-            <DialogTitle className="text-center">Chiave API creata!</DialogTitle>
+            <DialogTitle className="text-center">{t('apiKeys.successDialog.title')}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
               <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
-                ⚠️ Copia questa chiave ora. Non sarà più visibile dopo aver chiuso.
+                ⚠️ {t('apiKeys.successDialog.warning')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium">La tua chiave API</Label>
+              <Label className="text-sm font-medium">{t('apiKeys.successDialog.label')}</Label>
               <div className="relative">
                 <code className="block w-full p-3 bg-muted rounded-lg font-mono text-sm break-all select-all">
                   {createdToken}
@@ -898,12 +925,12 @@ export default function ImpostazioniAdmin() {
               {tokenCopied ? (
                 <>
                   <Check className="h-4 w-4 mr-2 text-green-600" />
-                  Copiato!
+                  {t('apiKeys.successDialog.copied')}
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4 mr-2" />
-                  Copia chiave
+                  {t('apiKeys.successDialog.copyButton')}
                 </>
               )}
             </Button>
@@ -911,7 +938,7 @@ export default function ImpostazioniAdmin() {
 
           <DialogFooter>
             <Button onClick={handleCloseSuccessModal} variant="outline" className="w-full">
-              Ho copiato la chiave
+              {t('apiKeys.successDialog.closeButton')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -924,13 +951,12 @@ export default function ImpostazioniAdmin() {
             <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
               <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
             </div>
-            <DialogTitle className="text-center">Rigenera Token</DialogTitle>
+            <DialogTitle className="text-center">{t('apiKeys.regenerateDialog.title')}</DialogTitle>
           </DialogHeader>
 
           <div className="py-4">
             <p className="text-sm text-muted-foreground text-center">
-              Stai per generare un nuovo token per "<span className="font-medium text-foreground">{regeneratingKey?.key_name}</span>". 
-              Il token attuale smetterà di funzionare immediatamente. Tutte le integrazioni che lo usano dovranno essere aggiornate.
+              {t('apiKeys.regenerateDialog.description')}
             </p>
           </div>
 
@@ -943,7 +969,7 @@ export default function ImpostazioniAdmin() {
               }}
               disabled={isRegenerating}
             >
-              Annulla
+              {t('apiKeys.regenerateDialog.buttons.cancel')}
             </Button>
             <Button 
               onClick={handleRegenerateToken}
@@ -952,10 +978,10 @@ export default function ImpostazioniAdmin() {
               {isRegenerating ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Rigenerazione...
+                  {t('apiKeys.regenerateDialog.buttons.regenerating')}
                 </>
               ) : (
-                'Rigenera Token'
+                t('apiKeys.regenerateDialog.buttons.regenerate')
               )}
             </Button>
           </DialogFooter>
@@ -970,17 +996,17 @@ export default function ImpostazioniAdmin() {
           setEditPermissions([])
         }
       }}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Modifica Permessi - {editingKey?.key_name}</DialogTitle>
+            <DialogTitle>{t('apiKeys.editPermissionsDialog.title')} - {editingKey?.key_name}</DialogTitle>
             <DialogDescription>
-              Seleziona i permessi per questa chiave API
+              {t('apiKeys.editPermissionsDialog.description')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div>
-              <Label>Permessi *</Label>
+              <Label>{t('apiKeys.createDialog.permissions.label')} {t('apiKeys.createDialog.permissions.required')}</Label>
               <Popover open={editPermissionsOpen} onOpenChange={setEditPermissionsOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -990,7 +1016,7 @@ export default function ImpostazioniAdmin() {
                     className="w-full justify-start h-auto min-h-10 font-normal"
                   >
                     {editPermissions.length === 0 ? (
-                      <span className="text-muted-foreground">Seleziona i permessi...</span>
+                      <span className="text-muted-foreground">{t('apiKeys.createDialog.permissions.placeholder')}</span>
                     ) : (
                       <div className="flex flex-wrap gap-1">
                         {editPermissions.map(perm => {
@@ -1031,70 +1057,72 @@ export default function ImpostazioniAdmin() {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0 bg-popover" align="start">
+                <PopoverContent 
+                  className="w-[400px] p-0 bg-popover z-50" 
+                  align="start"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
                   <div className="flex items-center border-b px-3">
                     <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
                     <input
-                      placeholder="Cerca permessi..."
+                      placeholder={t('apiKeys.createDialog.permissions.search')}
                       value={editPermissionsSearch}
                       onChange={(e) => setEditPermissionsSearch(e.target.value)}
                       className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
-                  <ScrollArea className="h-[300px]">
-                    <div className="p-2">
-                      {(() => {
-                        const groups = [...new Set(API_PERMISSIONS.map(p => p.group))]
-                        const filteredPermissions = API_PERMISSIONS.filter(p => 
-                          p.label.toLowerCase().includes(editPermissionsSearch.toLowerCase()) ||
-                          p.group.toLowerCase().includes(editPermissionsSearch.toLowerCase())
-                        )
+                  <div className="max-h-[300px] overflow-y-auto p-2">
+                    {(() => {
+                      const groups = [...new Set(API_PERMISSIONS.map(p => p.group))]
+                      const filteredPermissions = API_PERMISSIONS.filter(p => 
+                        p.label.toLowerCase().includes(editPermissionsSearch.toLowerCase()) ||
+                        p.group.toLowerCase().includes(editPermissionsSearch.toLowerCase())
+                      )
+                      
+                      return groups.map(group => {
+                        const groupPerms = filteredPermissions.filter(p => p.group === group)
+                        if (groupPerms.length === 0) return null
                         
-                        return groups.map(group => {
-                          const groupPerms = filteredPermissions.filter(p => p.group === group)
-                          if (groupPerms.length === 0) return null
-                          
-                          return (
-                            <div key={group} className="mb-3">
-                              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {group}
-                              </div>
-                              {groupPerms.map(perm => (
-                                <div
-                                  key={perm.value}
-                                  className="flex items-center space-x-2 px-2 py-2 hover:bg-accent rounded-sm cursor-pointer"
-                                  onClick={() => {
+                        return (
+                          <div key={group} className="mb-3">
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {group}
+                            </div>
+                            {groupPerms.map(perm => (
+                              <div
+                                key={perm.value}
+                                className="flex items-center space-x-2 px-2 py-2 hover:bg-accent rounded-sm cursor-pointer"
+                                onClick={() => {
+                                  setEditPermissions(prev => 
+                                    prev.includes(perm.value)
+                                      ? prev.filter(p => p !== perm.value)
+                                      : [...prev, perm.value]
+                                  )
+                                }}
+                              >
+                                <Checkbox
+                                  checked={editPermissions.includes(perm.value)}
+                                  onCheckedChange={(checked) => {
                                     setEditPermissions(prev => 
-                                      prev.includes(perm.value)
-                                        ? prev.filter(p => p !== perm.value)
-                                        : [...prev, perm.value]
+                                      checked
+                                        ? [...prev, perm.value]
+                                        : prev.filter(p => p !== perm.value)
                                     )
                                   }}
-                                >
-                                  <Checkbox
-                                    checked={editPermissions.includes(perm.value)}
-                                    onCheckedChange={(checked) => {
-                                      setEditPermissions(prev => 
-                                        checked
-                                          ? [...prev, perm.value]
-                                          : prev.filter(p => p !== perm.value)
-                                      )
-                                    }}
-                                  />
-                                  <span className="text-sm">{perm.label}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )
-                        })
-                      })()}
-                    </div>
-                  </ScrollArea>
+                                />
+                                <span className="text-sm">{perm.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })
+                    })()}
+                  </div>
                 </PopoverContent>
               </Popover>
               {editPermissions.length === 0 && (
                 <p className="text-xs text-destructive mt-1">
-                  Seleziona almeno un permesso
+                  {t('apiKeys.createDialog.permissions.error')}
                 </p>
               )}
             </div>
@@ -1110,13 +1138,13 @@ export default function ImpostazioniAdmin() {
               }}
               disabled={isSavingPermissions}
             >
-              Annulla
+              {t('apiKeys.editPermissionsDialog.buttons.cancel')}
             </Button>
             <Button 
               onClick={handleSavePermissions}
               disabled={isSavingPermissions || editPermissions.length === 0}
             >
-              {isSavingPermissions ? 'Salvataggio...' : 'Salva Permessi'}
+              {isSavingPermissions ? t('apiKeys.editPermissionsDialog.buttons.saving') : t('apiKeys.editPermissionsDialog.buttons.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

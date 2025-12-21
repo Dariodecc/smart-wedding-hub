@@ -1,49 +1,44 @@
 {
   "title": "API Documentation",
   "subtitle": "Complete guide for API integration",
-  "version": "v2.0",
   "backToSettings": "Settings",
-  "copied": "Copied to clipboard",
+  "version": "v2.0",
   
   "overview": {
     "title": "Overview",
-    "description": "The Wedding SMART APIs provide secure access to guest data with API Key authentication. They support CRUD operations on various resources and Twilio webhook integration for WhatsApp message tracking.",
-    "restful": "RESTful",
-    "restfulDesc": "Standard endpoints",
-    "secure": "Secure",
-    "secureDesc": "API Key + SHA-256 Hash",
-    "granularPerms": "Granular Permissions",
-    "granularPermsDesc": "Per resource and operation",
-    "webhook": "Webhook",
-    "webhookDesc": "Twilio integration"
+    "description": "Matrimonio SMART APIs provide secure access to guest data with API Key authentication. They support CRUD operations on various resources and Twilio webhook integration for WhatsApp message tracking.",
+    "restful": { "title": "RESTful", "desc": "Standard endpoints" },
+    "secure": { "title": "Secure", "desc": "API Key + SHA-256 Hash" },
+    "permissions": { "title": "Granular Permissions", "desc": "Per resource and operation" },
+    "webhook": { "title": "Webhook", "desc": "Twilio integration" }
   },
   
   "baseUrl": {
     "title": "Base URL",
-    "httpsNote": "All requests must use HTTPS."
+    "note": "All requests must use HTTPS."
   },
   
   "auth": {
     "title": "Authentication",
     "description": "All requests require Bearer Token authentication",
     "important": "Important",
-    "tokenNote": "The API token is only visible at creation time. Store it securely.",
+    "importantDesc": "The API token is only visible at creation time. Store it securely.",
     "header": "Authentication header",
-    "curlExample": "cURL Example",
+    "example": "cURL Example",
     "configTitle": "API Key Configuration",
-    "configSteps": {
-      "step1": "Go to <strong>Admin Settings</strong> → <strong>API Keys</strong>",
-      "step2": "Click <strong>New Key</strong>",
-      "step3": "Enter a descriptive name",
-      "step4": "Select the weddings the key will have access to",
-      "step5": "Configure permissions for each resource (read/write)",
-      "step6": "Copy and save the generated token"
-    }
+    "configSteps": [
+      "Go to Admin Settings → API Keys",
+      "Click New Key",
+      "Enter a descriptive name",
+      "Select weddings the key will have access to",
+      "Configure permissions for each resource (read/write)",
+      "Copy and store the generated token"
+    ]
   },
   
   "permissionsSection": {
     "title": "Permissions System",
-    "description": "Each API Key can have granular per-resource permissions",
+    "description": "Each API Key can have granular permissions per resource",
     "resource": "Resource",
     "resourceDesc": "Description",
     "read": "Read",
@@ -66,85 +61,6 @@
       "gruppi": "Groups",
       "tavoli": "Tables",
       "webhook": "Webhook"
-    },
-    "invitati": {
-      "list": {
-        "title": "List Guests",
-        "description": "Retrieve all guests. Automatically filters by authorized weddings.",
-        "queryParams": "Query Parameters (optional)",
-        "params": {
-          "wedding_id": "Filter by specific wedding",
-          "limit": "Maximum number of results (default: 100)",
-          "offset": "Offset for pagination"
-        },
-        "response": "Response (200 OK)"
-      },
-      "detail": {
-        "title": "Guest Detail",
-        "description": "Retrieve details of a single guest."
-      },
-      "create": {
-        "title": "Create Guest",
-        "description": "Create a new guest. Requires write permission."
-      },
-      "update": {
-        "title": "Update Guest",
-        "description": "Update an existing guest's data."
-      },
-      "delete": {
-        "title": "Delete Guest",
-        "description": "Delete a guest. Requires write permission."
-      }
-    },
-    "famiglie": {
-      "list": {
-        "title": "List Families",
-        "description": "Retrieve all families."
-      },
-      "create": {
-        "title": "Create Family",
-        "description": "Create a new family."
-      }
-    },
-    "gruppi": {
-      "list": {
-        "title": "List Groups",
-        "description": "Retrieve all groups."
-      },
-      "create": {
-        "title": "Create Group",
-        "description": "Create a new group."
-      }
-    },
-    "tavoli": {
-      "list": {
-        "title": "List Tables",
-        "description": "Retrieve all tables."
-      },
-      "create": {
-        "title": "Create Table",
-        "description": "Create a new table."
-      }
-    },
-    "webhook": {
-      "title": "Twilio Webhook for WhatsApp",
-      "description": "Receive status updates for WhatsApp messages sent via Twilio",
-      "configTitle": "Twilio Configuration",
-      "step1": "Go to <strong>Twilio Console</strong> → <strong>Messaging</strong> → <strong>Settings</strong>",
-      "step2": "Set <strong>Status Callback URL</strong>:",
-      "step3": "Add the <code>x-api-key</code> header with your token",
-      "handler": {
-        "title": "Webhook Handler",
-        "description": "Endpoint to receive status updates from Twilio.",
-        "note": "Twilio automatically sends notifications to this endpoint when a message status changes.",
-        "fieldsTitle": "Tracked fields",
-        "fields": {
-          "status": "queued, sent, delivered, read, failed",
-          "price": "Message cost",
-          "sid": "Twilio unique ID",
-          "dateSent": "Send date"
-        }
-      }
     }
   },
   
@@ -154,7 +70,7 @@
     "codes": {
       "400": { "title": "Bad Request", "desc": "Missing or invalid parameters" },
       "401": { "title": "Unauthorized", "desc": "Missing or invalid API token" },
-      "403": { "title": "Forbidden", "desc": "Insufficient permissions for the operation" },
+      "403": { "title": "Forbidden", "desc": "Insufficient permissions for operation" },
       "404": { "title": "Not Found", "desc": "Resource not found" },
       "405": { "title": "Method Not Allowed", "desc": "HTTP method not supported" },
       "500": { "title": "Internal Server Error", "desc": "Internal server error" }
@@ -163,24 +79,19 @@
   
   "examples": {
     "title": "Integration Examples",
-    "tabs": {
-      "python": "Python",
-      "nodejs": "Node.js",
-      "n8n": "n8n"
-    },
-    "n8nConfig": "Configure authentication in n8n using <strong>Header Auth</strong>:"
+    "n8nConfig": "Configure authentication in n8n using Header Auth:"
   },
   
   "security": {
     "title": "Security Best Practices",
-    "practices": {
-      "https": { "title": "Always use HTTPS", "desc": "All API calls must use HTTPS" },
-      "rotate": { "title": "Rotate keys", "desc": "Periodically regenerate API keys" },
-      "minPerms": { "title": "Minimal permissions", "desc": "Assign only strictly necessary permissions" },
-      "monitor": { "title": "Monitor usage", "desc": "Regularly check last_used_at of keys" },
-      "noShare": { "title": "Don't share", "desc": "Don't expose API keys in client code" },
-      "limitWeddings": { "title": "Limit weddings", "desc": "Associate each key only with necessary weddings" }
-    }
+    "tips": [
+      { "title": "Always use HTTPS", "desc": "All API calls must use HTTPS" },
+      { "title": "Rotate keys", "desc": "Periodically regenerate API keys" },
+      { "title": "Minimal permissions", "desc": "Assign only strictly necessary permissions" },
+      { "title": "Monitor usage", "desc": "Regularly check last_used_at of keys" },
+      { "title": "Don't share", "desc": "Don't expose API keys in client code" },
+      { "title": "Limit weddings", "desc": "Associate each key only with necessary weddings" }
+    ]
   },
   
   "rateLimit": {
@@ -189,5 +100,7 @@
     "polling": "Polling status",
     "bulk": "Bulk updates",
     "webhooks": "Webhooks (Twilio)"
-  }
+  },
+  
+  "copied": "Copied to clipboard"
 }

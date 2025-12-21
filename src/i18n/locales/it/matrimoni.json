@@ -86,6 +86,25 @@
     "subtitle": "Dashboard amministrativa",
     "backToList": "Torna ai Matrimoni",
     "notFound": "Matrimonio non trovato",
+    "exportGuests": "Esporta Ospiti",
+    "exportGuestsShort": "Esporta",
+    
+    "weddingInfo": {
+      "title": "Informazioni Matrimonio",
+      "date": "Data Matrimonio",
+      "countdown": {
+        "daysLeft": "Mancano {{days}} giorni",
+        "oneDay": "Manca 1 giorno",
+        "today": "È oggi!",
+        "passed": "Matrimonio celebrato"
+      },
+      "locations": "Location",
+      "ceremony": "Cerimonia",
+      "reception": "Ricevimento",
+      "sameLocation": "Stessa location",
+      "notSpecified": "Non specificata"
+    },
+    
     "stats": {
       "totalGuests": {
         "title": "Ospiti Totali",

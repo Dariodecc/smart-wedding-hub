@@ -1,0 +1,48 @@
+{
+  "title": "Admin Dashboard",
+  "subtitle": "System overview",
+  "stats": {
+    "weddings": {
+      "title": "Weddings",
+      "description": "Total managed weddings"
+    },
+    "totalUsers": {
+      "title": "Total Users",
+      "description": "Registered users"
+    },
+    "admins": {
+      "title": "Admins",
+      "description": "Administrators"
+    },
+    "couples": {
+      "title": "Couples",
+      "description": "Wedding couples"
+    },
+    "whatsappCost": {
+      "title": "WhatsApp Cost",
+      "description": "Total messages cost"
+    }
+  },
+  "charts": {
+    "weddingsTrend": {
+      "title": "Weddings Trend",
+      "subtitle": "Weddings created per month",
+      "noData": "No data available",
+      "tooltipLabel": "Weddings"
+    }
+  },
+  "months": {
+    "jan": "Jan",
+    "feb": "Feb",
+    "mar": "Mar",
+    "apr": "Apr",
+    "may": "May",
+    "jun": "Jun",
+    "jul": "Jul",
+    "aug": "Aug",
+    "sep": "Sep",
+    "oct": "Oct",
+    "nov": "Nov",
+    "dec": "Dec"
+  }
+}

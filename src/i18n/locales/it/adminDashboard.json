@@ -1,0 +1,48 @@
+{
+  "title": "Dashboard Admin",
+  "subtitle": "Panoramica generale del sistema",
+  "stats": {
+    "weddings": {
+      "title": "Matrimoni",
+      "description": "Totale matrimoni gestiti"
+    },
+    "totalUsers": {
+      "title": "Utenti Totali",
+      "description": "Utenti registrati"
+    },
+    "admins": {
+      "title": "Admin",
+      "description": "Amministratori"
+    },
+    "couples": {
+      "title": "Sposi",
+      "description": "Coppie di sposi"
+    },
+    "whatsappCost": {
+      "title": "Costo WhatsApp",
+      "description": "Costo totale messaggi inviati"
+    }
+  },
+  "charts": {
+    "weddingsTrend": {
+      "title": "Trend Matrimoni",
+      "subtitle": "Matrimoni creati per mese",
+      "noData": "Nessun dato disponibile",
+      "tooltipLabel": "Matrimoni"
+    }
+  },
+  "months": {
+    "jan": "Gen",
+    "feb": "Feb",
+    "mar": "Mar",
+    "apr": "Apr",
+    "may": "Mag",
+    "jun": "Giu",
+    "jul": "Lug",
+    "aug": "Ago",
+    "sep": "Set",
+    "oct": "Ott",
+    "nov": "Nov",
+    "dec": "Dic"
+  }
+}

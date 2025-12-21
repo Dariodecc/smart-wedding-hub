@@ -1,37 +1,125 @@
 {
   "title": "Matrimoni",
-  "subtitle": "Gestisci i tuoi matrimoni",
+  "subtitle": "Gestisci tutti i matrimoni",
   "addWedding": "Nuovo Matrimonio",
+  "addWeddingShort": "Nuovo",
   "editWedding": "Modifica Matrimonio",
+  "createWedding": "Crea Nuovo Matrimonio",
   "deleteWedding": "Elimina Matrimonio",
   "deleteWeddingConfirm": "Eliminare questo matrimonio?",
   "deleteWeddingDescription": "Questa azione è irreversibile. Tutti i dati associati al matrimonio verranno eliminati.",
+  "deleteConfirm": "Sei sicuro di voler eliminare questo matrimonio?",
   "coupleName": "Nome Coppia",
   "date": "Data",
   "location": "Luogo",
   "guests": "invitati",
+  "serviceCost": "Costo servizio",
+  "notSpecified": "Non specificato",
+  "createdOn": "Creato il",
+  "dateNotSpecified": "Data non specificata",
   "budget": "Budget",
   "createdAt": "Creato il",
   "dashboard": "Dashboard",
-  "manageGuests": "Invitati",
+  "dashboardAdmin": "Dashboard Admin",
+  "manageGuests": "Gestisci Invitati",
   "manage": "Gestisci",
+  "edit": "Modifica",
+  "delete": "Elimina",
+
   "empty": {
     "title": "Nessun matrimonio",
-    "description": "Inizia creando il primo matrimonio"
+    "description": "Inizia creando il tuo primo matrimonio per gestire invitati, tavoli e RSVP",
+    "button": "Crea Primo Matrimonio"
   },
+
+  "toast": {
+    "created": "Matrimonio creato",
+    "createdDescription": "Il matrimonio è stato creato con successo.",
+    "updated": "Matrimonio aggiornato",
+    "updatedDescription": "Il matrimonio è stato aggiornato con successo.",
+    "deleted": "Matrimonio eliminato",
+    "deletedDescription": "Il matrimonio è stato eliminato con successo.",
+    "error": "Errore",
+    "dateRequired": "La data del matrimonio è obbligatoria"
+  },
+
   "form": {
+    "sections": {
+      "coupleInfo": "Informazioni Coppia",
+      "eventDetails": "Dettagli Evento",
+      "locations": "Location",
+      "settings": "Impostazioni Avanzate"
+    },
     "coupleName": "Nome della coppia",
     "coupleNamePlaceholder": "es. Mario e Giulia",
+    "coupleNameRequired": "*",
     "weddingDate": "Data del matrimonio",
-    "ceremonyLocation": "Location della cerimonia",
-    "ceremonyLocationPlaceholder": "es. Chiesa di San Pietro",
-    "receptionLocation": "Location del ricevimento",
-    "receptionLocationPlaceholder": "es. Villa Rossi",
-    "serviceCost": "Costo servizio (€)",
-    "users": "Utenti (Sposi)",
-    "usersPlaceholder": "Seleziona gli sposi",
+    "weddingDatePlaceholder": "Seleziona una data",
+    "weddingDateRequired": "*",
+    "ceremonyLocation": "Location cerimonia",
+    "ceremonyLocationPlaceholder": "Via, Città, CAP",
+    "ceremonyLocationRequired": "*",
+    "receptionLocation": "Location ricevimento",
+    "receptionLocationPlaceholder": "Via, Città, CAP (opzionale)",
+    "serviceCost": "Costo servizio",
+    "serviceCostRequired": "*",
+    "users": "Utenti Sposi",
+    "usersPlaceholder": "Seleziona utenti sposi",
+    "usersSearchPlaceholder": "Cerca utente...",
+    "usersNoResults": "Nessun utente trovato.",
+    "usersRequired": "*",
     "enableMultiRsvp": "Abilita RSVP multiplo",
+    "enableMultiRsvpDescription": "Permetti agli invitati di rispondere per più persone",
     "webhookUrl": "URL Webhook",
-    "webhookUrlPlaceholder": "https://..."
+    "webhookUrlPlaceholder": "https://...",
+    "webhookUrlDescription": "Ricevi notifiche quando un invitato risponde",
+    "buttons": {
+      "cancel": "Annulla",
+      "create": "Crea Matrimonio",
+      "update": "Aggiorna Matrimonio",
+      "creating": "Creando...",
+      "updating": "Aggiornando..."
+    }
+  },
+
+  "detail": {
+    "subtitle": "Dashboard amministrativa",
+    "backToList": "Torna ai Matrimoni",
+    "notFound": "Matrimonio non trovato",
+    "stats": {
+      "totalGuests": {
+        "title": "Ospiti Totali",
+        "description": "Invitati al matrimonio"
+      },
+      "confirmed": {
+        "title": "Confermati",
+        "description": "degli invitati"
+      },
+      "pending": {
+        "title": "In Attesa",
+        "description": "degli invitati"
+      },
+      "declined": {
+        "title": "Declinati",
+        "description": "degli invitati"
+      },
+      "whatsappSent": {
+        "title": "WhatsApp Inviati",
+        "description": "degli invitati"
+      },
+      "whatsappPending": {
+        "title": "WhatsApp Mancanti",
+        "description": "degli invitati"
+      },
+      "whatsappFailed": {
+        "title": "WhatsApp Errore",
+        "description": "degli invitati"
+      },
+      "whatsappCost": {
+        "title": "Costo WhatsApp",
+        "totalCost": "Costo totale messaggi",
+        "noMessages": "Nessun messaggio inviato"
+      }
+    }
   }
 }

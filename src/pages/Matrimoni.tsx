@@ -27,11 +27,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
-import { Link, useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import { WeddingForm } from "@/components/WeddingForm";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface Wedding {
   id: string;
@@ -53,8 +52,8 @@ interface SpouseUser {
 const Matrimoni = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const { startImpersonation } = useAuth();
+  const { t, i18n } = useTranslation('matrimoni');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingWedding, setEditingWedding] = useState<Wedding | null>(null);
   const [formData, setFormData] = useState({
@@ -148,7 +147,7 @@ const Matrimoni = () => {
     mutationFn: async (data: typeof formData) => {
       // Validate wedding_date is set
       if (!data.wedding_date) {
-        throw new Error("La data del matrimonio è obbligatoria");
+        throw new Error(t('toast.dateRequired'));
       }
 
       const { data: wedding, error } = await supabase
@@ -189,13 +188,13 @@ const Matrimoni = () => {
       setIsCreateOpen(false);
       resetForm();
       toast({
-        title: "Matrimonio creato",
-        description: "Il matrimonio è stato creato con successo.",
+        title: t('toast.created'),
+        description: t('toast.createdDescription'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Errore",
+        title: t('toast.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -207,7 +206,7 @@ const Matrimoni = () => {
     mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
       // Validate wedding_date is set
       if (!data.wedding_date) {
-        throw new Error("La data del matrimonio è obbligatoria");
+        throw new Error(t('toast.dateRequired'));
       }
 
       const { error } = await supabase
@@ -248,13 +247,13 @@ const Matrimoni = () => {
       setEditingWedding(null);
       resetForm();
       toast({
-        title: "Matrimonio aggiornato",
-        description: "Il matrimonio è stato aggiornato con successo.",
+        title: t('toast.updated'),
+        description: t('toast.updatedDescription'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Errore",
+        title: t('toast.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -271,13 +270,13 @@ const Matrimoni = () => {
       queryClient.invalidateQueries({ queryKey: ["weddings"] });
       queryClient.invalidateQueries({ queryKey: ["assigned-spouses"] });
       toast({
-        title: "Matrimonio eliminato",
-        description: "Il matrimonio è stato eliminato con successo.",
+        title: t('toast.deleted'),
+        description: t('toast.deletedDescription'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Errore",
+        title: t('toast.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -331,6 +330,14 @@ const Matrimoni = () => {
     return spouseUsers?.find(u => u.id === userId)?.email || userId;
   };
 
+  const getLocalizedDate = (dateString: string, formatStr: 'long' | 'short' = 'long') => {
+    const locale = i18n.language === 'it' ? 'it-IT' : 'en-US';
+    const options: Intl.DateTimeFormatOptions = formatStr === 'long' 
+      ? { day: 'numeric', month: 'long', year: 'numeric' }
+      : { day: 'numeric', month: 'short', year: 'numeric' };
+    return new Date(dateString).toLocaleDateString(locale, options);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Page Header */}
@@ -340,17 +347,17 @@ const Matrimoni = () => {
             <SidebarTrigger className="text-gray-600 hover:text-gray-900 shrink-0" />
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
-                Matrimoni
+                {t('title')}
               </h1>
               <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
-                Gestisci i tuoi matrimoni
+                {t('subtitle')}
               </p>
             </div>
           </div>
           <Button onClick={() => { resetForm(); setIsCreateOpen(true); }}>
             <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Nuovo Matrimonio</span>
-            <span className="sm:hidden">Nuovo</span>
+            <span className="hidden sm:inline">{t('addWedding')}</span>
+            <span className="sm:hidden">{t('addWeddingShort')}</span>
           </Button>
         </div>
       </div>
@@ -362,7 +369,7 @@ const Matrimoni = () => {
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Crea Nuovo Matrimonio</DialogTitle>
+                <DialogTitle>{t('createWedding')}</DialogTitle>
               </DialogHeader>
               <WeddingForm
                 formData={formData}
@@ -382,7 +389,7 @@ const Matrimoni = () => {
             <Dialog open={!!editingWedding} onOpenChange={() => setEditingWedding(null)}>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Modifica Matrimonio</DialogTitle>
+                  <DialogTitle>{t('editWedding')}</DialogTitle>
                 </DialogHeader>
                 <WeddingForm
                   formData={formData}
@@ -437,12 +444,8 @@ const Matrimoni = () => {
                           <Calendar className="h-4 w-4 flex-shrink-0" />
                           <span className="truncate">
                             {wedding.wedding_date 
-                              ? new Date(wedding.wedding_date).toLocaleDateString('it-IT', {
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric'
-                                })
-                              : 'Data non specificata'
+                              ? getLocalizedDate(wedding.wedding_date)
+                              : t('dateNotSpecified')
                             }
                           </span>
                         </CardDescription>
@@ -459,28 +462,28 @@ const Matrimoni = () => {
                           <DropdownMenuItem asChild>
                             <Link to={`/matrimoni/${wedding.id}`} className="flex items-center">
                               <BarChart3 className="h-4 w-4 mr-2" />
-                              Dashboard Admin
+                              {t('dashboardAdmin')}
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => startImpersonation(wedding.id)}>
                             <Users className="h-4 w-4 mr-2" />
-                            Gestisci Invitati
+                            {t('manageGuests')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEdit(wedding)}>
                             <Edit className="h-4 w-4 mr-2" />
-                            Modifica
+                            {t('edit')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
                             onClick={() => {
-                              if (confirm("Sei sicuro di voler eliminare questo matrimonio?")) {
+                              if (confirm(t('deleteConfirm'))) {
                                 deleteMutation.mutate(wedding.id);
                               }
                             }}
                             className="text-red-600"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Elimina
+                            {t('delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -501,7 +504,7 @@ const Matrimoni = () => {
                       {/* Guest count */}
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Users className="h-4 w-4 flex-shrink-0" />
-                        <span>{wedding.guest_count || 0} invitati</span>
+                        <span>{wedding.guest_count || 0} {t('guests')}</span>
                       </div>
                       
                       {/* Service cost */}
@@ -509,8 +512,8 @@ const Matrimoni = () => {
                         <Euro className="h-4 w-4 flex-shrink-0" />
                         <span>
                           {wedding.service_cost != null 
-                            ? `${wedding.service_cost.toFixed(2)} €` 
-                            : "Non specificato"}
+                            ? `€${wedding.service_cost.toFixed(2)}` 
+                            : t('notSpecified')}
                         </span>
                       </div>
                       
@@ -518,7 +521,7 @@ const Matrimoni = () => {
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Clock className="h-4 w-4 flex-shrink-0" />
                         <span>
-                          Creato il {new Date(wedding.created_at).toLocaleDateString('it-IT')}
+                          {t('createdOn')} {getLocalizedDate(wedding.created_at, 'short')}
                         </span>
                       </div>
                     </div>
@@ -533,7 +536,7 @@ const Matrimoni = () => {
                       >
                         <Link to={`/matrimoni/${wedding.id}`}>
                           <BarChart3 className="h-4 w-4 mr-2" />
-                          Dashboard
+                          {t('dashboard')}
                         </Link>
                       </Button>
                       
@@ -544,7 +547,7 @@ const Matrimoni = () => {
                         onClick={() => startImpersonation(wedding.id)}
                       >
                         <Users className="h-4 w-4 mr-2" />
-                        Invitati
+                        {t('manageGuests')}
                       </Button>
                     </div>
                   </CardContent>
@@ -559,14 +562,14 @@ const Matrimoni = () => {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Heart className="h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Nessun matrimonio
+                  {t('empty.title')}
                 </h3>
                 <p className="text-gray-600 mb-6 text-center max-w-md">
-                  Inizia creando il tuo primo matrimonio per gestire invitati, tavoli e RSVP
+                  {t('empty.description')}
                 </p>
                 <Button onClick={() => { resetForm(); setIsCreateOpen(true); }}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Crea Primo Matrimonio
+                  {t('empty.button')}
                 </Button>
               </CardContent>
             </Card>

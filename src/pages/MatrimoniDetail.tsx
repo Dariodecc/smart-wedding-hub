@@ -16,10 +16,12 @@ import {
   ArrowLeft,
   Loader2
 } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const MatrimoniDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation('matrimoni');
 
   // Fetch wedding data
   const { data: wedding, isLoading: weddingLoading } = useQuery({
@@ -92,7 +94,8 @@ const MatrimoniDetail = () => {
       .reduce((sum, m) => sum + Math.abs(m.whatsapp_message_price || 0), 0);
     
     const formatCurrency = (amount: number, currency: string) => {
-      return new Intl.NumberFormat("it-IT", {
+      const locale = i18n.language === 'it' ? 'it-IT' : 'en-US';
+      return new Intl.NumberFormat(locale, {
         style: "currency",
         currency: currency,
         minimumFractionDigits: 2,
@@ -108,13 +111,13 @@ const MatrimoniDetail = () => {
       costSubtitle = `+ ${formatCurrency(costEUR, "EUR")}`;
     } else if (costUSD > 0) {
       costDisplay = formatCurrency(costUSD, "USD");
-      costSubtitle = "Costo totale messaggi";
+      costSubtitle = t('detail.stats.whatsappCost.totalCost');
     } else if (costEUR > 0) {
       costDisplay = formatCurrency(costEUR, "EUR");
-      costSubtitle = "Costo totale messaggi";
+      costSubtitle = t('detail.stats.whatsappCost.totalCost');
     } else {
       costDisplay = "€ 0,00";
-      costSubtitle = "Nessun messaggio inviato";
+      costSubtitle = t('detail.stats.whatsappCost.noMessages');
     }
 
     return {
@@ -134,7 +137,7 @@ const MatrimoniDetail = () => {
       costDisplay,
       costSubtitle,
     };
-  }, [guests]);
+  }, [guests, t, i18n.language]);
 
   const isLoading = weddingLoading || guestsLoading;
 
@@ -150,9 +153,9 @@ const MatrimoniDetail = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Matrimonio non trovato</p>
+          <p className="text-muted-foreground">{t('detail.notFound')}</p>
           <Button className="mt-4" onClick={() => navigate("/matrimoni")}>
-            Torna ai Matrimoni
+            {t('detail.backToList')}
           </Button>
         </div>
       </div>
@@ -177,7 +180,7 @@ const MatrimoniDetail = () => {
               {wedding.couple_name}
             </h1>
             <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
-              Dashboard amministrativa
+              {t('detail.subtitle')}
             </p>
           </div>
         </div>
@@ -188,114 +191,146 @@ const MatrimoniDetail = () => {
         <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
           {/* Stats Cards Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {/* Card 1 - Ospiti Totali */}
-            <Card>
+            {/* Card 1 - Total Guests */}
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Ospiti Totali</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-gray-500">
+                  {t('detail.stats.totalGuests.title')}
+                </CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-blue-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats?.totalGuests || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  Invitati al matrimonio
+                <div className="text-3xl font-bold text-gray-900">{stats?.totalGuests || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('detail.stats.totalGuests.description')}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Card 2 - Confermati */}
-            <Card>
+            {/* Card 2 - Confirmed */}
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Confermati</CardTitle>
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <CardTitle className="text-sm font-medium text-gray-500">
+                  {t('detail.stats.confirmed.title')}
+                </CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{stats?.confirmed || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.confirmedPercentage || 0}% degli invitati
+                <div className="text-3xl font-bold text-green-600">{stats?.confirmed || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats?.confirmedPercentage || 0}% {t('detail.stats.confirmed.description')}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Card 3 - In Attesa */}
-            <Card>
+            {/* Card 3 - Pending */}
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">In Attesa</CardTitle>
-                <Clock className="h-4 w-4 text-orange-600" />
+                <CardTitle className="text-sm font-medium text-gray-500">
+                  {t('detail.stats.pending.title')}
+                </CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-orange-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{stats?.pending || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.pendingPercentage || 0}% degli invitati
+                <div className="text-3xl font-bold text-orange-600">{stats?.pending || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats?.pendingPercentage || 0}% {t('detail.stats.pending.description')}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Card 4 - Declinati */}
-            <Card>
+            {/* Card 4 - Declined */}
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Declinati</CardTitle>
-                <XCircle className="h-4 w-4 text-red-600" />
+                <CardTitle className="text-sm font-medium text-gray-500">
+                  {t('detail.stats.declined.title')}
+                </CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+                  <XCircle className="h-5 w-5 text-red-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">{stats?.declined || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.declinedPercentage || 0}% degli invitati
+                <div className="text-3xl font-bold text-red-600">{stats?.declined || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats?.declinedPercentage || 0}% {t('detail.stats.declined.description')}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Card 5 - WhatsApp Inviati */}
-            <Card>
+            {/* Card 5 - WhatsApp Sent */}
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">WhatsApp Inviati</CardTitle>
-                <MessageCircle className="h-4 w-4 text-green-600" />
+                <CardTitle className="text-sm font-medium text-gray-500">
+                  {t('detail.stats.whatsappSent.title')}
+                </CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <MessageCircle className="h-5 w-5 text-green-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{stats?.delivered || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.deliveredPercentage || 0}% degli invitati
+                <div className="text-3xl font-bold text-green-600">{stats?.delivered || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats?.deliveredPercentage || 0}% {t('detail.stats.whatsappSent.description')}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Card 6 - WhatsApp Mancanti */}
-            <Card>
+            {/* Card 6 - WhatsApp Pending */}
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">WhatsApp Mancanti</CardTitle>
-                <Send className="h-4 w-4 text-gray-600" />
+                <CardTitle className="text-sm font-medium text-gray-500">
+                  {t('detail.stats.whatsappPending.title')}
+                </CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                  <Send className="h-5 w-5 text-gray-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-600">{stats?.notSent || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.notSentPercentage || 0}% degli invitati
+                <div className="text-3xl font-bold text-gray-600">{stats?.notSent || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats?.notSentPercentage || 0}% {t('detail.stats.whatsappPending.description')}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Card 7 - WhatsApp Errore */}
-            <Card>
+            {/* Card 7 - WhatsApp Failed */}
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">WhatsApp Errore</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-red-600" />
+                <CardTitle className="text-sm font-medium text-gray-500">
+                  {t('detail.stats.whatsappFailed.title')}
+                </CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">{stats?.failed || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.failedPercentage || 0}% degli invitati
+                <div className="text-3xl font-bold text-red-600">{stats?.failed || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats?.failedPercentage || 0}% {t('detail.stats.whatsappFailed.description')}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Card 8 - Costo WhatsApp */}
-            <Card>
+            {/* Card 8 - WhatsApp Cost */}
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Costo WhatsApp</CardTitle>
-                <DollarSign className="h-4 w-4 text-blue-600" />
+                <CardTitle className="text-sm font-medium text-gray-500">
+                  {t('detail.stats.whatsappCost.title')}
+                </CardTitle>
+                <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <DollarSign className="h-5 w-5 text-blue-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{stats?.costDisplay || "€ 0,00"}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.costSubtitle || "Nessun messaggio inviato"}
+                <div className="text-3xl font-bold text-blue-600">{stats?.costDisplay || "€ 0,00"}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats?.costSubtitle}
                 </p>
               </CardContent>
             </Card>

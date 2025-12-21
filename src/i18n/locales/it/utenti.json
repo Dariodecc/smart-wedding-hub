@@ -1,55 +1,109 @@
 {
   "title": "Utenti",
   "subtitle": "Gestisci gli utenti del sistema",
-  "addUser": "Aggiungi Utente",
+  "addUser": "Nuovo Utente",
+  "addUserShort": "Nuovo",
   "editUser": "Modifica Utente",
+  "createUser": "Crea Nuovo Utente",
+  "createUserDescription": "Inserisci le informazioni per creare un nuovo utente",
   "deleteUser": "Elimina Utente",
-  "deleteUserConfirm": "Eliminare questo utente?",
-  "deleteUserDescription": "Questa azione è irreversibile.",
-  "userDeleted": "Utente eliminato con successo",
-  "userUpdated": "Utente aggiornato con successo",
-  "userCreated": "Utente creato con successo",
+  "deleteUserConfirm": "Sei sicuro di voler eliminare l'utente",
+  "deleteUserDescription": "Questa azione non può essere annullata.",
+  
   "stats": {
-    "total": "Totale Utenti",
-    "admin": "Admin",
-    "sposi": "Sposi",
-    "expired": "Disattivati"
+    "total": {
+      "title": "Totale Utenti",
+      "description": "Utenti registrati"
+    },
+    "admin": {
+      "title": "Admin",
+      "description": "Amministratori"
+    },
+    "sposi": {
+      "title": "Sposi",
+      "description": "Coppie di sposi"
+    },
+    "disabled": {
+      "title": "Disabilitati",
+      "description": "Utenti disabilitati"
+    }
   },
-  "form": {
-    "email": "Email",
-    "emailPlaceholder": "esempio@email.com",
-    "password": "Password",
-    "generatePassword": "Genera password",
-    "role": "Ruolo",
-    "selectRole": "Seleziona ruolo",
+  
+  "list": {
+    "title": "Lista Utenti",
+    "search": {
+      "placeholder": "Cerca per email...",
+      "noResults": "Nessun utente trovato"
+    },
+    "filter": {
+      "wedding": "Filtra per matrimonio",
+      "allWeddings": "Tutti i matrimoni",
+      "noWedding": "Senza matrimonio",
+      "searchWedding": "Cerca matrimonio...",
+      "clearFilters": "Cancella filtri"
+    },
+    "you": "Tu",
+    "disabled": "Disabilitato",
     "wedding": "Matrimonio",
-    "selectWedding": "Seleziona matrimonio",
-    "isActive": "Utente attivo",
-    "activate": "Attiva utente",
-    "deactivate": "Disattiva utente"
+    "loading": "Caricamento...",
+    "empty": "Nessun utente trovato"
   },
-  "roles": {
-    "admin": "Admin",
-    "sposi": "Sposi"
+  
+  "form": {
+    "email": {
+      "label": "Email",
+      "required": "*"
+    },
+    "password": {
+      "label": "Password",
+      "required": "*",
+      "leaveEmpty": "Password (lascia vuoto per non modificare)",
+      "generate": "Genera"
+    },
+    "role": {
+      "label": "Ruolo",
+      "required": "*",
+      "admin": "Admin",
+      "sposi": "Sposi"
+    },
+    "wedding": {
+      "label": "Matrimonio",
+      "placeholder": "Seleziona matrimonio",
+      "search": "Cerca matrimonio..."
+    },
+    "status": {
+      "label": "Stato Utenza",
+      "enabled": "Abilitata",
+      "disabled": "Disabilitata"
+    },
+    "cannotDisableSelf": "Non puoi disabilitare il tuo account",
+    "buttons": {
+      "cancel": "Annulla",
+      "create": "Crea Utente",
+      "save": "Salva Modifiche",
+      "delete": "Elimina",
+      "creating": "Creazione...",
+      "saving": "Salvataggio...",
+      "deleting": "Eliminazione..."
+    }
   },
-  "status": {
-    "active": "Attivo",
-    "inactive": "Disattivato"
+  
+  "toast": {
+    "created": "Utente creato con successo",
+    "updated": "Utente aggiornato con successo",
+    "deleted": "Utente eliminato con successo",
+    "passwordGenerated": "Password generata",
+    "error": "Errore",
+    "errorCreating": "Errore durante la creazione",
+    "errorUpdating": "Errore durante l'aggiornamento",
+    "errorDeleting": "Errore durante l'eliminazione",
+    "userExists": "Utenza già registrata",
+    "userExistsDescription": "Un utente con questa email esiste già nel sistema",
+    "sessionExpired": "Sessione scaduta. Effettua nuovamente l'accesso."
   },
-  "errors": {
-    "emailExists": "Utenza già registrata",
-    "cannotDeleteSelf": "Non puoi eliminare il tuo account",
-    "cannotDeactivateSelf": "Non puoi disattivare il tuo account"
-  },
-  "empty": {
-    "title": "Nessun utente",
-    "description": "Inizia creando il primo utente"
-  },
-  "table": {
-    "email": "EMAIL",
-    "role": "RUOLO",
-    "wedding": "MATRIMONIO",
-    "status": "STATO",
-    "createdAt": "CREATO IL"
+  
+  "deleteDialog": {
+    "title": "Elimina Utente",
+    "cannotDeleteSelf": "Non puoi eliminare il tuo account"
   }
 }

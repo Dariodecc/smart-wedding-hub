@@ -14,6 +14,7 @@ import tavoliIT from './locales/it/tavoli.json';
 import matrimoniIT from './locales/it/matrimoni.json';
 import utentiIT from './locales/it/utenti.json';
 import settingsIT from './locales/it/settings.json';
+import adminDashboardIT from './locales/it/adminDashboard.json';
 
 // English
 import commonEN from './locales/en/common.json';
@@ -27,6 +28,7 @@ import tavoliEN from './locales/en/tavoli.json';
 import matrimoniEN from './locales/en/matrimoni.json';
 import utentiEN from './locales/en/utenti.json';
 import settingsEN from './locales/en/settings.json';
+import adminDashboardEN from './locales/en/adminDashboard.json';
 
 const resources = {
   it: {
@@ -41,6 +43,7 @@ const resources = {
     matrimoni: matrimoniIT,
     utenti: utentiIT,
     settings: settingsIT,
+    adminDashboard: adminDashboardIT,
   },
   en: {
     common: commonEN,
@@ -54,6 +57,7 @@ const resources = {
     matrimoni: matrimoniEN,
     utenti: utentiEN,
     settings: settingsEN,
+    adminDashboard: adminDashboardEN,
   },
 };
 
@@ -64,7 +68,7 @@ i18n
     resources,
     fallbackLng: 'it',
     defaultNS: 'common',
-    ns: ['common', 'auth', 'sidebar', 'dashboard', 'invitati', 'famiglie', 'gruppi', 'tavoli', 'matrimoni', 'utenti', 'settings'],
+    ns: ['common', 'auth', 'sidebar', 'dashboard', 'invitati', 'famiglie', 'gruppi', 'tavoli', 'matrimoni', 'utenti', 'settings', 'adminDashboard'],
     interpolation: {
       escapeValue: false,
     },

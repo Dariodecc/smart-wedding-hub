@@ -86,6 +86,25 @@
     "subtitle": "Administrative dashboard",
     "backToList": "Back to Weddings",
     "notFound": "Wedding not found",
+    "exportGuests": "Export Guests",
+    "exportGuestsShort": "Export",
+    
+    "weddingInfo": {
+      "title": "Wedding Information",
+      "date": "Wedding Date",
+      "countdown": {
+        "daysLeft": "{{days}} days left",
+        "oneDay": "1 day left",
+        "today": "It's today!",
+        "passed": "Wedding celebrated"
+      },
+      "locations": "Locations",
+      "ceremony": "Ceremony",
+      "reception": "Reception",
+      "sameLocation": "Same location",
+      "notSpecified": "Not specified"
+    },
+    
     "stats": {
       "totalGuests": {
         "title": "Total Guests",

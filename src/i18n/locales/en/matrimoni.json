@@ -1,37 +1,125 @@
 {
   "title": "Weddings",
-  "subtitle": "Manage your weddings",
+  "subtitle": "Manage all weddings",
   "addWedding": "New Wedding",
+  "addWeddingShort": "New",
   "editWedding": "Edit Wedding",
+  "createWedding": "Create New Wedding",
   "deleteWedding": "Delete Wedding",
   "deleteWeddingConfirm": "Delete this wedding?",
   "deleteWeddingDescription": "This action cannot be undone. All data associated with the wedding will be deleted.",
+  "deleteConfirm": "Are you sure you want to delete this wedding?",
   "coupleName": "Couple Name",
   "date": "Date",
   "location": "Location",
   "guests": "guests",
+  "serviceCost": "Service cost",
+  "notSpecified": "Not specified",
+  "createdOn": "Created on",
+  "dateNotSpecified": "Date not specified",
   "budget": "Budget",
   "createdAt": "Created at",
   "dashboard": "Dashboard",
-  "manageGuests": "Guests",
+  "dashboardAdmin": "Admin Dashboard",
+  "manageGuests": "Manage Guests",
   "manage": "Manage",
+  "edit": "Edit",
+  "delete": "Delete",
+
   "empty": {
     "title": "No weddings",
-    "description": "Start by creating the first wedding"
+    "description": "Start by creating your first wedding to manage guests, tables and RSVPs",
+    "button": "Create First Wedding"
   },
+
+  "toast": {
+    "created": "Wedding created",
+    "createdDescription": "The wedding has been created successfully.",
+    "updated": "Wedding updated",
+    "updatedDescription": "The wedding has been updated successfully.",
+    "deleted": "Wedding deleted",
+    "deletedDescription": "The wedding has been deleted successfully.",
+    "error": "Error",
+    "dateRequired": "Wedding date is required"
+  },
+
   "form": {
+    "sections": {
+      "coupleInfo": "Couple Information",
+      "eventDetails": "Event Details",
+      "locations": "Locations",
+      "settings": "Advanced Settings"
+    },
     "coupleName": "Couple name",
     "coupleNamePlaceholder": "e.g. John and Jane",
+    "coupleNameRequired": "*",
     "weddingDate": "Wedding date",
+    "weddingDatePlaceholder": "Select a date",
+    "weddingDateRequired": "*",
     "ceremonyLocation": "Ceremony location",
-    "ceremonyLocationPlaceholder": "e.g. St. Peter's Church",
+    "ceremonyLocationPlaceholder": "Street, City, ZIP",
+    "ceremonyLocationRequired": "*",
     "receptionLocation": "Reception location",
-    "receptionLocationPlaceholder": "e.g. Villa Rosa",
-    "serviceCost": "Service cost (€)",
-    "users": "Users (Couple)",
-    "usersPlaceholder": "Select the couple",
+    "receptionLocationPlaceholder": "Street, City, ZIP (optional)",
+    "serviceCost": "Service cost",
+    "serviceCostRequired": "*",
+    "users": "Spouse Users",
+    "usersPlaceholder": "Select spouse users",
+    "usersSearchPlaceholder": "Search user...",
+    "usersNoResults": "No user found.",
+    "usersRequired": "*",
     "enableMultiRsvp": "Enable multiple RSVP",
+    "enableMultiRsvpDescription": "Allow guests to respond for multiple people",
     "webhookUrl": "Webhook URL",
-    "webhookUrlPlaceholder": "https://..."
+    "webhookUrlPlaceholder": "https://...",
+    "webhookUrlDescription": "Receive notifications when a guest responds",
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create Wedding",
+      "update": "Update Wedding",
+      "creating": "Creating...",
+      "updating": "Updating..."
+    }
+  },
+
+  "detail": {
+    "subtitle": "Administrative dashboard",
+    "backToList": "Back to Weddings",
+    "notFound": "Wedding not found",
+    "stats": {
+      "totalGuests": {
+        "title": "Total Guests",
+        "description": "Invited to the wedding"
+      },
+      "confirmed": {
+        "title": "Confirmed",
+        "description": "of guests"
+      },
+      "pending": {
+        "title": "Pending",
+        "description": "of guests"
+      },
+      "declined": {
+        "title": "Declined",
+        "description": "of guests"
+      },
+      "whatsappSent": {
+        "title": "WhatsApp Sent",
+        "description": "of guests"
+      },
+      "whatsappPending": {
+        "title": "WhatsApp Pending",
+        "description": "of guests"
+      },
+      "whatsappFailed": {
+        "title": "WhatsApp Failed",
+        "description": "of guests"
+      },
+      "whatsappCost": {
+        "title": "WhatsApp Cost",
+        "totalCost": "Total messages cost",
+        "noMessages": "No messages sent"
+      }
+    }
   }
 }

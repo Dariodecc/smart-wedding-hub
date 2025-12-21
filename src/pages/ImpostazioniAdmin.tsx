@@ -424,17 +424,17 @@ export default function ImpostazioniAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       {/* Page Header */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center px-4">
-          <div className="flex items-center gap-4">
-            <SidebarTrigger className="shrink-0" />
-            <div className="flex flex-col">
-              <h1 className="text-lg font-semibold tracking-tight">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <SidebarTrigger className="text-gray-600 hover:text-gray-900 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 truncate">
                 {t('admin.title')}
               </h1>
-              <p className="text-sm text-muted-foreground hidden sm:block">
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
                 {t('admin.subtitle')}
               </p>
             </div>
@@ -443,8 +443,8 @@ export default function ImpostazioniAdmin() {
       </div>
 
       {/* Page Content */}
-      <div className="container mx-auto py-8 px-4 max-w-6xl">
-        <div className="space-y-6">
+      <div className="p-4 sm:p-6">
+        <div className="max-w-6xl mx-auto space-y-6">
           {/* Supabase Configuration Section */}
           <Card>
             <CardHeader>

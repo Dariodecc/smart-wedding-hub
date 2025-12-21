@@ -3,6 +3,7 @@
   "subtitle": "Guida completa per l'integrazione con le API",
   "backToSettings": "Impostazioni",
   "version": "v2.0",
+  "copied": "Copiato negli appunti",
   
   "overview": {
     "title": "Panoramica",
@@ -26,14 +27,12 @@
     "header": "Header di autenticazione",
     "example": "Esempio cURL",
     "configTitle": "Configurazione API Key",
-    "configSteps": [
-      "Vai su Impostazioni Admin → API Keys",
-      "Clicca Nuova Chiave",
-      "Inserisci un nome descrittivo",
-      "Seleziona i matrimoni a cui la chiave avrà accesso",
-      "Configura i permessi per ogni risorsa (lettura/scrittura)",
-      "Copia e conserva il token generato"
-    ]
+    "step1": "Vai su Impostazioni Admin → API Keys",
+    "step2": "Clicca Nuova Chiave",
+    "step3": "Inserisci un nome descrittivo",
+    "step4": "Seleziona i matrimoni a cui la chiave avrà accesso",
+    "step5": "Configura i permessi per ogni risorsa (lettura/scrittura)",
+    "step6": "Copia e conserva il token generato"
   },
   
   "permissionsSection": {
@@ -43,38 +42,69 @@
     "resourceDesc": "Descrizione",
     "read": "Lettura",
     "write": "Scrittura",
-    "resources": {
-      "invitati": "Gestione invitati",
-      "famiglie": "Gestione famiglie",
-      "gruppi": "Gestione gruppi",
-      "tavoli": "Gestione tavoli",
-      "weddings": "Informazioni matrimonio",
-      "preferenze_alimentari_custom": "Preferenze alimentari personalizzate"
-    }
+    "invitati": "Gestione invitati",
+    "famiglie": "Gestione famiglie",
+    "gruppi": "Gestione gruppi",
+    "tavoli": "Gestione tavoli",
+    "weddings": "Informazioni matrimonio",
+    "preferenze": "Preferenze alimentari personalizzate"
   },
   
   "endpoints": {
     "title": "Endpoints",
-    "tabs": {
-      "invitati": "Invitati",
-      "famiglie": "Famiglie",
-      "gruppi": "Gruppi",
-      "tavoli": "Tavoli",
-      "webhook": "Webhook"
+    "invitati": "Invitati",
+    "famiglie": "Famiglie",
+    "gruppi": "Gruppi",
+    "tavoli": "Tavoli",
+    "webhook": "Webhook",
+    "queryParams": "Query Parameters (opzionali)",
+    "response": "Response (200 OK)",
+    
+    "guests": {
+      "list": { "title": "Lista Invitati", "desc": "Recupera tutti gli invitati. Filtra automaticamente per i matrimoni autorizzati." },
+      "detail": { "title": "Dettaglio Invitato", "desc": "Recupera i dettagli di un singolo invitato." },
+      "create": { "title": "Crea Invitato", "desc": "Crea un nuovo invitato. Richiede permesso di scrittura." },
+      "update": { "title": "Aggiorna Invitato", "desc": "Aggiorna i dati di un invitato esistente." },
+      "delete": { "title": "Elimina Invitato", "desc": "Elimina un invitato. Richiede permesso di scrittura." }
+    },
+    "families": {
+      "list": { "title": "Lista Famiglie", "desc": "Recupera tutte le famiglie." },
+      "create": { "title": "Crea Famiglia", "desc": "Crea una nuova famiglia." }
+    },
+    "groups": {
+      "list": { "title": "Lista Gruppi", "desc": "Recupera tutti i gruppi." },
+      "create": { "title": "Crea Gruppo", "desc": "Crea un nuovo gruppo." }
+    },
+    "tables": {
+      "list": { "title": "Lista Tavoli", "desc": "Recupera tutti i tavoli." },
+      "create": { "title": "Crea Tavolo", "desc": "Crea un nuovo tavolo." }
+    },
+    "webhookSection": {
+      "title": "Webhook Twilio per WhatsApp",
+      "desc": "Ricevi aggiornamenti sullo stato dei messaggi WhatsApp inviati tramite Twilio",
+      "configTitle": "Configurazione Twilio",
+      "step1": "Vai su Twilio Console → Messaging → Settings",
+      "step2": "Imposta Status Callback URL:",
+      "step3": "Aggiungi l'header x-api-key con il tuo token",
+      "handler": { "title": "Webhook Handler", "desc": "Endpoint per ricevere gli aggiornamenti di stato da Twilio." },
+      "autoSend": "Twilio invia automaticamente le notifiche a questo endpoint quando lo stato di un messaggio cambia.",
+      "trackedFields": "Campi tracciati",
+      "statusDesc": "queued, sent, delivered, read, failed",
+      "priceDesc": "Costo del messaggio",
+      "sidDesc": "ID univoco Twilio",
+      "dateDesc": "Data invio"
     }
   },
   
   "errors": {
     "title": "Risposte di Errore",
     "format": "Formato errore",
-    "codes": {
-      "400": { "title": "Bad Request", "desc": "Parametri mancanti o non validi" },
-      "401": { "title": "Unauthorized", "desc": "Token API mancante o non valido" },
-      "403": { "title": "Forbidden", "desc": "Permessi insufficienti per l'operazione" },
-      "404": { "title": "Not Found", "desc": "Risorsa non trovata" },
-      "405": { "title": "Method Not Allowed", "desc": "Metodo HTTP non supportato" },
-      "500": { "title": "Internal Server Error", "desc": "Errore interno del server" }
-    }
+    "400": { "title": "Bad Request", "desc": "Parametri mancanti o non validi" },
+    "401": { "title": "Unauthorized", "desc": "Token API mancante o non valido" },
+    "403": { "title": "Forbidden", "desc": "Permessi insufficienti per l'operazione" },
+    "404": { "title": "Not Found", "desc": "Risorsa non trovata" },
+    "405": { "title": "Method Not Allowed", "desc": "Metodo HTTP non supportato" },
+    "500": { "title": "Internal Server Error", "desc": "Errore interno del server" }
   },
   
   "examples": {
@@ -84,14 +114,12 @@
   
   "security": {
     "title": "Best Practices di Sicurezza",
-    "tips": [
-      { "title": "Usa sempre HTTPS", "desc": "Tutte le chiamate API devono utilizzare HTTPS" },
-      { "title": "Ruota le chiavi", "desc": "Rigenera periodicamente le API key" },
-      { "title": "Permessi minimi", "desc": "Assegna solo i permessi strettamente necessari" },
-      { "title": "Monitora l'uso", "desc": "Controlla regolarmente last_used_at delle chiavi" },
-      { "title": "Non condividere", "desc": "Non esporre le API key nel codice client" },
-      { "title": "Limita i matrimoni", "desc": "Associa ogni chiave solo ai matrimoni necessari" }
-    ]
+    "tip1": { "title": "Usa sempre HTTPS", "desc": "Tutte le chiamate API devono utilizzare HTTPS" },
+    "tip2": { "title": "Ruota le chiavi", "desc": "Rigenera periodicamente le API key" },
+    "tip3": { "title": "Permessi minimi", "desc": "Assegna solo i permessi strettamente necessari" },
+    "tip4": { "title": "Monitora l'uso", "desc": "Controlla regolarmente last_used_at delle chiavi" },
+    "tip5": { "title": "Non condividere", "desc": "Non esporre le API key nel codice client" },
+    "tip6": { "title": "Limita i matrimoni", "desc": "Associa ogni chiave solo ai matrimoni necessari" }
   },
   
   "rateLimit": {
@@ -100,7 +128,5 @@
     "polling": "Polling status",
     "bulk": "Bulk updates",
     "webhooks": "Webhooks (Twilio)"
-  },
-  
-  "copied": "Copiato negli appunti"
+  }
 }

@@ -3,6 +3,7 @@
   "subtitle": "Complete guide for API integration",
   "backToSettings": "Settings",
   "version": "v2.0",
+  "copied": "Copied to clipboard",
   
   "overview": {
     "title": "Overview",
@@ -26,14 +27,12 @@
     "header": "Authentication header",
     "example": "cURL Example",
     "configTitle": "API Key Configuration",
-    "configSteps": [
-      "Go to Admin Settings → API Keys",
-      "Click New Key",
-      "Enter a descriptive name",
-      "Select weddings the key will have access to",
-      "Configure permissions for each resource (read/write)",
-      "Copy and store the generated token"
-    ]
+    "step1": "Go to Admin Settings → API Keys",
+    "step2": "Click New Key",
+    "step3": "Enter a descriptive name",
+    "step4": "Select weddings the key will have access to",
+    "step5": "Configure permissions for each resource (read/write)",
+    "step6": "Copy and store the generated token"
   },
   
   "permissionsSection": {
@@ -43,38 +42,69 @@
     "resourceDesc": "Description",
     "read": "Read",
     "write": "Write",
-    "resources": {
-      "invitati": "Guest management",
-      "famiglie": "Family management",
-      "gruppi": "Group management",
-      "tavoli": "Table management",
-      "weddings": "Wedding information",
-      "preferenze_alimentari_custom": "Custom dietary preferences"
-    }
+    "invitati": "Guest management",
+    "famiglie": "Family management",
+    "gruppi": "Group management",
+    "tavoli": "Table management",
+    "weddings": "Wedding information",
+    "preferenze": "Custom dietary preferences"
   },
   
   "endpoints": {
     "title": "Endpoints",
-    "tabs": {
-      "invitati": "Guests",
-      "famiglie": "Families",
-      "gruppi": "Groups",
-      "tavoli": "Tables",
-      "webhook": "Webhook"
+    "invitati": "Guests",
+    "famiglie": "Families",
+    "gruppi": "Groups",
+    "tavoli": "Tables",
+    "webhook": "Webhook",
+    "queryParams": "Query Parameters (optional)",
+    "response": "Response (200 OK)",
+    
+    "guests": {
+      "list": { "title": "List Guests", "desc": "Retrieve all guests. Automatically filters by authorized weddings." },
+      "detail": { "title": "Guest Detail", "desc": "Retrieve details of a single guest." },
+      "create": { "title": "Create Guest", "desc": "Create a new guest. Requires write permission." },
+      "update": { "title": "Update Guest", "desc": "Update an existing guest's data." },
+      "delete": { "title": "Delete Guest", "desc": "Delete a guest. Requires write permission." }
+    },
+    "families": {
+      "list": { "title": "List Families", "desc": "Retrieve all families." },
+      "create": { "title": "Create Family", "desc": "Create a new family." }
+    },
+    "groups": {
+      "list": { "title": "List Groups", "desc": "Retrieve all groups." },
+      "create": { "title": "Create Group", "desc": "Create a new group." }
+    },
+    "tables": {
+      "list": { "title": "List Tables", "desc": "Retrieve all tables." },
+      "create": { "title": "Create Table", "desc": "Create a new table." }
+    },
+    "webhookSection": {
+      "title": "Twilio Webhook for WhatsApp",
+      "desc": "Receive updates on the status of WhatsApp messages sent via Twilio",
+      "configTitle": "Twilio Configuration",
+      "step1": "Go to Twilio Console → Messaging → Settings",
+      "step2": "Set Status Callback URL:",
+      "step3": "Add the x-api-key header with your token",
+      "handler": { "title": "Webhook Handler", "desc": "Endpoint to receive status updates from Twilio." },
+      "autoSend": "Twilio automatically sends notifications to this endpoint when a message status changes.",
+      "trackedFields": "Tracked fields",
+      "statusDesc": "queued, sent, delivered, read, failed",
+      "priceDesc": "Message cost",
+      "sidDesc": "Twilio unique ID",
+      "dateDesc": "Send date"
     }
   },
   
   "errors": {
     "title": "Error Responses",
     "format": "Error format",
-    "codes": {
-      "400": { "title": "Bad Request", "desc": "Missing or invalid parameters" },
-      "401": { "title": "Unauthorized", "desc": "Missing or invalid API token" },
-      "403": { "title": "Forbidden", "desc": "Insufficient permissions for operation" },
-      "404": { "title": "Not Found", "desc": "Resource not found" },
-      "405": { "title": "Method Not Allowed", "desc": "HTTP method not supported" },
-      "500": { "title": "Internal Server Error", "desc": "Internal server error" }
-    }
+    "400": { "title": "Bad Request", "desc": "Missing or invalid parameters" },
+    "401": { "title": "Unauthorized", "desc": "Missing or invalid API token" },
+    "403": { "title": "Forbidden", "desc": "Insufficient permissions for operation" },
+    "404": { "title": "Not Found", "desc": "Resource not found" },
+    "405": { "title": "Method Not Allowed", "desc": "HTTP method not supported" },
+    "500": { "title": "Internal Server Error", "desc": "Internal server error" }
   },
   
   "examples": {
@@ -84,14 +114,12 @@
   
   "security": {
     "title": "Security Best Practices",
-    "tips": [
-      { "title": "Always use HTTPS", "desc": "All API calls must use HTTPS" },
-      { "title": "Rotate keys", "desc": "Periodically regenerate API keys" },
-      { "title": "Minimal permissions", "desc": "Assign only strictly necessary permissions" },
-      { "title": "Monitor usage", "desc": "Regularly check last_used_at of keys" },
-      { "title": "Don't share", "desc": "Don't expose API keys in client code" },
-      { "title": "Limit weddings", "desc": "Associate each key only with necessary weddings" }
-    ]
+    "tip1": { "title": "Always use HTTPS", "desc": "All API calls must use HTTPS" },
+    "tip2": { "title": "Rotate keys", "desc": "Periodically regenerate API keys" },
+    "tip3": { "title": "Minimal permissions", "desc": "Assign only strictly necessary permissions" },
+    "tip4": { "title": "Monitor usage", "desc": "Regularly check last_used_at of keys" },
+    "tip5": { "title": "Don't share", "desc": "Don't expose API keys in client code" },
+    "tip6": { "title": "Limit weddings", "desc": "Associate each key only with necessary weddings" }
   },
   
   "rateLimit": {
@@ -100,7 +128,5 @@
     "polling": "Polling status",
     "bulk": "Bulk updates",
     "webhooks": "Webhooks (Twilio)"
-  },
-  
-  "copied": "Copied to clipboard"
+  }
 }

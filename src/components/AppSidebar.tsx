@@ -60,15 +60,15 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       {/* Header */}
-      <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-3 px-2 py-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-md">
-            <Heart className="h-5 w-5" />
+      <SidebarHeader className="border-b border-sidebar-border p-2">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-md">
+            <Heart className="h-4 w-4" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col">
-              <span className="font-bold text-sidebar-foreground">Wedding</span>
-              <span className="text-xs text-sidebar-foreground/60">Smart Hub</span>
+              <span className="text-sm font-bold text-sidebar-foreground">Wedding</span>
+              <span className="text-[10px] text-sidebar-foreground/60">Smart Hub</span>
             </div>
           )}
         </div>
@@ -187,17 +187,17 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-2">
         {/* User Info - Expanded */}
         {!isCollapsed && user && (
-          <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/50 p-2 mb-2">
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs">
+          <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent/50 p-2 mb-2">
+            <Avatar className="h-7 w-7 shrink-0">
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[10px]">
                 {getUserInitials()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">
+              <p className="text-xs font-medium text-sidebar-foreground truncate">
                 {user.email?.split("@")[0]}
               </p>
-              <p className="text-xs text-sidebar-foreground/60">
+              <p className="text-[10px] text-sidebar-foreground/60">
                 {isAdmin ? t("userInfo.admin") : t("userInfo.sposi")}
               </p>
             </div>
@@ -209,15 +209,15 @@ export function AppSidebar() {
           <div className="flex justify-center mb-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs">
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[10px]">
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
               <TooltipContent side="right">
                 <p>{user.email}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground">
                   {isAdmin ? t("userInfo.admin") : t("userInfo.sposi")}
                 </p>
               </TooltipContent>
@@ -236,9 +236,9 @@ export function AppSidebar() {
           </div>
         )}
 
-        {/* Actions - Collapsed (vertical stack) */}
+        {/* Actions - Collapsed */}
         {isCollapsed && (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" onClick={signOut} className="h-8 w-8 text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10">
@@ -246,20 +246,10 @@ export function AppSidebar() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>{t("logout")}</p>
+                {t("logout")}
               </TooltipContent>
             </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="h-8 w-8 flex items-center justify-center">
-                  <LanguageSwitcher />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>Language</p>
-              </TooltipContent>
-            </Tooltip>
+            <LanguageSwitcher compact />
           </div>
         )}
       </SidebarFooter>

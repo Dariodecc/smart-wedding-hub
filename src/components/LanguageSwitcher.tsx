@@ -13,7 +13,11 @@ const languages = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
 ];
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  compact?: boolean;
+}
+
+export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
   const { i18n } = useTranslation();
 
   const changeLanguage = (langCode: string) => {
@@ -25,12 +29,12 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-9 px-2 gap-1.5">
+        <Button variant="ghost" size={compact ? "icon" : "sm"} className={compact ? "h-8 w-8" : "h-9 px-2 gap-1.5"}>
           <Globe className="h-4 w-4" />
-          <span className="text-base">{currentLang.flag}</span>
+          {!compact && <span className="text-base">{currentLang.flag}</span>}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" side={compact ? "right" : "bottom"}>
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}

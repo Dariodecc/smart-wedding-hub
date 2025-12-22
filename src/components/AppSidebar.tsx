@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, UsersRound, Group, Table2, Settings, Heart, LogOut, AlertTriangle, Book, User } from "lucide-react";
+import { LayoutDashboard, Users, UsersRound, Group, Table2, Settings, Heart, LogOut, AlertTriangle, Book } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -48,7 +48,6 @@ export function AppSidebar() {
   const showAdminMenu = isAdmin && !isImpersonating;
   const showSposiMenu = !isAdmin || isImpersonating;
 
-  // Get user initials for avatar
   const getUserInitials = () => {
     if (!user?.email) return "U";
     const parts = user.email.split("@")[0].split(/[._-]/);
@@ -61,85 +60,78 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       {/* Header */}
-      <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 shadow-lg">
-            <Heart className="h-5 w-5 text-white" />
+      <SidebarHeader className="border-b border-sidebar-border">
+        <div className="flex items-center gap-3 px-2 py-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-md">
+            <Heart className="h-5 w-5" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col">
-              <span className="text-lg font-bold text-sidebar-foreground">Wedding</span>
-              <span className="text-xs font-medium text-muted-foreground">Smart Hub</span>
+              <span className="font-bold text-sidebar-foreground">Wedding</span>
+              <span className="text-xs text-sidebar-foreground/60">Smart Hub</span>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
-        {/* Impersonation Banner */}
+      <SidebarContent>
+        {/* Impersonation Banner - Only when expanded */}
         {isImpersonating && !isCollapsed && (
-          <div className="mx-2 mt-3">
-            <div className="rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-3 border border-orange-200 dark:border-orange-800/50 shadow-sm">
-              <div className="flex items-start gap-2 mb-2">
-                <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+          <div className="mx-3 mt-3">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-medium text-orange-900/70 dark:text-orange-100/70 mb-0.5">
+                  <p className="text-xs font-medium text-amber-800">
                     {t("impersonation.title")}
-                  </div>
-                  <div className="text-sm font-semibold text-orange-900 dark:text-orange-100 truncate">
+                  </p>
+                  <p className="text-xs text-amber-700 truncate">
                     {wedding?.couple_name || t("common:loading")}
-                  </div>
+                  </p>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={stopImpersonation}
-                className="w-full h-8 text-xs rounded-lg border-orange-300 bg-white/80 text-orange-700 hover:bg-orange-50 hover:text-orange-800 hover:border-orange-400 dark:border-orange-700 dark:bg-orange-950/50 dark:text-orange-300 dark:hover:bg-orange-900/50 dark:hover:border-orange-600 transition-all"
-              >
-                <LogOut className="h-3 w-3 mr-1.5" />
+              <Button variant="outline" size="sm" onClick={stopImpersonation} className="w-full mt-2 h-7 text-xs border-amber-300 hover:bg-amber-100">
+                <LogOut className="h-3 w-3 mr-1" />
                 {t("impersonation.exit")}
               </Button>
             </div>
           </div>
         )}
 
-        {/* Collapsed Impersonation Icon */}
+        {/* Impersonation Icon - Only when collapsed */}
         {isImpersonating && isCollapsed && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="mx-auto mt-3 flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900/30 cursor-pointer" onClick={stopImpersonation}>
-                <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{t("impersonation.title")}: {wedding?.couple_name}</p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex justify-center py-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                  <AlertTriangle className="h-4 w-4" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>{t("impersonation.title")}: {wedding?.couple_name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         )}
 
         {/* Admin Menu */}
         {showAdminMenu && (
-          <SidebarGroup className="mt-2">
+          <SidebarGroup>
             {!isCollapsed && (
-              <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold px-3 mb-1">
+              <SidebarGroupLabel className="text-xs text-sidebar-foreground/50 uppercase tracking-wider">
                 {t("adminSection")}
               </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-1 px-1">
+              <SidebarMenu>
                 {adminItems.map((item) => (
                   <SidebarMenuItem key={item.titleKey}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <SidebarMenuButton asChild>
-                          <NavLink
-                            to={item.url}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200"
-                            activeClassName="bg-sidebar-accent text-sidebar-primary font-medium shadow-sm"
-                          >
-                            <item.icon className="h-5 w-5 shrink-0" />
-                            {!isCollapsed && <span className="font-medium">{t(item.titleKey)}</span>}
+                          <NavLink to={item.url} className="flex items-center gap-3 rounded-lg transition-colors" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground">
+                            <item.icon className="h-4 w-4 shrink-0" />
+                            {!isCollapsed && <span>{t(item.titleKey)}</span>}
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
@@ -158,26 +150,22 @@ export function AppSidebar() {
 
         {/* Sposi Menu */}
         {showSposiMenu && (
-          <SidebarGroup className="mt-2">
+          <SidebarGroup>
             {!isCollapsed && (
-              <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold px-3 mb-1">
+              <SidebarGroupLabel className="text-xs text-sidebar-foreground/50 uppercase tracking-wider">
                 {t("guestSection")}
               </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-1 px-1">
+              <SidebarMenu>
                 {gestioneInvitatiItems.map((item) => (
                   <SidebarMenuItem key={item.titleKey}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <SidebarMenuButton asChild>
-                          <NavLink
-                            to={item.url}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200"
-                            activeClassName="bg-sidebar-accent text-sidebar-primary font-medium shadow-sm"
-                          >
-                            <item.icon className="h-5 w-5 shrink-0" />
-                            {!isCollapsed && <span className="font-medium">{t(item.titleKey)}</span>}
+                          <NavLink to={item.url} className="flex items-center gap-3 rounded-lg transition-colors" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground">
+                            <item.icon className="h-4 w-4 shrink-0" />
+                            {!isCollapsed && <span>{t(item.titleKey)}</span>}
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
@@ -196,20 +184,20 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="border-t border-sidebar-border p-3">
+      <SidebarFooter className="border-t border-sidebar-border p-2">
         {/* User Info - Expanded */}
         {!isCollapsed && user && (
-          <div className="flex items-center gap-3 px-2 py-2 mb-2 rounded-xl bg-sidebar-accent/50">
-            <Avatar className="h-9 w-9 shrink-0">
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-semibold">
+          <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/50 p-2 mb-2">
+            <Avatar className="h-8 w-8 shrink-0">
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs">
                 {getUserInitials()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-sidebar-foreground truncate">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">
                 {user.email?.split("@")[0]}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-sidebar-foreground/60">
                 {isAdmin ? t("userInfo.admin") : t("userInfo.sposi")}
               </p>
             </div>
@@ -218,54 +206,53 @@ export function AppSidebar() {
 
         {/* User Avatar - Collapsed */}
         {isCollapsed && user && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex justify-center mb-2">
-                <Avatar className="h-9 w-9">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-semibold">
+          <div className="flex justify-center mb-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs">
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{user.email}</p>
-              <p className="text-xs text-muted-foreground">
-                {isAdmin ? t("userInfo.admin") : t("userInfo.sposi")}
-              </p>
-            </TooltipContent>
-          </Tooltip>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>{user.email}</p>
+                <p className="text-xs text-muted-foreground">
+                  {isAdmin ? t("userInfo.admin") : t("userInfo.sposi")}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         )}
 
-        {/* Actions Row */}
-        <div className={`flex items-center gap-2 ${isCollapsed ? 'flex-col' : ''}`}>
-          {/* Logout Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size={isCollapsed ? "icon" : "default"}
-                onClick={signOut}
-                className={`${isCollapsed ? 'h-9 w-9' : 'flex-1 justify-start'} rounded-xl hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 transition-all`}
-              >
-                <LogOut className="h-4 w-4" />
-                {!isCollapsed && <span className="ml-2">{t("logout")}</span>}
-              </Button>
-            </TooltipTrigger>
-            {isCollapsed && (
+        {/* Actions - Expanded */}
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={signOut} className="flex-1 justify-start text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10">
+              <LogOut className="h-4 w-4 mr-2" />
+              {t("logout")}
+            </Button>
+            <LanguageSwitcher />
+          </div>
+        )}
+
+        {/* Actions - Collapsed (vertical stack) */}
+        {isCollapsed && (
+          <div className="flex flex-col items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={signOut} className="h-8 w-8 text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
               <TooltipContent side="right">
                 <p>{t("logout")}</p>
               </TooltipContent>
-            )}
-          </Tooltip>
-
-          {/* Language Switcher */}
-          {!isCollapsed && <LanguageSwitcher />}
-          
-          {isCollapsed && (
+            </Tooltip>
+            
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-sidebar-accent transition-all cursor-pointer">
+                <div className="h-8 w-8 flex items-center justify-center">
                   <LanguageSwitcher />
                 </div>
               </TooltipTrigger>
@@ -273,8 +260,8 @@ export function AppSidebar() {
                 <p>Language</p>
               </TooltipContent>
             </Tooltip>
-          )}
-        </div>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
